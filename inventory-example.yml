@@ -18,16 +18,28 @@ all:
         ## you should enable the bastion. This will enable the use of the kvm server
         ## as jumphost to enter the VMs via SSH.
         ##
-        ## bastion_enabled: Bool, required argument.
+        ## terraform_bastion_enabled: Bool, required argument.
         #
-        bastion_enabled: False
-        # bastion_host, is bastion_enabled is True, should correspond to the IP of
-        # the qemu/kvm server.
-        bastion_host: 192.168.1.2
-        bastion_password: password
-        bastion_port: 22
-        bastion_user: root
+        terraform_bastion_enabled: False
+        ## terraform_bastion_host, is terraform_bastion_enabled is True, should correspond to the IP of
+        ## the qemu/kvm server.
+        #
+        # terraform_bastion_host: 192.168.1.2
+        # terraform_bastion_password: password
+        # terraform_bastion_port: 22
+        # terraform_bastion_user: root
         # ----
+        #
+        ## list of eventual single or multiple bastion/jump hops necessar to reach the
+        ## VMs. if terraform_bastion_enabled is True, AT LEAST one jump is ncessary
+        ## and should correspond to the terraform_node user@IP.
+        #
+        ## This value can be set also if terraform_bastion_enabled is False, this way
+        ## it is possible to specify a jump host independently from the terraform node.
+        # ansible_jump_hosts:
+        #   - {user: root, host: 10.10.20.1}
+        #   - {user: root, host: 192.168.122.2}
+        #   - {user: root, host: 172.16.0.1}
         #
         # ----
         ## Source image:
@@ -150,7 +162,7 @@ all:
               # ----
               ## Default ssh public key location.
               ## If you need a specific ssh key for a specific group of hosts
-              ## you can declare it here, to be group specific instead
+              ## you can declare it here, to be GROUP-SPECIFIC instead
               ## of global.
               #
               #ssh_public_key_file: '~/.ssh/id_rsa.pub'
@@ -159,7 +171,7 @@ all:
               # ----
               ## this parameter is optional. Specifying this parameter
               ## will change the password during the initialization of the VM
-              ## in the entire group.
+              ## GROUP-SPECIFIC.
               ##
               ## This will then be used in the provisioning section if no ssh-public-key
               ## is found.
@@ -169,7 +181,7 @@ all:
               # ansible_ssh_pass: test_psk
               # ----
 
-              ## Here we can provide a group-wide default
+              ## Here we can provide a GROUP-SPECIFIC default
               ## for the resources (cpu, ram, network...)
               ## so if all nodes in a group are the same size
               ## it is possible to deduplicate a lot of settings.
