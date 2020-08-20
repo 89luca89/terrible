@@ -43,6 +43,10 @@ all:
         ssh_port: 22
         ssh_user: root
         # ----
+        ##
+        # Default ssh public key location.
+        ssh_public_key_file: '~/.ssh/id_rsa.pub'
+      hosts:
         #
         # ----
         ## Terraform node is required; it is the IP of the machine
@@ -53,11 +57,9 @@ all:
         ## In case the terraform machine is NOT the local machine, put here the
         ## IP/hostname of the terraform node.
         #
-        terraform_node: 127.0.0.1
         # ----
-        ##
-        # Default ssh public key location.
-        ssh_public_key_file: '~/.ssh/id_rsa.pub'
+        terraform_node:
+          ansible_host: remote_terraform_node.test.com
       children:
         master_nodes:
           hosts:
@@ -197,11 +199,11 @@ all:
               memory: 1024
           vars:
             # ...
-    hypervisor_2:
-      vars:
-      children:
-        master_nodes:
-        slave_nodes:
+            # hypervisor_2:
+            #   vars:
+            #   children:
+            #     master_nodes:
+            #     slave_nodes:
     #
     ## ----
     #
@@ -209,6 +211,9 @@ all:
     #   vars:
     #     ...
     #   children:
+    #     host:
+    #       terraform_node:
+    #         ansible_host: 127.0.0.1
     #     group_1:
     #       hosts:
     #         ...
