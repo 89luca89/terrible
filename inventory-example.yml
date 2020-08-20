@@ -36,10 +36,10 @@ all:
         #
         ## This value can be set also if terraform_bastion_enabled is False, this way
         ## it is possible to specify a jump host independently from the terraform node.
-        # ansible_jump_hosts:
-        #   - {user: root, host: 10.10.20.1}
-        #   - {user: root, host: 192.168.122.2}
-        #   - {user: root, host: 172.16.0.1}
+        ansible_jump_hosts:
+          - {user: root, host: bastion_2.lan, port: 2222}
+          - {user: root, host: bastion.lan, port: 22}
+          - {user: bastion, host: management, port: 50363}
         #
         # ----
         ## Source image:

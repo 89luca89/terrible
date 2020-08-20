@@ -161,11 +161,6 @@ These variables are **required**, they should be declared on per-hypervisor scop
 
 * **ansible_host:** `required`. Specify the ip address for the VM. If not specified, a random ip is assigned.
 
-* **bastion_enabled:** `required`. Specify `True` or `False`. In case the **terraform_node** and KVM server differ, you should enable the bastion. This will enable the use of the KVM server as jumphost to enter th VMs via ssh.
-* **bastion_host:** `required` if **bastion_enabled** is `True`. Specify the ip address of the bastion host.
-* **bastion_password:** `required` if **bastion_enabled** is `True`. Specify the password of the bastion host.
-* **bastion_port:** `required` if **bastion_enabled** is `True`. Specify the port (for the ssh connection) of the bastion host.
-* **bastion_user:** `required` if **bastion_enabled** is `True`. Specify the user of the bastion host.
 * **disk_source:** `required`. Specify the (local) path to the virtual disk you want to use to deploy the VMs.
 * **pool_name:** `required`. Specify the *storage pool* name where you want to deploy the VMs on the KVM server.
 * **provider_uri:** `required`. Specify the uri of the KVM server. You can use `qemu:///system` if the KVM server is you own computer, or `qemu+ssh://USER@IP:PORT/system` (or different) if your server is remote.
@@ -173,6 +168,12 @@ These variables are **required**, they should be declared on per-hypervisor scop
 * **ssh_port:** `required`. Specify the port to access the deployed VMs.
 * **ssh_user:** `required`. Specify the user to access the deployed VMs.
 * **terraform_node:** `required`. Specify the ip of the machine that performs the Terraform tasks. The default value of 127.0.0.1 indicates that the machine that perform Terraform tasks is the same that launches the Ansible playbook. In case the Terraform machine is not the local machine, put the ip/hostname of the Terraform node.
+* **terraform_bastion_enabled:** `required`. Specify `True` or `False`. In case the **terraform_node** and KVM server differ, you should enable the bastion. This will enable the use of the KVM server as jumphost to enter th VMs via ssh.
+* **terraform_bastion_host:** `required` if **terraform_bastion_enabled** is `True`. Specify the ip address of the bastion host.
+* **terraform_bastion_password:** `required` if **terraform_bastion_enabled** is `True`. Specify the password of the bastion host.
+* **terraform_bastion_port:** `required` if **terraform_bastion_enabled** is `True`. Specify the port (for the ssh connection) of the bastion host.
+* **terraform_bastion_user:** `required` if **terraform_bastion_enabled** is `True`. Specify the user of the bastion host.
+* **ansible_jump_hosts:** `required` if **terraform_bastion_enabled** is `True`. Specify one or more jumphost/bastions for the ansible provisioning part.
 
 These variable are optional, there are sensible defaults set up, most of them can be declared from **hypervisor scope** to **vm-group scope** and **per-vm scope**:
 
@@ -181,6 +182,37 @@ These variable are optional, there are sensible defaults set up, most of them ca
 * **mac_address:** `optional`. Specify the memory ram for the VM. If not specified, a random mac is assigned.
 * **memory:** `optional`. Specify the memory ram for the VM. If not specified, the default value is taken. Default: `1024`
 * **network_name:** `optional`. Specify the network name for the VM. If not specified, the default value is taken. Default: `"default"`
+
+#### Bastions, Jumphosts, Remote Nodes
+
+As stated in the above list, it is possible to use a `terraform_terraform_bastion_enabled` variable also declaring:
+
+* terraform_bastion_host
+* terraform_bastion_password
+* terraform_bastion_port
+* terraform_bastion_user
+
+to declare what jump host `terraform` will use to finish provisioning the machine when deploying.
+
+*If `terraform_terraform_bastion_enabled` is set to True, all the above variables are required, including `ansible_jump_hosts` list*
+
+**Ansible Jumphosts list**
+
+Example:
+
+```yaml
+        ansible_jump_hosts:
+          - {user: root, host: terraform_server.internal.lan, port: 22}
+          - {user: bastion, host: tunnel, port: 22}
+```
+
+declaring one or multiple jump hosts, will generate automatically all the ssh arguments needed to perform
+single/multiple hops for ansible.
+
+in the above example we have:
+
+`ansible machine` --> `bastion@tunnel:50364` --> `root@terraform_server.internal.lan:22` --> `target VM`
+
 
 ## Support
 
