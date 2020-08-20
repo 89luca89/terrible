@@ -1,0 +1,6 @@
+
+update_command: pkg upgrade -y
+
+base_packages:
+  - vim
+  - curl

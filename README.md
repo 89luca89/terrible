@@ -148,7 +148,6 @@ Once you understand how to fill the inventory file, you are ready to check all t
 These variables are **required**, they should be declared on per-hypervisor scope:
 
 * **ansible_host:** `required`. Specify the ip address for the VM. If not specified, a random ip is assigned.
-
 * **bastion_enabled:** `required`. Specify `True` or `False`. In case the **terraform_node** and KVM server differ, you should enable the bastion. This will enable the use of the KVM server as jumphost to enter th VMs via ssh.
 * **bastion_host:** `required` if **bastion_enabled** is `True`. Specify the ip address of the bastion host.
 * **bastion_password:** `required` if **bastion_enabled** is `True`. Specify the password of the bastion host.
@@ -169,6 +168,7 @@ These variable are optional, there are sensible defaults set up, most of them ca
 * **mac_address:** `optional`. Specify the memory ram for the VM. If not specified, a random mac is assigned.
 * **memory:** `optional`. Specify the memory ram for the VM. If not specified, the default value is taken. Default: `1024`
 * **network_name:** `optional`. Specify the network name for the VM. If not specified, the default value is taken. Default: `"default"`
+* **change_passwd_cmd:** `optional`. Specify a different command to be used to change the password to the user. If not specified the default command is used. Default: `echo root:{{ ansible_ssh_pass }} | chpasswd`. This variable become really useful when you are using a FreeBSD OS.
 
 ## Support
 
@@ -177,6 +177,7 @@ Actually the role is supporting the most common 3 OS families for the Guests:
 * RedHat
 * Debian
 * Suse
+* FreeBSD
 
 This means you are able to generate the infrastructure using the OS listed above.
 

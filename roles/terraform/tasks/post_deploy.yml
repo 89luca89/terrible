@@ -7,6 +7,16 @@
   package:
     name: "{{ base_packages }}"
     state: present
+  when: (ansible_os_family == "RedHat") or
+        (ansible_os_family == "Debian") or
+        (ansible_os_family == "Suse")
+  tags: provision
+
+- name: Install Basic Packages
+  pkgng:
+    name: "{{ base_packages }}"
+    state: present
+  when: ansible_os_family == "FreeBSD"
   tags: provision
 
 - name: Update systems
