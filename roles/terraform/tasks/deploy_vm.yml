@@ -1,0 +1,39 @@
+---
+# tasks file for terraform
+#
+#
+
+- name: "Read public key for ssh"
+  set_fact:
+    ssh_public_key: "{{ lookup('file', '{{ ssh_public_key_file }}') }}"
+  tags: deploy
+
+- name: Ensures terraform dirs exists
+  file: path=/tmp/{{ inventory_hostname }}-terraform-vm state=directory
+  delegate_to: "{{ terraform_node }}"
+  tags: deploy
+
+- name: "Deploy terraform files"
+  template:
+    src: terraform-vm.tf.j2
+    dest: /tmp/{{ inventory_hostname }}-terraform-vm/{{ inventory_hostname }}-terraform-vm.tf
+  delegate_to: "{{ terraform_node }}"
+  register: terraform_status
+  tags: deploy
+
+- name: "Terraform destroy VMs"
+  terraform:
+    project_path: /tmp/{{ inventory_hostname }}-terraform-vm/
+    force_init: true
+    state: absent
+  delegate_to: "{{ terraform_node }}"
+  when: terraform_status is undefined or terraform_status.changed
+  tags: deploy, destroy
+
+- name: "Terraform apply VMs"
+  terraform:
+    project_path: /tmp/{{ inventory_hostname }}-terraform-vm/
+    force_init: true
+    state: present
+  delegate_to: "{{ terraform_node }}"
+  tags: deploy, apply

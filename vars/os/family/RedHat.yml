@@ -1,0 +1,7 @@
+
+update_command: yum update -y --security
+
+base_packages:
+  - vim
+  - curl
+  - epel-release

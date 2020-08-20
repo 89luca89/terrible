@@ -1,0 +1,16 @@
+# Creation Date: 2019-06-17
+#
+# Author: Luca Di Maio
+---
+
+# file: main.yml
+
+- hosts: all
+  gather_facts: False
+  roles:
+    - terraform
+
+      # - hosts: all
+      #   gather_facts: True
+      #   roles:
+      #     - post-deploy

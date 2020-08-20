@@ -1,0 +1,6 @@
+
+update_command: zypper patch -y
+
+base_packages:
+  - vim
+  - curl

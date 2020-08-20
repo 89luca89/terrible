@@ -1,0 +1,130 @@
+# variables that can be overriden
+#
+#
+#
+variable "cpu" { default = {{ cpu }} }
+variable "disk_source" { default = "{{ disk_source }}" }
+variable "hostname" { default = "{{ inventory_hostname }}" }
+
+variable "memory_mb" { default = {{ memory }} }
+variable "provider_uri" { default = "{{ provider_uri }}" }
+variable "pool_name" { default = "{{ pool_name }}" }
+
+variable "ssh_public_key" { default = "{{ ssh_public_key }}" }
+
+# instance the provider
+provider "libvirt" {
+  uri = var.provider_uri
+}
+
+# Base OS image to use to create a cluster of different
+# nodes
+resource "libvirt_volume" "os_image" {
+  name   = format("%s-%s", var.hostname, "terraform")
+  source = pathexpand(var.disk_source)
+  pool   = var.pool_name
+  format = "qcow2"
+}
+
+# Create the machine
+resource "libvirt_domain" "domain-terraform" {
+  name   = var.hostname
+  memory = var.memory_mb
+  vcpu   = var.cpu
+
+  cpu = {
+    mode = "host-passthrough"
+  }
+
+  disk { volume_id = libvirt_volume.os_image.id }
+  boot_device { dev = ["cdrom", "hd", "network"] }
+
+  {% if mount_points is defined %}
+  {% for item in mount_points %}
+  filesystem {
+    source   = pathexpand("{{ item.src }}")
+    target   = "{{ item.dest }}"
+    readonly = false
+  }
+  {% endfor %}
+  {% endif %}
+
+  # uses static  IP
+  network_interface {
+    network_name   = "{{ network_name }}"
+    hostname       = var.hostname
+    addresses      = ["{{ ansible_host }}"]
+
+    {% if mac_address is defined %}
+    mac            = "{{ mac_address }}"
+    {% endif %}
+
+    wait_for_lease = true
+  }
+
+  {% if macvtap_ifaces is defined %}
+  {% for iface in macvtap_ifaces %}
+  network_interface {
+    bridge  = "{{ iface }}"
+    hostname = var.hostname
+  }
+  {% endfor %}
+  {% endif %}
+
+  # IMPORTANT
+  # it will show no console otherwise
+  video {
+    type = "qxl"
+  }
+
+  graphics {
+    type        = "spice"
+    listen_type = "address"
+    autoport    = "true"
+  }
+
+  connection {
+    type             = "ssh"
+    host             = self.network_interface[0].addresses[0]
+    user             = "{{ ssh_user }}"
+    password         = "{{ ssh_password }}"
+    port             = "{{ ssh_port }}"
+
+    {% if bastion_enabled %}
+    bastion_host     = "{{ bastion_host }}"
+    bastion_port     = "{{ bastion_port }}"
+    bastion_user     = "{{ bastion_user }}"
+    bastion_password = "{{ bastion_password }}"
+    {% endif %}
+  }
+  # Hostdev passtrought
+  # provisioner "local-exec" {
+  #   command = "virsh --connect ${var.provider_uri} attach-device ${var.hostname} --file passtrought-host.xml --live --persistent"
+  # }
+
+  {% if ssh_public_key is defined %}
+  provisioner "remote-exec" {
+    inline = [
+        "mkdir -m 0700 ~/.ssh",
+        "echo '${var.ssh_public_key}' | tee -a ~/.ssh/authorized_keys",
+        "chmod 0600 ~/.ssh/authorized_keys"]
+  }
+  {% endif %}
+
+  {% if ansible_ssh_pass is defined %}
+  provisioner "remote-exec" {
+    inline = [
+      "echo root:{{ ansible_ssh_pass }} | chpasswd"]
+  }
+  {% endif %}
+
+}
+
+terraform {
+  required_version = ">= {{ terraform_version }}"
+}
+
+output "metadata" {
+  # run 'terraform refresh' if not populated
+  value = libvirt_domain.domain-terraform
+}

@@ -1,0 +1,15 @@
+---
+
+# Post deploy for VMs deployed by terraform.
+#
+
+- name: Install Basic Packages
+  package:
+    name: "{{ base_packages }}"
+    state: present
+  tags: provision
+
+- name: Update systems
+  shell: "{{ update_command }}"
+  become: true
+  tags: provision

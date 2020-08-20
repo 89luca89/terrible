@@ -1,0 +1,49 @@
+---
+
+# main task for terraform role
+#
+#
+
+- assert:
+    that:
+      - "'ansible_host' is defined"
+      - "'bastion_enabled' is defined"
+      - "'disk_source' is defined"
+      - "'pool_name' is defined"
+      - "'provider_uri' is defined"
+      - "'ssh_password' is defined"
+      - "'ssh_port' is defined"
+      - "'ssh_public_key_file' is defined"
+      - "'ssh_user' is defined"
+      - "'terraform_node' is defined"
+  tags: deploy, destroy, apply
+
+- assert:
+    that:
+      - "'bastion_host' is defined"
+      - "'bastion_password' is defined"
+      - "'bastion_port' is defined"
+      - "'bastion_user' is defined"
+  when:
+    - bastion_enabled is defined
+    - bastion_enabled
+  tags: deploy, destroy, apply
+
+- include_tasks: deploy_vm.yml
+  tags: deploy, destroy, apply
+
+- name: Wait for system to become reachable
+  wait_for_connection:
+    delay: 1
+    timeout: 300
+  tags: provision
+
+- name: gather facts
+  setup:
+  tags: provision
+
+- include_vars: "vars/os/family/{{ ansible_os_family }}.yml"
+  tags: provision
+
+- include_tasks: post_deploy.yml
+  tags: provision

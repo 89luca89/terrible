@@ -1,0 +1,223 @@
+all:
+  vars:
+  children:
+    hypervisor_1:
+      vars:
+        # ----
+        ## Hypervisor dependent
+
+        ## Provider URI is required. It is the uri of the KVM server.
+        ## In case the KVM server and the terraform_node correspond, retain
+        ## the default "qemu:///system", else use the form:
+        ##
+        ##      qemu+ssh://USER@IP/system
+        #
+        provider_uri: "qemu:///system"
+
+        ## BASTION SECTION: in case the terraform_node and qemu/kvm server differ,
+        ## you should enable the bastion. This will enable the use of the kvm server
+        ## as jumphost to enter the VMs via SSH.
+        ##
+        ## bastion_enabled: Bool, required argument.
+        #
+        bastion_enabled: False
+        # bastion_host, is bastion_enabled is True, should correspond to the IP of
+        # the qemu/kvm server.
+        bastion_host: 192.168.1.2
+        bastion_password: password
+        bastion_port: 22
+        bastion_user: root
+        # ----
+        #
+        # ----
+        ## Source image:
+        # in this example, we setup the default image to a centos8 image,
+        # this can be overwritten on a per-group or per-host level.
+        disk_source: "~/VirtualMachines/centos8-terraform.qcow2"
+        pool_name: default
+        # ----
+        #
+        ## These are the ssh infos that are necessary to access the
+        ## basic VM source image.
+        ssh_password: root
+        ssh_port: 22
+        ssh_user: root
+        # ----
+        #
+        # ----
+        ## Terraform node is required; it is the IP of the machine
+        ## that performs the terraform tasks. The default value of
+        ## 127.0.0.1 indicates that the machine that performs terraform
+        ## tasks is the same that launches the ansible playbook.
+        ##
+        ## In case the terraform machine is NOT the local machine, put here the
+        ## IP/hostname of the terraform node.
+        #
+        terraform_node: 127.0.0.1
+        # ----
+        ##
+        # Default ssh public key location.
+        ssh_public_key_file: '~/.ssh/id_rsa.pub'
+      children:
+        master_nodes:
+          hosts:
+            # Here the list of VMs that we want to create and provision.
+
+            host-vm-1:
+
+              ## Host specific resources
+              #
+              ## It is possible to specify per-VM disk source.
+              ## This is useful for mixed environments with
+              ## multiple distributions.
+              # disk_source: "~/VirtualMachines/centos8-terraform.qcow2"
+              cpu: 4
+              memory: 1024
+              network_name: "default"
+
+              # mac_address is optional if you have a means
+              # of controlling the dhcp-leases
+              #
+              mac_address: "AA:BB:CC:11:24:24"
+
+              # ----
+              ## Mount points are optionals, the folder are
+              ## exposed to the guest via 9p fs, make sure
+              ## the guest supports it.
+              ##
+              ## It can be 1 value or more, depending on your needs.
+              ##
+              #
+              # mount_points:
+              #   - {src: /tmp, dest: mnt }
+              #   - {src: /home, dest: home }
+              # ----
+
+              # ----
+              ## If your mean of interfacing with the VMs is
+              ## external to the hypervisor, you can declare
+              ## here the macvtap interfaces.
+              ##
+              ## It can be 1 value or more, depending on your needs.
+              ##
+              ## This is optional if you want to use the NAT network.
+              #
+              # macvtap_ifaces:
+              #   - ens1
+              #   - ens2
+              # ----
+
+              # ----
+              ## Default ssh public key location.
+              ## If you need a specific ssh key for a specific host
+              ## you can declare it here, to be host specific instead
+              ## of global.
+              #
+              #ssh_public_key_file: '~/.ssh/id_rsa.pub'
+              # ----
+
+              # ----
+              ## this parameter is optional. Specifying this parameter
+              ## will change the VM password during the initialization of it.
+              ##
+              ## This will then be used in the provisioning section if no ssh-public-key
+              ## is found.
+              ##
+              ## It is advisable to use ansible-vault for this section.
+              #
+              # ansible_ssh_pass: test_psk
+              # ----
+
+              # ----
+              ## ansible_host is declared here as a mean for ansible
+              ## to continue the VM provisioning after the terraform apply.
+              ##
+              ## In case you want to use the macvtap_ifaces, you can declare
+              ## here one of the external IPs that ansible can use to reach
+              ## the VM.
+              #
+              ansible_host: 192.168.124.199
+              # ----
+          vars:
+
+              ## It is possible to specify per-GROUP disk source.
+              ## This is useful for mixed environments with
+              ## multiple distributions.
+              # disk_source: "~/VirtualMachines/centos8-terraform.qcow2"
+
+              # ----
+              ## Default ssh public key location.
+              ## If you need a specific ssh key for a specific group of hosts
+              ## you can declare it here, to be group specific instead
+              ## of global.
+              #
+              #ssh_public_key_file: '~/.ssh/id_rsa.pub'
+              # ---
+
+              # ----
+              ## this parameter is optional. Specifying this parameter
+              ## will change the password during the initialization of the VM
+              ## in the entire group.
+              ##
+              ## This will then be used in the provisioning section if no ssh-public-key
+              ## is found.
+              ##
+              ## It is advisable to use ansible-vault for this section.
+              #
+              # ansible_ssh_pass: test_psk
+              # ----
+
+              ## Here we can provide a group-wide default
+              ## for the resources (cpu, ram, network...)
+              ## so if all nodes in a group are the same size
+              ## it is possible to deduplicate a lot of settings.
+              # cpu: 1
+              # memory: 1024
+              # network_name: "default"
+              # mount_points:
+              #   - {src: /tmp, dest: mnt }
+              #   - {src: /home, dest: home }
+              # macvtap_ifaces:
+              #   - ens1
+              #   - ens2
+        slave_nodes:
+          hosts:
+            host-vm-2:
+              network_name: "default"
+              ansible_host: 192.168.124.200
+              mac_address: "AA:BB:CC:11:24:25"
+              cpu: 2
+              memory: 1024
+            host-vm-3:
+              disk_source: "~/VirtualMachines/opensuse15.2-terraform.qcow2"
+              network_name: "default"
+              ansible_host: 192.168.124.201
+              mac_address: "AA:BB:CC:11:24:26"
+              cpu: 2
+              memory: 1024
+          vars:
+            # ...
+    hypervisor_2:
+      vars:
+      children:
+        master_nodes:
+        slave_nodes:
+    #
+    ## ----
+    #
+    # hypervisor_2
+    #   vars:
+    #     ...
+    #   children:
+    #     group_1:
+    #       hosts:
+    #         ...
+    #       vars:
+    #         ...
+    #     group_2:
+    #       hosts:
+    #       ...
+    #       vars:
+    #       ...
+    # hypervisor_3
+    # ...

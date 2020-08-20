@@ -1,0 +1,7 @@
+
+update_command: apt update; unattended-upgrade
+
+base_packages:
+  - vim
+  - curl
+  - unattended-upgrades
