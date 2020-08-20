@@ -42,6 +42,9 @@ all:
                 provider_uri: ...
                 pool_name: ...
                ...
+            hosts:
+                terraform_node:
+                    ansible_host: ...
             children:
                 group_1:
                     hosts:
@@ -60,6 +63,9 @@ all:
                 provider_uri: ...
                 pool_name: ...
                ...
+            hosts:
+                terraform_node:
+                    ansible_host: ...
             children:
                 group_3:
                     hosts:
@@ -83,8 +89,11 @@ all:
         hypervisor_1:
             vars:
                 provider_uri: "qemu:///system"
-                pool_name: default
-                terraform_node: 127.0.0.1
+                pool_name: defaul
+            hosts:
+                terraform_node:
+                    ansible_host: 127.0.0.1
+                    ansible_connection: local
         ...
 ```
 
@@ -101,8 +110,11 @@ Here's a little example:
             vars:
                 provider_uri: "qemu:///system"
                 pool_name: default
-                terraform_node: 127.0.0.1
                 disk_source: "~/VirtualMachines/centos8-terraform.qcow2"
+            hosts:
+                terraform_node:
+                    ansible_host: 127.0.0.1
+                    ansible_connection: local
             children:
                 group_1:
                     hosts:
