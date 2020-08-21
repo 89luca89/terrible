@@ -5,7 +5,7 @@
 
 # file: main.yml
 
-- hosts: all
+- hosts: all:!terraform_node
   gather_facts: False
   roles:
     - terraform

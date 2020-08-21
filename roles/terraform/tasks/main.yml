@@ -7,7 +7,7 @@
 - assert:
     that:
       - "'ansible_host' is defined"
-      - "'bastion_enabled' is defined"
+      - "'terraform_bastion_enabled' is defined"
       - "'disk_source' is defined"
       - "'pool_name' is defined"
       - "'provider_uri' is defined"
@@ -20,13 +20,14 @@
 
 - assert:
     that:
-      - "'bastion_host' is defined"
-      - "'bastion_password' is defined"
-      - "'bastion_port' is defined"
-      - "'bastion_user' is defined"
+      - "'ansible_jump_hosts' is defined"
+      - "'terraform_bastion_host' is defined"
+      - "'terraform_bastion_password' is defined"
+      - "'terraform_bastion_port' is defined"
+      - "'terraform_bastion_user' is defined"
   when:
-    - bastion_enabled is defined
-    - bastion_enabled
+    - terraform_bastion_enabled is defined
+    - terraform_bastion_enabled
   tags: deploy, destroy, apply
 
 - include_tasks: deploy_vm.yml
