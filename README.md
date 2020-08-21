@@ -119,6 +119,7 @@ Here's a little example:
                 group_1:
                     hosts:
                         host_1:
+                            os_family: RedHat
                             cpu: 4
                             memory: 8192
                             network_name: "default"
@@ -126,8 +127,10 @@ Here's a little example:
                 group_2:
                     hosts:
                         host_2:
+                            os_family: RedHat
                             cpu: 2
                         host_3:
+                            os_family: Suse
                             disk_source: "~/VirtualMachines/opensuse15.2-terraform.qcow2"
                             cpu: 4
                             memory: 4096
@@ -160,13 +163,13 @@ Once you understand how to fill the inventory file, you are ready to check all t
 These variables are **required**, they should be declared on per-hypervisor scope:
 
 * **ansible_host:** `required`. Specify the ip address for the VM. If not specified, a random ip is assigned.
-
 * **disk_source:** `required`. Specify the (local) path to the virtual disk you want to use to deploy the VMs.
 * **pool_name:** `required`. Specify the *storage pool* name where you want to deploy the VMs on the KVM server.
 * **provider_uri:** `required`. Specify the uri of the KVM server. You can use `qemu:///system` if the KVM server is you own computer, or `qemu+ssh://USER@IP:PORT/system` (or different) if your server is remote.
 * **ssh_password:** `required`. Specify the password to access the deployed VMs.
 * **ssh_port:** `required`. Specify the port to access the deployed VMs.
 * **ssh_user:** `required`. Specify the user to access the deployed VMs.
+* **os_family:** `required`. Specify the OS family for the installation. Possible values are: `RedHat`, `Debian`, `Suse`, `FreeBSD`.
 * **terraform_node:** `required`. Specify the ip of the machine that performs the Terraform tasks. The default value of 127.0.0.1 indicates that the machine that perform Terraform tasks is the same that launches the Ansible playbook. In case the Terraform machine is not the local machine, put the ip/hostname of the Terraform node.
 * **terraform_bastion_enabled:** `required`. Specify `True` or `False`. In case the **terraform_node** and KVM server differ, you should enable the bastion. This will enable the use of the KVM server as jumphost to enter th VMs via ssh.
 * **terraform_bastion_host:** `required` if **terraform_bastion_enabled** is `True`. Specify the ip address of the bastion host.
@@ -182,6 +185,7 @@ These variable are optional, there are sensible defaults set up, most of them ca
 * **mac_address:** `optional`. Specify the memory ram for the VM. If not specified, a random mac is assigned.
 * **memory:** `optional`. Specify the memory ram for the VM. If not specified, the default value is taken. Default: `1024`
 * **network_name:** `optional`. Specify the network name for the VM. If not specified, the default value is taken. Default: `"default"`
+* **change_passwd_command:** `optional`. Specify a different command to be used to change the password to the user. If not specified the default command is used. Default: `echo root:{{ ansible_ssh_pass }} | chpasswd`. This variable become really useful when you are using a FreeBSD OS.
 
 #### Bastions, Jumphosts, Remote Nodes
 
@@ -234,6 +238,7 @@ Actually the role is supporting the most common 3 OS families for the Guests:
 * RedHat (including Centos, Fedora and derivates)
 * Debian (Including Ubuntu and derivates)
 * Suse (Thumbleweed and Leap)
+* FreeBSD
 
 This means you are able to generate the infrastructure using the OS listed above.
 
