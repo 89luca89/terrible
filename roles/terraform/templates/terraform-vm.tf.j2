@@ -91,10 +91,10 @@ resource "libvirt_domain" "domain-terraform" {
     port             = "{{ ssh_port }}"
 
     {% if terraform_bastion_enabled %}
-    terraform_bastion_host     = "{{ terraform_bastion_host }}"
-    terraform_bastion_port     = "{{ terraform_bastion_port }}"
-    terraform_bastion_user     = "{{ terraform_bastion_user }}"
-    terraform_bastion_password = "{{ terraform_bastion_password }}"
+    bastion_host     = "{{ terraform_bastion_host }}"
+    bastion_port     = "{{ terraform_bastion_port }}"
+    bastion_user     = "{{ terraform_bastion_user }}"
+    bastion_password = "{{ terraform_bastion_password }}"
     {% endif %}
   }
   # Hostdev passtrought
