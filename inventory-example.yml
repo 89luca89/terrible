@@ -138,8 +138,16 @@ all:
               #
               ansible_host: 192.168.124.199
               # ----
+              ## It is possible to specify custom commands that should be executed
+              ## on a VM **BEFORE** ansible provisioning starts. This can be useful
+              ## for cases where python3 is not installed by default for example, or
+              ## to setup static IPs for bridge/macvtap interfaces.
+              #
+              ## It supports using jinja2 syntax and variables.
+              #
+              terraform_custom_provisioners:
+                - "echo {{ ansible_host }} > /tmp/test_provisioning_success.log"
           vars:
-
               ## It is possible to specify per-GROUP disk source.
               ## This is useful for mixed environments with
               ## multiple distributions.
