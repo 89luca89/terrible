@@ -18,16 +18,28 @@ all:
         ## you should enable the bastion. This will enable the use of the kvm server
         ## as jumphost to enter the VMs via SSH.
         ##
-        ## bastion_enabled: Bool, required argument.
+        ## terraform_bastion_enabled: Bool, required argument.
         #
-        bastion_enabled: False
-        # bastion_host, is bastion_enabled is True, should correspond to the IP of
-        # the qemu/kvm server.
-        bastion_host: 192.168.1.2
-        bastion_password: password
-        bastion_port: 22
-        bastion_user: root
+        terraform_bastion_enabled: False
+        ## terraform_bastion_host, is terraform_bastion_enabled is True, should correspond to the IP of
+        ## the qemu/kvm server.
+        #
+        # terraform_bastion_host: 192.168.1.2
+        # terraform_bastion_password: password
+        # terraform_bastion_port: 22
+        # terraform_bastion_user: root
         # ----
+        #
+        ## list of eventual single or multiple bastion/jump hops necessar to reach the
+        ## VMs. if terraform_bastion_enabled is True, AT LEAST one jump is ncessary
+        ## and should correspond to the terraform_node user@IP.
+        #
+        ## This value can be set also if terraform_bastion_enabled is False, this way
+        ## it is possible to specify a jump host independently from the terraform node.
+        ansible_jump_hosts:
+          - {user: root, host: bastion_2.lan, port: 2222}
+          - {user: root, host: bastion.lan, port: 22}
+          - {user: bastion, host: management, port: 50363}
         #
         # ----
         ## Source image:
@@ -43,6 +55,10 @@ all:
         ssh_port: 22
         ssh_user: root
         # ----
+        ##
+        # Default ssh public key location.
+        ssh_public_key_file: '~/.ssh/id_rsa.pub'
+      hosts:
         #
         # ----
         ## Terraform node is required; it is the IP of the machine
@@ -50,14 +66,15 @@ all:
         ## 127.0.0.1 indicates that the machine that performs terraform
         ## tasks is the same that launches the ansible playbook.
         ##
+        ## When using 127.0.0.1 for the terraform_node, it is advisable to also
+        ## set ansible_connection to local, so it does not use ssh for localhost.
+        ##
         ## In case the terraform machine is NOT the local machine, put here the
         ## IP/hostname of the terraform node.
         #
-        terraform_node: 127.0.0.1
         # ----
-        ##
-        # Default ssh public key location.
-        ssh_public_key_file: '~/.ssh/id_rsa.pub'
+        terraform_node:
+          ansible_host: remote_terraform_node.test.com
       children:
         master_nodes:
           hosts:
@@ -138,8 +155,16 @@ all:
               #
               ansible_host: 192.168.124.199
               # ----
+              ## It is possible to specify custom commands that should be executed
+              ## on a VM **BEFORE** ansible provisioning starts. This can be useful
+              ## for cases where python3 is not installed by default for example, or
+              ## to setup static IPs for bridge/macvtap interfaces.
+              #
+              ## It supports using jinja2 syntax and variables.
+              #
+              terraform_custom_provisioners:
+                - "echo {{ ansible_host }} > /tmp/test_provisioning_success.log"
           vars:
-
               ## It is possible to specify per-GROUP disk source.
               ## This is useful for mixed environments with
               ## multiple distributions.
@@ -148,7 +173,7 @@ all:
               # ----
               ## Default ssh public key location.
               ## If you need a specific ssh key for a specific group of hosts
-              ## you can declare it here, to be group specific instead
+              ## you can declare it here, to be GROUP-SPECIFIC instead
               ## of global.
               #
               #ssh_public_key_file: '~/.ssh/id_rsa.pub'
@@ -157,7 +182,7 @@ all:
               # ----
               ## this parameter is optional. Specifying this parameter
               ## will change the password during the initialization of the VM
-              ## in the entire group.
+              ## GROUP-SPECIFIC.
               ##
               ## This will then be used in the provisioning section if no ssh-public-key
               ## is found.
@@ -167,7 +192,7 @@ all:
               # ansible_ssh_pass: test_psk
               # ----
 
-              ## Here we can provide a group-wide default
+              ## Here we can provide a GROUP-SPECIFIC default
               ## for the resources (cpu, ram, network...)
               ## so if all nodes in a group are the same size
               ## it is possible to deduplicate a lot of settings.
@@ -197,11 +222,11 @@ all:
               memory: 1024
           vars:
             # ...
-    hypervisor_2:
-      vars:
-      children:
-        master_nodes:
-        slave_nodes:
+            # hypervisor_2:
+            #   vars:
+            #   children:
+            #     master_nodes:
+            #     slave_nodes:
     #
     ## ----
     #
@@ -209,6 +234,9 @@ all:
     #   vars:
     #     ...
     #   children:
+    #     host:
+    #       terraform_node:
+    #         ansible_host: 127.0.0.1
     #     group_1:
     #       hosts:
     #         ...
