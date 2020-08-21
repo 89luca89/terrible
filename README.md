@@ -166,6 +166,7 @@ These variables are **required**, they should be declared on per-hypervisor scop
 * **ssh_password:** `required`. Specify the password to access the deployed VMs.
 * **ssh_port:** `required`. Specify the port to access the deployed VMs.
 * **ssh_user:** `required`. Specify the user to access the deployed VMs.
+* **os_family:** `required`. Specify the OS family for the installation. Possible values are: `RedHat`, `Debian`, `Suse`, `FreeBSD`.
 * **terraform_node:** `required`. Specify the ip of the machine that performs the Terraform tasks. The default value of 127.0.0.1 indicates that the machine that perform Terraform tasks is the same that launches the Ansible playbook. In case the Terraform machine is not the local machine, put the ip/hostname of the Terraform node.
 * **terraform_bastion_enabled:** `required`. Specify `True` or `False`. In case the **terraform_node** and KVM server differ, you should enable the bastion. This will enable the use of the KVM server as jumphost to enter th VMs via ssh.
 * **terraform_bastion_host:** `required` if **terraform_bastion_enabled** is `True`. Specify the ip address of the bastion host.
@@ -181,7 +182,7 @@ These variable are optional, there are sensible defaults set up, most of them ca
 * **mac_address:** `optional`. Specify the memory ram for the VM. If not specified, a random mac is assigned.
 * **memory:** `optional`. Specify the memory ram for the VM. If not specified, the default value is taken. Default: `1024`
 * **network_name:** `optional`. Specify the network name for the VM. If not specified, the default value is taken. Default: `"default"`
-* **change_passwd_cmd:** `optional`. Specify a different command to be used to change the password to the user. If not specified the default command is used. Default: `echo root:{{ ansible_ssh_pass }} | chpasswd`. This variable become really useful when you are using a FreeBSD OS.
+* **change_passwd_command:** `optional`. Specify a different command to be used to change the password to the user. If not specified the default command is used. Default: `echo root:{{ ansible_ssh_pass }} | chpasswd`. This variable become really useful when you are using a FreeBSD OS.
 
 #### Bastions, Jumphosts, Remote Nodes
 
