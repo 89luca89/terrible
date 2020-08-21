@@ -128,6 +128,7 @@ Here's a little example:
                         host_2:
                             cpu: 2
                         host_3:
+                            os_family: Suse
                             disk_source: "~/VirtualMachines/opensuse15.2-terraform.qcow2"
                             cpu: 4
                             memory: 4096
