@@ -111,10 +111,21 @@ resource "libvirt_domain" "domain-terraform" {
   }
   {% endif %}
 
+  {% if ansible_dependencies is defined %}
+  provisioner "remote-exec" {
+    inline = [
+      {% for pkg in ansible_dependencies %}
+      "{{ install_command }} {{ pkg }}"{% if not loop.last %},{% endif %}
+
+      {% endfor %}
+      ]
+  }
+  {% endif %}
+
   {% if ansible_ssh_pass is defined %}
   provisioner "remote-exec" {
     inline = [
-      "{{ change_passwd_cmd }}"
+      "{{ change_passwd_command }}"
       ]
   }
   {% endif %}

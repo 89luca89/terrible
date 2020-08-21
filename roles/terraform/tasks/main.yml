@@ -30,6 +30,9 @@
     - terraform_bastion_enabled
   tags: deploy, destroy, apply
 
+- include_vars: "vars/os/family/{{ os_family }}.yml"
+  tags: provision
+
 - include_tasks: deploy_vm.yml
   tags: deploy, destroy, apply
 
@@ -41,9 +44,6 @@
 
 - name: gather facts
   setup:
-  tags: provision
-
-- include_vars: "vars/os/family/{{ ansible_os_family }}.yml"
   tags: provision
 
 - include_tasks: post_deploy.yml
