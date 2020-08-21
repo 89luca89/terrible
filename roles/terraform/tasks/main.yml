@@ -4,31 +4,54 @@
 #
 #
 
-- assert:
+- name: Assert os_family
+  assert:
     that:
-      - "'ansible_host' is defined"
-      - "'terraform_bastion_enabled' is defined"
-      - "'disk_source' is defined"
-      - "'pool_name' is defined"
-      - "'provider_uri' is defined"
-      - "'ssh_password' is defined"
-      - "'ssh_port' is defined"
-      - "'ssh_public_key_file' is defined"
-      - "'ssh_user' is defined"
-      - "'terraform_node' is defined"
-  tags: deploy, destroy, apply
+      - "{{ item }}"
+    fail_msg: >
+      You must specify the os_family for host {{ inventory_hostname }},
+      supported values are: {{ os_family_support }}
+  with_items:
+      - "os_family is defined"
+      - "os_family in os_family_support"
+  tags: deploy, destroy, apply, provision
 
-- assert:
+- name: Assert VMs Variables
+  assert:
+    that: "{{ item }} is defined"
+    fail_msg: >
+      You must specify {{ item }}
+  with_items:
+      - ansible_host
+      - terraform_bastion_enabled
+      - disk_source
+      - pool_name
+      - provider_uri
+      - ssh_password
+      - ssh_port
+      - ssh_public_key_file
+      - ssh_user
+  tags: deploy, destroy, apply, provision
+
+- name: Assert Bastion Variables
+  assert:
     that:
-      - "'ansible_jump_hosts' is defined"
-      - "'terraform_bastion_host' is defined"
-      - "'terraform_bastion_password' is defined"
-      - "'terraform_bastion_port' is defined"
-      - "'terraform_bastion_user' is defined"
+      - "{{ item }} is defined"
+    fail_msg: >
+      You must specify {{ item }} when terraform_bastion_enabled is True
+  with_items:
+      - ansible_jump_hosts
+      - terraform_bastion_host
+      - terraform_bastion_password
+      - terraform_bastion_port
+      - terraform_bastion_user
   when:
     - terraform_bastion_enabled is defined
     - terraform_bastion_enabled
-  tags: deploy, destroy, apply
+  tags: deploy, destroy, apply, provision
+
+- include_vars: "vars/os/family/{{ os_family }}.yml"
+  tags: deploy, destroy, apply, provision
 
 - include_vars: "vars/os/family/{{ os_family }}.yml"
   tags: provision
