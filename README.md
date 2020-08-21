@@ -233,7 +233,7 @@ in the example above we have:
 
 ## Support
 
-Actually the role is supporting the most common 3 OS families for the Guests:
+Actually the role is supporting the most common 4 OS families for the Guests:
 
 * RedHat (including Centos, Fedora and derivates)
 * Debian (Including Ubuntu and derivates)
