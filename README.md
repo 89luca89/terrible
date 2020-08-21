@@ -209,18 +209,31 @@ Example:
 declaring one or multiple jump hosts, will generate automatically all the ssh arguments needed to perform
 single/multiple hops for ansible.
 
-in the above example we have:
+Be aware that the order of declaration is from *farther to nearest* hops, so if you have something like:
 
-`ansible machine` --> `bastion@tunnel:50364` --> `root@terraform_server.internal.lan:22` --> `target VM`
+- bastion_1
+- bastion_2
+- bastion_3
 
+the order of the hops starting from the ansible executor will be:
+
+- ansible executor
+- bastion_3
+- bastion_2
+- bastion_1
+- target_host
+
+in the example above we have:
+
+![bastion_flow](pics/bastion_flow.png)
 
 ## Support
 
 Actually the role is supporting the most common 3 OS families for the Guests:
 
-* RedHat
-* Debian
-* Suse
+* RedHat (including Centos, Fedora and derivates)
+* Debian (Including Ubuntu and derivates)
+* Suse (Thumbleweed and Leap)
 
 This means you are able to generate the infrastructure using the OS listed above.
 
