@@ -66,6 +66,9 @@ all:
         ## 127.0.0.1 indicates that the machine that performs terraform
         ## tasks is the same that launches the ansible playbook.
         ##
+        ## When using 127.0.0.1 for the terraform_node, it is advisable to also
+        ## set ansible_connection to local, so it does not use ssh for localhost.
+        ##
         ## In case the terraform machine is NOT the local machine, put here the
         ## IP/hostname of the terraform node.
         #
