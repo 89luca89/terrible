@@ -22,3 +22,9 @@ ansible_ssh_common_args: '-o StrictHostKeyChecking=no {% if ansible_jump_hosts i
 
 # Other commands
 change_passwd_cmd: echo "root:{{ ansible_ssh_pass }}" | chpasswd
+
+os_family_support:
+  - RedHat
+  - Suse
+  - Debian
+  - FreeBSD

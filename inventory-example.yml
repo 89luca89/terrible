@@ -88,6 +88,7 @@ all:
               ## This is useful for mixed environments with
               ## multiple distributions.
               # disk_source: "~/VirtualMachines/centos8-terraform.qcow2"
+              os_family: RedHat
               cpu: 4
               memory: 1024
               network_name: "default"
@@ -208,12 +209,14 @@ all:
         slave_nodes:
           hosts:
             host-vm-2:
+              os_family: RedHat
               network_name: "default"
               ansible_host: 192.168.124.200
               mac_address: "AA:BB:CC:11:24:25"
               cpu: 2
               memory: 1024
             host-vm-3:
+              os_family: Suse
               disk_source: "~/VirtualMachines/opensuse15.2-terraform.qcow2"
               network_name: "default"
               ansible_host: 192.168.124.201
