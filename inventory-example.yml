@@ -57,7 +57,7 @@ all:
         # ----
         ##
         # Default ssh public key location.
-        ssh_public_key_file: '~/.ssh/id_rsa.pub'
+        # ssh_public_key_file: '~/.ssh/id_rsa.pub'
       hosts:
         #
         # ----
