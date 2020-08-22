@@ -7,13 +7,6 @@ cpu: 1
 memory: 1024
 network_name: "default"
 
-# This sets the default set_new_password to the same
-# password of the VM base image source.
-#
-# to specify a new password for each host, consider using
-# the host_var, group_var or the all_var in the inventory file.
-set_new_password: "{{ ssh_password }}"
-
 terraform_version: 0.12
 
 # In case a bastion is specified, we should provide a jump host
