@@ -6,24 +6,26 @@
 - name: "Read public key for ssh"
   set_fact:
     ssh_public_key: "{{ lookup('file', '{{ ssh_public_key_file }}') }}"
-  tags: deploy
+  tags: deploy, generate_hcl
 
 - name: Ensures terraform dirs exists
-  file: path=/tmp/{{ inventory_hostname }}-terraform-vm state=directory
+  file:
+    path: "{{ hcl_deploy_path }}/{{ inventory_hostname }}"
+    state: directory
   delegate_to: terraform_node
-  tags: deploy
+  tags: deploy, generate_hcl
 
 - name: "Deploy terraform files"
   template:
     src: terraform-vm.tf.j2
-    dest: /tmp/{{ inventory_hostname }}-terraform-vm/{{ inventory_hostname }}-terraform-vm.tf
+    dest: "{{ hcl_deploy_path }}/{{ inventory_hostname }}/{{ inventory_hostname }}.tf"
   delegate_to: terraform_node
   register: terraform_status
-  tags: deploy
+  tags: deploy, generate_hcl
 
 - name: "Terraform destroy VMs"
   terraform:
-    project_path: /tmp/{{ inventory_hostname }}-terraform-vm/
+    project_path: "{{ hcl_deploy_path }}/{{ inventory_hostname }}"
     force_init: true
     state: absent
   delegate_to: terraform_node
@@ -32,7 +34,7 @@
 
 - name: "Terraform apply VMs"
   terraform:
-    project_path: /tmp/{{ inventory_hostname }}-terraform-vm/
+    project_path: "{{ hcl_deploy_path }}/{{ inventory_hostname }}"
     force_init: true
     state: present
   delegate_to: terraform_node

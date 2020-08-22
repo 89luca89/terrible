@@ -14,7 +14,7 @@
   with_items:
       - "os_family is defined"
       - "os_family in os_family_support"
-  tags: deploy, destroy, apply, provision
+  tags: deploy, destroy, apply, provision, generate_hcl
 
 - name: Assert VMs Variables
   assert:
@@ -31,7 +31,7 @@
       - ssh_port
       - ssh_public_key_file
       - ssh_user
-  tags: deploy, destroy, apply, provision
+  tags: deploy, destroy, apply, provision, generate_hcl
 
 - name: Assert Bastion Variables
   assert:
@@ -48,13 +48,13 @@
   when:
     - terraform_bastion_enabled is defined
     - terraform_bastion_enabled
-  tags: deploy, destroy, apply, provision
+  tags: deploy, destroy, apply, provision, generate_hcl
 
 - include_vars: "vars/os/family/{{ os_family }}.yml"
   tags: deploy, destroy, apply, provision
 
 - include_tasks: deploy_vm.yml
-  tags: deploy, destroy, apply
+  tags: deploy, destroy, apply, generate_hcl
 
 - name: Wait for system to become reachable
   wait_for_connection:

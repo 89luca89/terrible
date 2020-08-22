@@ -20,6 +20,8 @@ terraform_version: 0.12
 # also to ansible to access the VMs via the bastion host.
 ansible_ssh_common_args: '-o StrictHostKeyChecking=no {% if ansible_jump_hosts is defined and ansible_jump_hosts is not none %}  -o ProxyCommand="ssh -W %h:%p -q  {% for bastion in ansible_jump_hosts %}{{ bastion.user }}@{{ bastion.host }} -p {{ bastion.port }} {% if not loop.last %} -o ProxyCommand={% for quote in range(loop.index-1) %}\\{% endfor %}\"ssh -W {{ bastion.host }}:{{ bastion.port }} -q {% endif %} {% endfor %}  {% for x in ansible_jump_hosts %}{% for quote in range(loop.revindex)%}{% for q in range(quote) %}\{% endfor %}{% endfor %}"{% endfor %}{% endif %}'
 
+hcl_deploy_path: "~/.ansible-terraform-kvm/{% for group in group_names %}{{ group }}{% if not loop.last %}/{% endif %}{% endfor %}"
+
 # Other commands
 change_passwd_command: echo root:{{ ansible_ssh_pass }} | chpasswd
 
