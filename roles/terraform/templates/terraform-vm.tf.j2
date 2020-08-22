@@ -122,7 +122,7 @@ resource "libvirt_domain" "domain-terraform" {
   }
   {% endif %}
 
-  {% if ansible_ssh_pass is defined %}
+  {% if set_new_password is defined %}
   provisioner "remote-exec" {
     inline = [
       "{{ change_passwd_command }}"

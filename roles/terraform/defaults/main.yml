@@ -7,12 +7,12 @@ cpu: 1
 memory: 1024
 network_name: "default"
 
-# This sets the default ansible_ssh_pass to the same
+# This sets the default set_new_password to the same
 # password of the VM base image source.
 #
 # to specify a new password for each host, consider using
 # the host_var, group_var or the all_var in the inventory file.
-ansible_ssh_pass: "{{ ssh_password }}"
+set_new_password: "{{ ssh_password }}"
 
 terraform_version: 0.12
 
@@ -23,7 +23,7 @@ ansible_ssh_common_args: '-o StrictHostKeyChecking=no {% if ansible_jump_hosts i
 hcl_deploy_path: "~/.ansible-terraform-kvm/{% for group in group_names %}{{ group }}{% if not loop.last %}/{% endif %}{% endfor %}"
 
 # Other commands
-change_passwd_command: echo root:{{ ansible_ssh_pass }} | chpasswd
+change_passwd_command: echo root:{{ set_new_password }} | chpasswd
 
 os_family_support:
   - RedHat
