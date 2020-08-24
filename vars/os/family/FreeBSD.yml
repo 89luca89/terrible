@@ -1,7 +1,7 @@
 ansible_dependencies:
   - python36
 
-change_passwd_command: "echo {{ set_new_password }} | pw mod user root -h 0"
+change_passwd_command: "echo {{ ansible_ssh_pass }} | pw mod user root -h 0"
 
 update_command: pkg upgrade -y
 install_command: pkg install -y
