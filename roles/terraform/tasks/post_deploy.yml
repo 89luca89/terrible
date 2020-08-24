@@ -3,22 +3,9 @@
 # Post deploy for VMs deployed by terraform.
 #
 
-- name: Install Basic Packages
-  package:
-    name: "{{ base_packages }}"
-    state: present
-  when: (ansible_os_family == "RedHat") or
-        (ansible_os_family == "Debian") or
-        (ansible_os_family == "Suse")
-  tags: provision
-
-- name: Install Basic Packages
-  pkgng:
-    name: "{{ base_packages }}"
-    state: present
-  when: ansible_os_family == "FreeBSD"
-  tags: provision
-
+# Upgrade systems but limit to only
+# security updates, to keep track of
+# the packages versions.
 - name: Update systems
   shell: "{{ update_command }}"
   become: true

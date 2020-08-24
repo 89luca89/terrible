@@ -4,6 +4,7 @@
 #
 #
 
+# Ensure that the os_family variable has been set for current host.
 - name: Assert os_family
   assert:
     that:
@@ -16,6 +17,7 @@
       - "os_family in os_family_support"
   tags: deploy, destroy, apply, provision, generate_hcl
 
+# Ensure that the mandatory variables for the host are set.
 - name: Assert VMs Variables
   assert:
     that: "{{ item }} is defined"
@@ -33,6 +35,8 @@
       - ssh_user
   tags: deploy, destroy, apply, provision, generate_hcl
 
+# If terraform_bastion_enabled is true, we need to ensure that
+# all the dependent variables are set in order to function properly.
 - name: Assert Bastion Variables
   assert:
     that:
@@ -50,9 +54,11 @@
     - terraform_bastion_enabled
   tags: deploy, destroy, apply, provision, generate_hcl
 
+# Include the variables of the os_family of the host.
 - include_vars: "vars/os/family/{{ os_family }}.yml"
   tags: deploy, destroy, apply, provision
 
+# Deploy the HCL files, use Terraform to deploy the infrastructure.
 - include_tasks: deploy_vm.yml
   tags: deploy, destroy, apply, generate_hcl
 
@@ -62,9 +68,11 @@
     timeout: 300
   tags: provision
 
+# Ansible: gather facts of the newly created hosts.
 - name: gather facts
   setup:
   tags: provision
 
+# Perform post-deploy tasks, such as users, networks and so on...
 - include_tasks: post_deploy.yml
   tags: provision

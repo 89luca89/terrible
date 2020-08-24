@@ -9,8 +9,3 @@
   gather_facts: False
   roles:
     - terraform
-
-      # - hosts: all
-      #   gather_facts: True
-      #   roles:
-      #     - post-deploy

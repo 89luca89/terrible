@@ -1,7 +1,4 @@
+ansible_dependencies:
+  - python3
 
-update_command: apt update; unattended-upgrade
-
-base_packages:
-  - vim
-  - curl
-  - unattended-upgrades
+opdate_command: apt update; unattended-upgrade
