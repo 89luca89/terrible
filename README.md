@@ -41,7 +41,7 @@ all:
             vars:
                 provider_uri: ...
                 pool_name: ...
-               ...
+                ...
             hosts:
                 terraform_node:
                     ansible_host: ...
@@ -62,7 +62,7 @@ all:
             vars:
                 provider_uri: ...
                 pool_name: ...
-               ...
+                ...
             hosts:
                 terraform_node:
                     ansible_host: ...
@@ -134,13 +134,14 @@ Here's a little example:
                             disk_source: "~/VirtualMachines/opensuse15.2-terraform.qcow2"
                             cpu: 4
                             memory: 4096
+                            set_new_passowrd: password123
 ```
 
 In this example, we specified 2 main groups (`group_1`, `group_2`) inside the `hypervisor_1`.
 These groups are composed overall by 3 machines (`host_1`, `host_2`, `host_3`). 
 As you can see, not all the properties are specified for each machine. This is due to the default values of the variables provided by this role. 
 
-Thanks to the **variabe hierarchy** in Ansible, you can configure variables:
+Thanks to the variabe hierarchy in Ansible, you can configure variables:
 
 - Hypervisor wise
 - VM groups wise
@@ -180,25 +181,25 @@ These variables are **required**, they should be declared on per-hypervisor scop
 
 These variable are optional, there are sensible defaults set up, most of them can be declared from **hypervisor scope** to **vm-group scope** and **per-vm scope**:
 
-* **ansible_ssh_pass:** `optional`. Specify a new password to access the Vm. If not specified, the default value (**ssh_password**) is taken.
+* **set_new_password:** `optional`. Specify a new password to access the Vm. If not specified, the default value (**ssh_password**) is taken.
 * **cpu:** `optional`. Specify the cpu number for the VM. If not specified, the default value is taken. Default: `1`
 * **mac_address:** `optional`. Specify the memory ram for the VM. If not specified, a random mac is assigned.
 * **memory:** `optional`. Specify the memory ram for the VM. If not specified, the default value is taken. Default: `1024`
 * **network_name:** `optional`. Specify the network name for the VM. If not specified, the default value is taken. Default: `"default"`
-* **change_passwd_command:** `optional`. Specify a different command to be used to change the password to the user. If not specified the default command is used. Default: `echo root:{{ ansible_ssh_pass }} | chpasswd`. This variable become really useful when you are using a FreeBSD OS.
+* **change_passwd_command:** `optional`. Specify a different command to be used to change the password to the user. If not specified the default command is used. Default: `echo root:{{ set_new_password }} | chpasswd`. This variable become really useful when you are using a FreeBSD OS.
 
 #### Bastions, Jumphosts, Remote Nodes
 
-As stated in the above list, it is possible to use a `terraform_terraform_bastion_enabled` variable also declaring:
+As stated in the above list, it is possible to use a `terraform_bastion_enabled` variable also declaring:
 
-* terraform_bastion_host
-* terraform_bastion_password
-* terraform_bastion_port
-* terraform_bastion_user
+* **terraform_bastion_host**
+* **terraform_bastion_password**
+* **terraform_bastion_port**
+* **terraform_bastion_user**
 
 to declare what jump host `terraform` will use to finish provisioning the machine when deploying.
 
-*If `terraform_terraform_bastion_enabled` is set to True, all the above variables are required, including `ansible_jump_hosts` list*
+If `terraform_bastion_enabled` is set to `True`, all the above variables are required, including `ansible_jump_hosts` list
 
 **Ansible Jumphosts list**
 
@@ -248,6 +249,12 @@ Hypervisor OS is agnostic, as long as **libvirt** is installed.
 
 Once composed the inventory file, it's time to run your playbook.
 
+To pull up infrastructure:
 ```bash
 ansible-playbook -i inventory.yml -u root main.yml
+```
+
+To pull down infrastructure:
+```bash
+ansible-playbook -i inventory.yml -u root main.yml --tags destroy
 ```

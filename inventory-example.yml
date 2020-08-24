@@ -57,7 +57,7 @@ all:
         # ----
         ##
         # Default ssh public key location.
-        ssh_public_key_file: '~/.ssh/id_rsa.pub'
+        # ssh_public_key_file: '~/.ssh/id_rsa.pub'
       hosts:
         #
         # ----
@@ -143,7 +143,7 @@ all:
               ##
               ## It is advisable to use ansible-vault for this section.
               #
-              # ansible_ssh_pass: test_psk
+              # set_new_password: test_psk
               # ----
 
               # ----
@@ -190,7 +190,7 @@ all:
               ##
               ## It is advisable to use ansible-vault for this section.
               #
-              # ansible_ssh_pass: test_psk
+              # set_new_password: test_psk
               # ----
 
               ## Here we can provide a GROUP-SPECIFIC default

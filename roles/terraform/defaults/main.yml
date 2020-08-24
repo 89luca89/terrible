@@ -7,19 +7,15 @@ cpu: 1
 memory: 1024
 network_name: "default"
 
-# This sets the default ansible_ssh_pass to the same
-# password of the VM base image source.
-#
-# to specify a new password for each host, consider using
-# the host_var, group_var or the all_var in the inventory file.
-ansible_ssh_pass: "{{ ssh_password }}"
-
 terraform_version: 0.12
 
 # In case a bastion is specified, we should provide a jump host
 # also to ansible to access the VMs via the bastion host.
 ansible_ssh_common_args: '-o StrictHostKeyChecking=no {% if ansible_jump_hosts is defined and ansible_jump_hosts is not none %}  -o ProxyCommand="ssh -W %h:%p -q  {% for bastion in ansible_jump_hosts %}{{ bastion.user }}@{{ bastion.host }} -p {{ bastion.port }} {% if not loop.last %} -o ProxyCommand={% for quote in range(loop.index-1) %}\\{% endfor %}\"ssh -W {{ bastion.host }}:{{ bastion.port }} -q {% endif %} {% endfor %}  {% for x in ansible_jump_hosts %}{% for quote in range(loop.revindex)%}{% for q in range(quote) %}\{% endfor %}{% endfor %}"{% endfor %}{% endif %}'
 
+##
+# Default ssh public key location.
+ssh_public_key_file: '~/.ssh/id_rsa.pub'
 hcl_deploy_path: "~/.ansible-terraform-kvm/{% for group in group_names %}{{ group }}{% if not loop.last %}/{% endif %}{% endfor %}"
 
 # Other commands
