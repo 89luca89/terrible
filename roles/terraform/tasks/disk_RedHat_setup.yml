@@ -56,7 +56,6 @@
     path: "{{ item.0['mount_point'] }}"
     src: "UUID={{ ( ansible_devices[item.1].partitions.values() | list )[0].uuid }}"
     fstype: "{{ item.0['format'] }}"
-    state: mounted
   with_together:
     - "{{ data_disks.values() | list }}"
     - "{{ ansible_devices.keys() | select('match','vd[b-z]') | sort | list }}"
