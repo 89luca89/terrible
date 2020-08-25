@@ -1,0 +1,38 @@
+---
+
+# additional disks setup for terraform role
+#
+#
+
+- name: Create disk partitions
+  parted:
+    device: "/dev/{{ item }}"
+    number: 1
+    state: present
+  with_items:
+    - "{{ ansible_devices.keys() | select('match','vd[b-z]') | list }}"
+
+- name: Format disks
+  filesystem:
+    dev: "/dev/{{ item.0 }}1"
+    fstype: "{{ item.1['format'] }}"
+  with_together:
+    - "{{ ansible_devices.keys() | select('match','vd[b-z]') | list }}"
+    - "{{ data_disks.values() | list }}"
+
+- name: Create disks mountpoint
+  file:
+    path: "{{ item['mount_point'] }}"
+    state: directory
+  with_items:
+    - "{{ data_disks.values() | list }}"
+
+- name: Mount disks
+  mount:
+    path: "{{ item.1['mount_point'] }}"
+    src: "/dev/{{ item.0 }}1" 
+    fstype: "{{ item.1['format'] }}"
+    state: mounted
+  with_together:
+    - "{{ ansible_devices.keys() | select('match','vd[b-z]') | list }}"
+    - "{{ data_disks.values() | list }}"
