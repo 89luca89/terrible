@@ -71,11 +71,8 @@ resource "libvirt_domain" "domain-terraform" {
     wait_for_lease = true
   }
   {% endif %}
-  {% endfor %}
-
-  {% for iface in network_interfaces %}
   # We then add all additional interfaces
-  {% if network_interfaces[iface].type == "bridge" %}
+  {% elif network_interfaces[iface].type == "bridge" %}
 
   network_interface {
     bridge  = "{{ network_interfaces[iface].name }}"
@@ -93,6 +90,7 @@ resource "libvirt_domain" "domain-terraform" {
     mac            = "{{ network_interfaces[iface].mac_address }}"
     {% endif %}
   }
+
   {% endif %}
   {% endfor %}
 
