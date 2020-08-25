@@ -2,3 +2,4 @@ ansible_dependencies:
   - python3
 
 opdate_command: apt update; unattended-upgrade
+install_command: apt install -y

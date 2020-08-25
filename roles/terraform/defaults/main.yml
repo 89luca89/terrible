@@ -7,6 +7,9 @@ cpu: 1
 memory: 1024
 network_name: "default"
 
+# Default disk fstype
+format: ext4
+
 terraform_version: 0.12
 
 # In case a bastion is specified, we should provide a jump host
