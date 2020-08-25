@@ -1,0 +1,67 @@
+---
+
+# Remove networks we do not manage in order to have control
+- name: Remove unmanaged networks
+  shell: |
+    find /etc/sysconfig/network/ -type f -iname "ifcfg-*" ! -iname "ifcfg-lo" ! -iname "ifcfg.template" -delete
+  async: 5
+  poll: 0
+
+# Gather up all interfaces
+- name: get available devices
+  find:
+    paths: /sys/class/net/
+    excludes: "lo"
+    file_type: any
+  register: interfaces
+
+# Deploy multiple ifcfg-namaget-NET_POOL-ETHX files
+- name: "Set connection setting files"
+  blockinfile:
+    path: "/etc/sysconfig/network/ifcfg-{{ item.0.path.split('/')[-1] }}"
+    block: |
+      TYPE=Ethernet
+      PROXY_METHOD='none'
+      BROWSER_ONLY='no'
+      BOOTPROTO='static'
+      IPADDR='{{ item.1.ip }}/24'
+      PREFIX='24'
+      DEFROUTE={% if item.1.get('default_route', False) == True %}'yes'
+      {% else %}'no'
+      {% endif %}
+      IPV4_FAILURE_FATAL='no'
+      GATEWAY0='{{ item.1.gw }}'
+      {% for dns in item.1.dns %}
+      DNS{{ loop.index }}='{{ dns }}'
+      {% endfor %}
+      IPV6INIT='yes'
+      IPV6_AUTOCONF='yes'
+      IPV6_DEFROUTE={% if item.1.get('default_route', False) == True %}'yes'
+      {% else %}'no'
+      {% endif %}
+      IPV6_FAILURE_FATAL='no'
+      IPV6_ADDR_GEN_MODE='stable-privacy'
+      NAME='managed-{{ network_name }}-{{ item.0.path.split('/')[-1] }}'
+      UUID='{{ 9999999999999999999999 | random | to_uuid }}'
+      DEVICE='{{ item.0.path.split('/')[-1] }}'
+      ONBOOT='yes'
+      STARTMODE='auto'
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.1.ip }} {{ item.0.path.split('/')[-1] }}"
+    create: yes
+  with_together:
+    - "{{ interfaces.files | sort(attribute='path') }}"
+    - "{{ network_interfaces.values() | list }}"
+
+# Set default route for choosen device.
+- name: "Set default route"
+  blockinfile:
+    path: "/etc/sysconfig/network/routes"
+    block: |
+      # Destination   Gateway                 Netmask                 Device
+      default         {{ item.1.gw }}            -                       {{ item.0.path.split('/')[-1] }}
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.1.ip }} {{ item.0.path.split('/')[-1] }}"
+    create: yes
+  when: "item.1.get('default_route', False) == True"
+  with_together:
+    - "{{ interfaces.files | sort(attribute='path') }}"
+    - "{{ network_interfaces.values() | list }}"

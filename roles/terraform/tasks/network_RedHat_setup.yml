@@ -1,0 +1,53 @@
+---
+
+# Remove networks we do not manage in order to have control
+- name: Remove unmanaged networks
+  shell: |
+    find /etc/sysconfig/network-scripts -type f -delete ! -iname "*managed*"
+  async: 5
+  poll: 0
+
+# Gather up all interfaces
+- name: get available devices
+  find:
+    paths: /sys/class/net/
+    excludes: "lo"
+    file_type: any
+  register: interfaces
+
+# Deploy multiple ifcfg-namaget-NET_POOL-ETHX files, this is more easy to
+# keep track than using directly nmcli
+- name: "Set connection setting files"
+  blockinfile:
+    path: "/etc/sysconfig/network-scripts/ifcfg-managed-{{ network_name }}-{{ item.0.path.split('/')[-1] }}"
+    block: |
+      TYPE=Ethernet
+      PROXY_METHOD=none
+      BROWSER_ONLY=no
+      BOOTPROTO=none
+      IPADDR="{{ item.1.ip }}"
+      PREFIX=24
+      DEFROUTE={% if item.1.get('default_route', False) == True %}yes
+      {% else %}no
+      {% endif %}
+      IPV4_FAILURE_FATAL=no
+      GATEWAY0={{ item.1.gw }}
+      {% for dns in item.1.dns %}
+      DNS{{ loop.index }}={{ dns }}
+      {% endfor %}
+      IPV6INIT=yes
+      IPV6_AUTOCONF=yes
+      IPV6_DEFROUTE={% if item.1.get('default_route', False) == True %}yes
+      {% else %}no
+      {% endif %}
+      IPV6_FAILURE_FATAL=no
+      IPV6_ADDR_GEN_MODE=stable-privacy
+      NAME=managed-default-{{ item.0.path.split('/')[-1] }}
+      UUID={{ 9999999999999999999999 | random | to_uuid }}
+      DEVICE="{{ item.0.path.split('/')[-1] }}"
+      ONBOOT=yes
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.1.ip }} {{ item.0.path.split('/')[-1] }}"
+    create: yes
+  with_together:
+    - "{{ interfaces.files | sort(attribute='path') }}"
+    - "{{ network_interfaces.values() | list }}"
