@@ -59,7 +59,6 @@ resource "libvirt_domain" "domain-terraform" {
   network_interface {
     network_name   = "{{ network_name }}"
     hostname       = var.hostname
-
     {% if network_interfaces[iface].ip is defined %}
     addresses      = ["{{ network_interfaces[iface].ip }}"]
     {% endif %}
@@ -70,7 +69,7 @@ resource "libvirt_domain" "domain-terraform" {
 
     wait_for_lease = true
   }
-  {% endif %}
+
   # We then add all additional interfaces
   {% elif network_interfaces[iface].type == "bridge" %}
 
@@ -90,7 +89,6 @@ resource "libvirt_domain" "domain-terraform" {
     mac            = "{{ network_interfaces[iface].mac_address }}"
     {% endif %}
   }
-
   {% endif %}
   {% endfor %}
 
@@ -138,7 +136,7 @@ resource "libvirt_domain" "domain-terraform" {
     provisioner "remote-exec" {
       inline = [
         {% for pkg in ansible_dependencies %}
-        {% endif %}
+        "{{ install_command }} {{ pkg }}"{% if not loop.last %},{% endif %}
 
         {% endfor %}
       ]
