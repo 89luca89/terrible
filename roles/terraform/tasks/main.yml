@@ -62,17 +62,6 @@
 - include_tasks: deploy_vm.yml
   tags: deploy, destroy, apply, generate_hcl
 
-- name: Wait for system to become reachable
-  wait_for_connection:
-    delay: 1
-    timeout: 300
-  tags: provision
-
-# Ansible: gather facts of the newly created hosts.
-- name: gather facts
-  setup:
-  tags: provision
-
 # Perform post-deploy tasks, such as users, networks and so on...
 - include_tasks: post_deploy.yml
   tags: provision

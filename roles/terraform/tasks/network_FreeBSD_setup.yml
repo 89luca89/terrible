@@ -1,0 +1,38 @@
+---
+
+# Gather up all interfaces
+- name: get available devices
+  shell: |
+    ifconfig -l | sed 's/lo[0-9]//g'| awk '{$1=$1};1'
+  changed_when: no
+  register: interfaces
+
+- name: "Set connection setting files"
+  blockinfile:
+    path: "/etc/rc.conf"
+    block: |
+      ifconfig_{{ item.0 }}="inet {{ item.1.ip }} netmask 255.255.255.0"
+      {% if item.1.get('default_route', False) == True %}
+      defaultrouter="{{ item.1.gw }}"
+      {% endif %}
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.1.ip }}"
+    create: yes
+  with_together:
+    - "{{ interfaces.stdout.split(' ') | sort | list }}"
+    - "{{ network_interfaces.values() | list }}"
+
+- name: "Set connection setting files"
+  blockinfile:
+    path: "/etc/resolv.conf"
+    block: |
+      {% if item.1.get('default_route', False) == True %}
+      {% for dns in item.1.dns %}
+      nameserver {{ dns }}
+      {% endfor %}
+      defaultrouter="{{ item.1.gw }}"
+      {% endif %}
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.1.ip }}"
+    create: yes
+  with_together:
+    - "{{ interfaces.stdout.split(' ') | sort | list }}"
+    - "{{ network_interfaces.values() | list }}"

@@ -1,0 +1,50 @@
+---
+
+# Gather up all interfaces
+- name: get available devices
+  find:
+    paths: /sys/class/net/
+    excludes: "lo"
+    file_type: any
+  register: interfaces
+
+# Use traditional /etc/network/interfaces on Debian
+- name: "Set connection setting files - Debian"
+  blockinfile:
+    path: "/etc/network/interfaces"
+    block: |
+          auto {{ item.0.path.split('/')[-1] }}
+          iface {{ item.0.path.split('/')[-1] }} inet static
+          address {{ item.1.ip }}/24
+          {% if item.1.get('default_route', False) == True %}
+          gateway {{ item.1.gw }}
+          {% endif %}
+          dns-nameservers {% for dns in item.1.dns %}{{ dns }}{% endfor %}
+
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.1.ip }} {{ item.0.path.split('/')[-1] }}"
+    create: yes
+  with_together:
+    - "{{ interfaces.files | sort(attribute='path') }}"
+    - "{{ network_interfaces.values() | list }}"
+  when: ansible_distribution != 'Ubuntu'
+
+# Use netplan on Ubuntu
+- name: "Set connection setting files - Ubuntu"
+  blockinfile:
+    path: /etc/netplan/01-netcfg.yaml
+    block: |
+      #
+          {{ item.0.path.split('/')[-1] }}:
+            dhcp4: no
+            addresses: [{{ item.1.ip }}/24]
+      {% if item.1.get('default_route', False) == True %}
+            gateway4: {{ item.1.gw }}
+      {% endif %}
+            nameservers:
+              addresses: [{% for dns in item.1.dns %}{{ dns }}{% if not loop.last %},{% endif %}{% endfor %}]
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.1.ip }} {{ item.0.path.split('/')[-1] }}"
+    create: yes
+  with_together:
+    - "{{ interfaces.files | sort(attribute='path') }}"
+    - "{{ network_interfaces.values() | list }}"
+  when: ansible_distribution == 'Ubuntu'

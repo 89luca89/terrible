@@ -55,8 +55,7 @@
     project_path: "{{ hcl_deploy_path }}/{{ inventory_hostname }}"
     force_init: true
     state: absent
-  when: terraform_status is undefined or terraform_status.changed
-  tags: deploy, destroy
+  tags: never, destroy
   delegate_to: terraform_node
 
 - name: "Terraform apply VMs"
@@ -64,5 +63,11 @@
     project_path: "{{ hcl_deploy_path }}/{{ inventory_hostname }}"
     force_init: true
     state: present
+  register: terraform_output
   tags: deploy, apply
   delegate_to: terraform_node
+
+### !!! Important
+# Here we register the terraform_output that in combination with the
+# output provider in the .tf file will return us the DHCP lease IP of
+# the NAT network we use as management for the role.

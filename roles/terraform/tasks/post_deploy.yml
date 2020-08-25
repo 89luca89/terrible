@@ -3,6 +3,57 @@
 # Post deploy for VMs deployed by terraform.
 #
 
+# Setup Network for the newly deployed VMs.
+#
+# We Will do a switcheroo between the terraform returned IP (if present)
+# and setup the network as declared in the inventory for each VM
+- name: "Prepare for ansible_host pivoting, save target ip..."
+  set_fact:
+    original_ansible_host: "{{ ansible_host }}"
+  tags: provision
+
+- name: Attempt Setup Network
+  block:
+
+    # Do the switcheroo only if we have all the data declared.
+    # Sometimes if we re-deploy a VM that does not change, terraform apply
+    # would return 127.0.0.1 as the VM Ip erroneously, so ensure we do not
+    # have that output
+    - name: "Pivoting ansible_host: set to terraform temporary ip..."
+      set_fact:
+        ansible_host: "{{ terraform_output.outputs.ip.value }}"
+      when:
+        - terraform_output is defined
+        - terraform_output.outputs.ip.value != '127.0.0.1'
+
+    # Ansible: gather facts of the newly created hosts.
+    - name: gather facts
+      setup:
+
+    # Configure network adressing each os_family separately
+    # as each system differs hugely
+    - name: Configure Network
+      include_tasks: "network_{{ os_family }}_setup.yml"
+
+  always:
+    # We ALWAYS want to return ansible_host to it's original value,
+    # so this role can continue, but also other roles are not affected
+    - name: "Pivoting ansible_host: restoring target ip..."
+      set_fact:
+        ansible_host: "{{ original_ansible_host }}"
+  tags: provision
+
+- name: Wait for system to become reachable
+  wait_for_connection:
+    delay: 1
+    timeout: 300
+  tags: provision
+
+# Ansible: gather facts of the newly created hosts.
+- name: gather facts
+  setup:
+  tags: provision
+
 # Upgrade systems but limit to only
 # security updates, to keep track of
 # the packages versions.
