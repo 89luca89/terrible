@@ -282,15 +282,6 @@ Structure:
                                 # but it's important to declare it so ansible has a way to communicate with
                                 # the VM and setup all the remaining networks.
                                 iface_1:
-                                  name: ens1p0      # mandatory 
-                                  type: macvtap     # mandatory
-                                  ip: 172.16.0.155  # mandatory
-                                  gw: 172.16.0.1    # mandatory
-                                  dns:              # optional
-                                   - 1.1.1.1
-                                   - 8.8.8.8
-                                  default_route: True # at least one true mandatory, false is optional.
-                                iface_2:
                                   name: nat             # mandatory
                                   type: nat             # mandatory
                                   ip: 192.168.122.47    # mandatory
@@ -300,6 +291,15 @@ Structure:
                                    - 8.8.8.8
                                   mac_address: "AA:BB:CC:11:24:68"   # optional
                                   # default_route: False
+                                iface_2:
+                                  name: ens1p0      # mandatory 
+                                  type: macvtap     # mandatory
+                                  ip: 172.16.0.155  # mandatory
+                                  gw: 172.16.0.1    # mandatory
+                                  dns:              # optional
+                                   - 1.1.1.1
+                                   - 8.8.8.8
+                                  default_route: True # at least one true mandatory, false is optional.
 ```
 
 The playbook will use the available IP returned from the `terraform apply` phase to enter the machines
