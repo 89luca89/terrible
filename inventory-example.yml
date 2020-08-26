@@ -145,6 +145,10 @@ all:
               ##   default_route: ... # at least one true mandatory, false is optional.
               # ----
               network_interfaces:
+                # Nat interface, it should always be the first one you declare.
+                # it does not necessary have to be your default_route or main ansible_host,
+                # but it's important to declare it so ansible has a way to communicate with
+                # the VM and setup all the remaining networks.
                 iface_1:
                   name: nat
                   type: nat

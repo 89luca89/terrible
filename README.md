@@ -277,6 +277,10 @@ Structure:
                             cpu: 4
                             memory: 8192
                             network_interfaces:
+                                # Nat interface, it should always be the first one you declare.
+                                # it does not necessary have to be your default_route or main ansible_host,
+                                # but it's important to declare it so ansible has a way to communicate with
+                                # the VM and setup all the remaining networks.
                                 iface_1:
                                   name: ens1p0      # mandatory 
                                   type: macvtap     # mandatory
