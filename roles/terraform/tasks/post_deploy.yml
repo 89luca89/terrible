@@ -67,7 +67,7 @@
 
 - name: Wait for system to become reachable
   wait_for_connection:
-    delay: 1
+    delay: 15
     timeout: 300
   tags: provision
 
