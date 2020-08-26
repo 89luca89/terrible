@@ -237,7 +237,7 @@ in the example above we have:
 
 Network declaration is **mandatory** and **per-vm**.
 
-Declare each device you want to add inside the network_interfaces dictionary.
+Declare each device you want to add inside the `network_interfaces` dictionary.
 
 **Remember that** :
 
