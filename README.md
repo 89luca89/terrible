@@ -272,6 +272,7 @@ Structure:
                 group_1:
                     hosts:
                         host_1:
+                            ansible_host: 172.16.0.155
                             os_family: RedHat
                             cpu: 4
                             memory: 8192
@@ -281,7 +282,7 @@ Structure:
                                   type: macvtap     # mandatory
                                   ip: 172.16.0.155  # mandatory
                                   gw: 172.16.0.1    # mandatory
-                                  dns:   ...        # optional
+                                  dns:              # optional
                                    - 1.1.1.1
                                    - 8.8.8.8
                                   default_route: True # at least one true mandatory, false is optional.
@@ -295,6 +296,17 @@ Structure:
                                   mac_address: "AA:BB:CC:11:24:68"   # optional
                                   # default_route: False
 ```
+
+The playbook will use the available IP returned from the `terraform apply` phase to enter the machines
+and use the os-specific way to setup the user-space part of the network, static IPs, routes, gateways and
+DNSs.
+
+After this, the playbook will set the `ansible_host` variable to it's original value, and proceed with
+the provisioning.
+
+This is important because it will make `ansible_host` independent from the internal management interface
+needed for this network bootstrap tasks, making it easily compatible with any type of role that you
+want to perform after this.
 
 ## Support
 
