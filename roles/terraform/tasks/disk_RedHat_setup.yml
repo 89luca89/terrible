@@ -4,6 +4,13 @@
 #
 #
 
+# Filter the additional virtual disks and create 1 partition
+# for each disk.
+# Es. For each disk you have:
+# vdb
+# └─vdb1
+# vdc
+# └─vdc1
 - name: Create disk partitions
   parted:
     device: "/dev/{{ item }}"
@@ -12,25 +19,29 @@
   with_items:
     - "{{ ansible_devices.keys() | select('match','vd[b-z]') | list }}"
 
+# For each partition previously created
+# the task format the unique partition with
+# the filesystem type specified into the inventory,
+# or with the default if not specified.
 - name: Format disks
   filesystem:
-    dev: "/dev/{{ item.0 }}1"
-    fstype: "{{ item.1['format'] }}"
+    dev: "/dev/{{ item.1 }}1"
+    fstype: "{{ item.0['format'] }}"
   with_together:
-    - "{{ ansible_devices.keys() | select('match','vd[b-z]') | list }}"
     - "{{ data_disks.values() | list }}"
+    - "{{ ansible_devices.keys() | select('match','vd[b-z]') | sort | list }}"
 
+# Set the facts again after the previous tasks
+# to update the informations about created disks.
+# This is useful to get the newest partition UUIDs.
 - name: Set Facts
   setup:
     gather_subset:
       - hardware
 
-- name: Debug
-  debug:
-    msg: "{{ ansible_devices[item].partitions }}" #.value.partitions.values().0.uuid }}"
-  with_subelements:
-    - "{{ ansible_devices.keys() | list }}"
-
+# For each disk, create its related mount point
+# if specified into the inventory.
+# If not specified, the assert must exit the playbook execution.
 - name: Create disks mountpoint
   file:
     path: "{{ item['mount_point'] }}"
@@ -38,19 +49,14 @@
   with_items:
     - "{{ data_disks.values() | list }}"
 
-#- name: Store all informations together
-#  set_fact:
-#    disks_info: "{{ disks_info|default([]) + [ {'device': "/dev/item.0", 'mount_point': item.1['mount_point'], 'uuid': } ] }}"
-#  with_together:
-#    - "{{ ansible_devices.keys() | select('match','vd[b-z]') | list }}"
-#    - "{{ data_disks.values() | list }}"
-
+# Mount each disk on the related mountpoint,
+# generating the entry into the /etc/fstab file.
 - name: Mount disks
   mount:
-    path: "{{ item.1['mount_point'] }}"
-    src: "/dev/{{ item.0 }}1"
-    fstype: "{{ item.1['format'] }}"
+    path: "{{ item.0['mount_point'] }}"
+    src: "UUID={{ ( ansible_devices[item.1].partitions.values() | list )[0].uuid }}"
+    fstype: "{{ item.0['format'] }}"
     state: mounted
   with_together:
-    - "{{ ansible_devices.keys() | select('match','vd[b-z]') | list }}"
     - "{{ data_disks.values() | list }}"
+    - "{{ ansible_devices.keys() | select('match','vd[b-z]') | sort | list }}"
