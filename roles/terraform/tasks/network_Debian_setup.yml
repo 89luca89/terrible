@@ -1,5 +1,9 @@
 ---
 
+- name: "Setup machine hostname"
+  hostname:
+    name: "{{ inventory_hostname }}"
+
 # Gather up all interfaces
 - name: get available devices
   find:
@@ -28,6 +32,12 @@
     - "{{ network_interfaces.values() | list }}"
   when: ansible_distribution != 'Ubuntu'
 
+- name: "Restart networking - apply configs"
+  command: "systemctl restart networking"
+  async: 1
+  poll: 0
+  when: ansible_distribution != 'Ubuntu'
+
 # Use netplan on Ubuntu
 - name: "Set connection setting files - Ubuntu"
   blockinfile:
@@ -47,4 +57,10 @@
   with_together:
     - "{{ interfaces.files | sort(attribute='path') }}"
     - "{{ network_interfaces.values() | list }}"
+  when: ansible_distribution == 'Ubuntu'
+
+- name: "Restart networking - apply configs"
+  command: "netplan apply -f"
+  async: 1
+  poll: 0
   when: ansible_distribution == 'Ubuntu'

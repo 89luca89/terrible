@@ -1,5 +1,9 @@
 ---
 
+- name: "Setup machine hostname"
+  hostname:
+    name: "{{ inventory_hostname }}"
+
 # Remove networks we do not manage in order to have control
 - name: Remove unmanaged networks
   shell: |
@@ -65,3 +69,8 @@
   with_together:
     - "{{ interfaces.files | sort(attribute='path') }}"
     - "{{ network_interfaces.values() | list }}"
+
+- name: "Restart networking - apply configs"
+  command: "systemctl restart network"
+  async: 1
+  poll: 0
