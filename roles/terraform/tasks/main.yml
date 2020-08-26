@@ -119,6 +119,24 @@
     - terraform_bastion_enabled
   tags: deploy, destroy, apply, provision, generate_hcl
 
+# If one (or more) additional disk is defined, we need to ensure that
+# all the dependent variables are set in order to function properly.
+- name: Assert Additional Disks Varibles
+  assert:
+    that:
+      - "{{ item }}.size is defined"
+      - "{{ item }}.pool is defined"
+      - "{{ item }}.format is defined"
+      - "{{ item }}.mount_point is defined"
+    fail_msg: >
+      You must specify {{ item }} when data_disks is defined
+  with_items:
+    - "{{ data_disks.values() | list }}"
+  when:
+    - data_disks is defined
+    - "{{ data_disks | length > 0 }}"
+  tags: deploy, destroy, apply, provision, generate_hcl
+
 # Include the variables of the os_family of the host.
 - include_vars: "vars/os/family/{{ os_family }}.yml"
   tags: deploy, destroy, apply, provision
