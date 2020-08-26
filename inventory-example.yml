@@ -152,7 +152,6 @@ all:
                   gw: 192.168.122.1
                   dns:
                     - 192.168.122.1
-                  mac_address: "AA:BB:CC:11:24:68"
                 iface_2:
                   name: ens1
                   type: macvtap
