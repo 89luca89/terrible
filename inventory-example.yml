@@ -147,6 +147,7 @@ all:
               # ----
               network_interfaces:
                 iface_1:
+                  name: nat
                   type: nat
                   ip: 192.168.122.155
                   gw: 192.168.122.1

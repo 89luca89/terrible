@@ -122,8 +122,8 @@ Here's a little example:
                             os_family: RedHat
                             cpu: 4
                             memory: 8192
-                            network_name: "default"
-                            mac_address: "de:ad:be:ef:00:11"
+                            network_interfaces:
+                                ...
                 group_2:
                     hosts:
                         host_2:
@@ -135,6 +135,8 @@ Here's a little example:
                             cpu: 4
                             memory: 4096
                             set_new_passowrd: password123
+                            network_interfaces:
+                                ...
 ```
 
 In this example, we specified 2 main groups (`group_1`, `group_2`) inside the `hypervisor_1`.
@@ -170,6 +172,7 @@ These variables are **required**, they should be declared on per-hypervisor scop
 * **ssh_password:** `required`. Specify the password to access the deployed VMs.
 * **ssh_port:** `required`. Specify the port to access the deployed VMs.
 * **ssh_user:** `required`. Specify the user to access the deployed VMs.
+* **network_interfaces**: `required`. Specify VM's network interfaces.
 * **os_family:** `required`. Specify the OS family for the installation. Possible values are: `RedHat`, `Debian`, `Suse`, `FreeBSD`.
 * **terraform_node:** `required`. Specify the ip of the machine that performs the Terraform tasks. The default value of 127.0.0.1 indicates that the machine that perform Terraform tasks is the same that launches the Ansible playbook. In case the Terraform machine is not the local machine, put the ip/hostname of the Terraform node.
 * **terraform_bastion_enabled:** `required`. Specify `True` or `False`. In case the **terraform_node** and KVM server differ, you should enable the bastion. This will enable the use of the KVM server as jumphost to enter th VMs via ssh.
@@ -183,9 +186,7 @@ These variable are optional, there are sensible defaults set up, most of them ca
 
 * **set_new_password:** `optional`. Specify a new password to access the Vm. If not specified, the default value (**ssh_password**) is taken.
 * **cpu:** `optional`. Specify the cpu number for the VM. If not specified, the default value is taken. Default: `1`
-* **mac_address:** `optional`. Specify the memory ram for the VM. If not specified, a random mac is assigned.
 * **memory:** `optional`. Specify the memory ram for the VM. If not specified, the default value is taken. Default: `1024`
-* **network_name:** `optional`. Specify the network name for the VM. If not specified, the default value is taken. Default: `"default"`
 * **change_passwd_command:** `optional`. Specify a different command to be used to change the password to the user. If not specified the default command is used. Default: `echo root:{{ set_new_password }} | chpasswd`. This variable become really useful when you are using a FreeBSD OS.
 
 #### Bastions, Jumphosts, Remote Nodes
@@ -231,6 +232,69 @@ the order of the hops starting from the ansible executor will be:
 in the example above we have:
 
 ![bastion_flow](pics/bastion_flow.png)
+
+#### Network
+
+Network declaration is **mandatory** and **per-vm**.
+
+Declare each device you want to add inside the network_interfaces dictionary.
+
+**Remember that** :
+
+- **the order of declaration is important**
+- the NAT device should **always be present** (unless you can control your DHCP leases
+    for the external devices) and that should be **the FIRST device**.
+    It is important because it's the way the role has to communicate
+    with the VM **BEFORE** setting up all the userspace networks.
+
+Supported interface types: 
+
+- nat
+- macvtap
+- bridge
+
+the default_route should be assigned to **ONE** interface to function properly.
+If not set it's equal to False.
+
+Structure:
+
+```yaml
+        hypervisor_1:
+            vars:
+                provider_uri: "qemu:///system"
+                pool_name: default
+                disk_source: "~/VirtualMachines/centos8-terraform.qcow2"
+            hosts:
+                terraform_node:
+                    ansible_host: 127.0.0.1
+                    ansible_connection: local
+            children:
+                group_1:
+                    hosts:
+                        host_1:
+                            os_family: RedHat
+                            cpu: 4
+                            memory: 8192
+                            network_interfaces:
+                                iface_1:
+                                  name: ens1p0      # mandatory 
+                                  type: macvtap     # mandatory
+                                  ip: 172.16.0.155  # mandatory
+                                  gw: 172.16.0.1    # mandatory
+                                  dns:   ...        # optional
+                                   - 1.1.1.1
+                                   - 8.8.8.8
+                                  default_route: True # at least one true mandatory, false is optional.
+                                iface_2:
+                                  type: nat             # mandatory
+                                  ip: 192.168.122.47    # mandatory
+                                  gw: 192.168.122.1     # mandatory
+                                  dns:                  # optional
+                                   - 1.1.1.1
+                                   - 8.8.8.8
+                                  mac_address: "AA:BB:CC:11:24:68"   # optional
+                                  # default_route: False
+```
 
 ## Support
 
