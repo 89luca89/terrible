@@ -57,6 +57,6 @@
     - "{{ network_interfaces.values() | list }}"
 
 - name: "Restart networking - apply configs"
-  command: "systemctl restart NetworkManager"
+  command: "reboot"
   async: 1
   poll: 0
