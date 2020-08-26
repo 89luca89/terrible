@@ -291,6 +291,7 @@ Structure:
                                    - 8.8.8.8
                                   default_route: True # at least one true mandatory, false is optional.
                                 iface_2:
+                                  name: nat             # mandatory
                                   type: nat             # mandatory
                                   ip: 192.168.122.47    # mandatory
                                   gw: 192.168.122.1     # mandatory
