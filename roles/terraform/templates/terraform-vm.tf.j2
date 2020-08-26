@@ -122,14 +122,6 @@ resource "libvirt_domain" "domain-terraform" {
   }
   {% endif %}
 
-  {% if set_new_password is defined %}
-  provisioner "remote-exec" {
-    inline = [
-      "{{ change_passwd_command }}"
-      ]
-  }
-  {% endif %}
-
   {% if terraform_custom_provisioners is defined %}
   provisioner "remote-exec" {
     inline = [

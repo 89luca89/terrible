@@ -18,9 +18,6 @@ ansible_ssh_common_args: '-o StrictHostKeyChecking=no {% if ansible_jump_hosts i
 ssh_public_key_file: '~/.ssh/id_rsa.pub'
 hcl_deploy_path: "~/.ansible-terraform-kvm/{% for group in group_names %}{{ group }}{% if not loop.last %}/{% endif %}{% endfor %}"
 
-# Other commands
-change_passwd_command: echo root:{{ ansible_ssh_pass }} | chpasswd
-
 os_family_support:
   - RedHat
   - Suse

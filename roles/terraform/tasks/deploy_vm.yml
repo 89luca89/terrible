@@ -23,16 +23,6 @@
   tags: deploy, generate_hcl
   delegate_to: terraform_node
 
-# Also set a default password for ansible to use.
-# if we have a set_new_password variable, set it to this value as
-# the new hosts will have the newly setup after the deploy.
-# Else default to the ssh_password mantatory value.
-- name: "Set ansible_ssh_pass"
-  set_fact:
-    ansible_ssh_pass: "{% if set_new_password is defined %}{{ set_new_password }}{% else %}{{ ssh_password }}{% endif %}"
-  tags: deploy, destroy, apply, provision, generate_hcl
-  delegate_to: terraform_node
-
 # Create the directory tree for the temprorary files.
 - name: Ensures terraform dirs exists
   file:
