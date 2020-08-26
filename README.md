@@ -302,11 +302,15 @@ Structure:
                                   default_route: True # at least one true mandatory, false is optional.
 ```
 
-The playbook will use the available IP returned from the `terraform apply` phase to enter the machines
-and use the os-specific way to setup the user-space part of the network, static IPs, routes, gateways and
-DNSs.
+The playbook will use the available IP returned from the `terraform apply` command to access the machines
+and use the `os_family` way to setup the user-space part of the network:
 
-After this, the playbook will set the `ansible_host` variable to it's original value, and proceed with
+- static IPs
+- routes
+- gateways
+- DNS
+
+After this, the playbook will set the `ansible_host` variable to its original value, and proceed with
 the provisioning.
 
 This is important because it will make `ansible_host` independent from the internal management interface
