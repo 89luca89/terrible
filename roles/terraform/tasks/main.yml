@@ -33,6 +33,21 @@
       - ssh_port
       - ssh_public_key_file
       - ssh_user
+      - network_interfaces
+  tags: deploy, destroy, apply, provision, generate_hcl
+
+# Ensure that the mandatory variables for the host are set.
+- name: Assert VMs Network Variables
+  assert:
+    that:
+      - "{{ item }}.name is defined"
+      - "{{ item }}.type is defined"
+      - "{{ item }}.ip is defined"
+      - "{{ item }}.gw is defined"
+    fail_msg: >
+      You must specify {{ item }}
+  with_items:
+    - "{{ network_interfaces.values() | list }}"
   tags: deploy, destroy, apply, provision, generate_hcl
 
 # If terraform_bastion_enabled is true, we need to ensure that
