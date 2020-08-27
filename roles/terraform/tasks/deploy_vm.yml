@@ -3,26 +3,6 @@
 #
 #
 
-# Check if we have a public ssh_key file
-- name: "Ensure public key ssh file exists"
-  stat:
-    path: "{{ ssh_public_key_file }}"
-  register: ssh_public_key_file_stat
-  when:
-    - ssh_public_key_file is defined
-  tags: deploy, destroy, apply, provision, generate_hcl
-  delegate_to: terraform_node
-
-# If it exists, read it, it will be deployed in the authorized_keys of
-# the newly created hosts to perform the ansible tasks.
-- name: "Read public key for ssh"
-  set_fact:
-    ssh_public_key: "{{ lookup('file', '{{ ssh_public_key_file }}') }}"
-  when:
-    - ssh_public_key_file_stat.stat.exists
-  tags: deploy, generate_hcl
-  delegate_to: terraform_node
-
 # Create the directory tree for the temprorary files.
 - name: Ensures terraform dirs exists
   file:
