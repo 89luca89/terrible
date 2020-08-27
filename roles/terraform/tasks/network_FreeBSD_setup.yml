@@ -21,6 +21,7 @@
       {% endif %}
     marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.1.ip }}"
     create: yes
+  register: connection_file
   with_together:
     - "{{ interfaces.stdout.split(' ') | sort | list }}"
     - "{{ network_interfaces.values() | list }}"
@@ -37,6 +38,7 @@
       {% endfor %}
     marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.1.ip }}"
     create: yes
+  register: resolv_file
   with_together:
     - "{{ interfaces.stdout.split(' ') | sort | list }}"
     - "{{ network_interfaces.values() | list }}"
@@ -48,8 +50,10 @@
       resolvconf=NO
     marker: "# {mark} ANSIBLE MANAGED BLOCK"
     create: yes
+  register: resolvconf_file
 
 - name: "Restart networking - apply configs"
   command: "/etc/netstart"
   async: 1
   poll: 0
+  when: "connection_file.changed or resolv_file.changed or resolvconf_file.changed"

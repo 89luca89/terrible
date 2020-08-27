@@ -7,7 +7,8 @@
 # Remove networks we do not manage in order to have control
 - name: Remove unmanaged networks
   shell: |
-    find /etc/sysconfig/network-scripts -type f -delete ! -iname "*managed*"
+    find /etc/sysconfig/network-scripts -type f ! -iname "*managed* -delete"
+  changed_when: no
   async: 5
   poll: 0
 
@@ -47,11 +48,12 @@
       IPV6_FAILURE_FATAL=no
       IPV6_ADDR_GEN_MODE=stable-privacy
       NAME=managed-default-{{ item.0.path.split('/')[-1] }}
-      UUID={{ 9999999999999999999999 | random | to_uuid }}
+      UUID={{ item.0.path.split('/')[-1] | to_uuid }}
       DEVICE="{{ item.0.path.split('/')[-1] }}"
       ONBOOT=yes
     marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.1.ip }} {{ item.0.path.split('/')[-1] }}"
     create: yes
+  register: ifcfg_file
   with_together:
     - "{{ interfaces.files | sort(attribute='path') }}"
     - "{{ network_interfaces.values() | list }}"
@@ -60,3 +62,4 @@
   command: "reboot"
   async: 1
   poll: 0
+  when: "ifcfg_file.changed"

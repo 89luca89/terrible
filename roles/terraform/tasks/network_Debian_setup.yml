@@ -27,6 +27,7 @@
 
     marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.1.ip }} {{ item.0.path.split('/')[-1] }}"
     create: yes
+  register: interfaces_file
   with_together:
     - "{{ interfaces.files | sort(attribute='path') }}"
     - "{{ network_interfaces.values() | list }}"
@@ -36,7 +37,9 @@
   command: "systemctl restart networking"
   async: 1
   poll: 0
-  when: ansible_distribution != 'Ubuntu'
+  when:
+    - ansible_distribution != 'Ubuntu'
+    - interfaces_file.changed
 
 # Use netplan on Ubuntu
 - name: "Set connection setting files - Ubuntu"
@@ -54,6 +57,7 @@
               addresses: [{% for dns in item.1.dns %}{{ dns }}{% if not loop.last %},{% endif %}{% endfor %}]
     marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.1.ip }} {{ item.0.path.split('/')[-1] }}"
     create: yes
+  register: netplan_file
   with_together:
     - "{{ interfaces.files | sort(attribute='path') }}"
     - "{{ network_interfaces.values() | list }}"
@@ -63,4 +67,6 @@
   command: "netplan apply -f"
   async: 1
   poll: 0
-  when: ansible_distribution == 'Ubuntu'
+  when:
+    - ansible_distribution == 'Ubuntu'
+    - netplan_file.changed
