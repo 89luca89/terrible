@@ -30,7 +30,7 @@ resource "libvirt_volume" "os_image" {
 {% for disk in data_disks %}
 # Additional data disk n. {{ loop.index }}
 resource "libvirt_volume" "data_disk_{{ loop.index }}" {
-  name = "data_disk_{{ loop.index }}.qcow2"
+  name = format("%s-%s-%s-%d", var.hostname, "terraform", "data_disk", "{{ loop.index }}")
   pool = "{{ data_disks[disk].pool }}"
   size = {{ data_disks[disk].size * 1024 * 1024 * 1024 }}
   format = "qcow2"
