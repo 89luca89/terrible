@@ -7,6 +7,7 @@
 # Ensure that the os_family variable has been set for current host.
 - name: Assert os_family
   assert:
+    quiet: yes
     that:
       - "{{ item }}"
     fail_msg: >
@@ -20,6 +21,7 @@
 # Ensure that the mandatory variables for the host are set.
 - name: Assert VMs Variables
   assert:
+    quiet: yes
     that: "{{ item }} is defined"
     fail_msg: >
       You must specify {{ item }}
@@ -39,6 +41,7 @@
 # Ensure that the mandatory variables for the host are set.
 - name: Assert VMs Network Variables - At least one interface is defined
   assert:
+    quiet: yes
     that:
       - "{{ network_interfaces.keys() | list | length }} > 0"
     fail_msg: >
@@ -48,6 +51,7 @@
 # Ensure that the mandatory variables for the host are set.
 - name: Assert VMs Network Variables - NAT should be our first interface
   assert:
+    quiet: yes
     that:
       - "{{ network_interfaces.values() | list }}[0].type == 'nat'"
     fail_msg: >
@@ -57,6 +61,7 @@
 # Ensure that the mandatory variables for the host are set.
 - name: Assert VMs Network Variables
   assert:
+    quiet: yes
     that:
       - "{{ item }}.name is defined"
       - "{{ item }}.type is defined"
@@ -71,6 +76,7 @@
 # Ensure that the mandatory variables for the host are set.
 - name: Assert VMs Network Type Variables
   assert:
+    quiet: yes
     that:
       - "{{ item }}.type == 'nat' or {{ item }}.type == 'macvtap' or {{ item }}.type == 'bridge'"
     fail_msg: >
@@ -82,6 +88,7 @@
 # Ensure that the mandatory variables for the host are set.
 - name: Assert VMs DNS Network Variables
   assert:
+    quiet: yes
     that:
       - "{{ item.dns }} | length > 0"
     fail_msg: >
@@ -96,6 +103,7 @@
 # all the dependent variables are set in order to function properly.
 - name: Assert Bastion Variables
   assert:
+    quiet: yes
     that:
       - "{{ item }} is defined"
     fail_msg: >
