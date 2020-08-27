@@ -87,7 +87,7 @@
     fail_msg: >
       Incomplete interface dns specification.
   when:
-    - "{{ item }}.dns is defined"
+    - "item.dns is defined"
   with_items:
     - "{{ network_interfaces.values() | list }}"
   tags: deploy, destroy, apply, provision, generate_hcl
