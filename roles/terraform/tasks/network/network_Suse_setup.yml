@@ -1,0 +1,82 @@
+---
+
+- name: "Setup machine hostname"
+  hostname:
+    name: "{{ inventory_hostname }}"
+
+# Gather up all interfaces
+- name: get available devices
+  find:
+    paths: /sys/class/net/
+    excludes: "lo"
+    file_type: any
+  register: interfaces
+
+# Deploy multiple ifcfg-namaget-NET_POOL-ETHX files
+- name: "Set connection setting files"
+  blockinfile:
+    path: "/etc/sysconfig/network/ifcfg-{{ item.0.path.split('/')[-1] }}"
+    block: |
+      TYPE=Ethernet
+      PROXY_METHOD='none'
+      BROWSER_ONLY='no'
+      BOOTPROTO='static'
+      IPADDR='{{ item.1.ip }}/24'
+      PREFIX='24'
+      DEFROUTE={% if item.1.get('default_route', False) == True %}'yes'
+      {% else %}'no'
+      {% endif %}
+      IPV4_FAILURE_FATAL='no'
+      GATEWAY0='{{ item.1.gw }}'
+      {% for dns in item.1.dns %}
+      DNS{{ loop.index }}='{{ dns }}'
+      {% endfor %}
+      IPV6INIT='yes'
+      IPV6_AUTOCONF='yes'
+      IPV6_DEFROUTE={% if item.1.get('default_route', False) == True %}'yes'
+      {% else %}'no'
+      {% endif %}
+      IPV6_FAILURE_FATAL='no'
+      IPV6_ADDR_GEN_MODE='stable-privacy'
+      NAME='managed-{{ network_name }}-{{ item.0.path.split('/')[-1] }}'
+      UUID='{{ item.0.path.split('/')[-1] | to_uuid }}'
+      DEVICE='{{ item.0.path.split('/')[-1] }}'
+      ONBOOT='yes'
+      STARTMODE='auto'
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.1.ip }} {{ item.0.path.split('/')[-1] }}"
+    create: yes
+  register: ifcfg_file
+  with_together:
+    - "{{ interfaces.files | sort(attribute='path') }}"
+    - "{{ network_interfaces.values() | list }}"
+
+# Set default route for choosen device.
+- name: "Set default route"
+  blockinfile:
+    path: "/etc/sysconfig/network/routes"
+    block: |
+      # Destination   Gateway                 Netmask                 Device
+      default         {{ item.1.gw }}            -                       {{ item.0.path.split('/')[-1] }}
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.1.ip }} {{ item.0.path.split('/')[-1] }}"
+    create: yes
+  register: route_file
+  when: "item.1.get('default_route', False) == True"
+  with_together:
+    - "{{ interfaces.files | sort(attribute='path') }}"
+    - "{{ network_interfaces.values() | list }}"
+
+# Set default dns for choosen device.
+- name: "Set default route"
+  blockinfile:
+    path: "/etc/sysconfig/network/config"
+    block: |
+      NETCONFIG_DNS_STATIC_SERVERS={% for iface in network_interfaces.values()|list %}{% for dns in iface.dns %}{{ dns }} {% endfor %}{% endfor %}
+    marker: "# {mark} ANSIBLE MANAGED BLOCK"
+    create: yes
+  register: netconfig_file
+
+- name: "Restart networking - apply configs"
+  command: "systemctl restart network"
+  async: 1
+  poll: 0
+  when: "ifcfg_file.changed or route_file.changed or netconfig_file.changed"

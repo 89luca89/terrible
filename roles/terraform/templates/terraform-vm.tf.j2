@@ -49,27 +49,48 @@ resource "libvirt_domain" "domain-terraform" {
   {% endfor %}
   {% endif %}
 
+  {% for iface in network_interfaces %}
+
+
+  # We first add the NAT device, so we are sure that interface[0] is where
+  # we have the DHCP lease
+  {% if network_interfaces[iface].type  == "nat" %}
   # uses static  IP
   network_interface {
     network_name   = "{{ network_name }}"
     hostname       = var.hostname
-    addresses      = ["{{ ansible_host }}"]
+    {% if network_interfaces[iface].ip is defined %}
+    addresses      = ["{{ network_interfaces[iface].ip }}"]
+    {% endif %}
 
-    {% if mac_address is defined %}
-    mac            = "{{ mac_address }}"
+    {% if network_interfaces[iface].mac_address  is defined %}
+    mac            = "{{ network_interfaces[iface].mac_address }}"
     {% endif %}
 
     wait_for_lease = true
   }
 
-  {% if macvtap_ifaces is defined %}
-  {% for iface in macvtap_ifaces %}
+  # We then add all additional interfaces
+  {% elif network_interfaces[iface].type == "bridge" %}
+
   network_interface {
-    bridge  = "{{ iface }}"
+    bridge  = "{{ network_interfaces[iface].name }}"
     hostname = var.hostname
+    {% if network_interfaces[iface].mac_address  is defined %}
+    mac            = "{{ network_interfaces[iface].mac_address }}"
+    {% endif %}
   }
-  {% endfor %}
+  {% elif network_interfaces[iface].type == "macvtap" %}
+
+  network_interface {
+    macvtap  = "{{ network_interfaces[iface].name }}"
+    hostname = var.hostname
+    {% if network_interfaces[iface].mac_address  is defined %}
+    mac            = "{{ network_interfaces[iface].mac_address }}"
+    {% endif %}
+  }
   {% endif %}
+  {% endfor %}
 
   # IMPORTANT
   # it will show no console otherwise
@@ -105,41 +126,41 @@ resource "libvirt_domain" "domain-terraform" {
   {% if ssh_public_key is defined %}
   provisioner "remote-exec" {
     inline = [
-        "mkdir -m 0700 ~/.ssh",
-        "echo '${var.ssh_public_key}' | tee -a ~/.ssh/authorized_keys",
-        "chmod 0600 ~/.ssh/authorized_keys"]
-  }
-  {% endif %}
+      "mkdir -m 0700 ~/.ssh",
+      "echo '${var.ssh_public_key}' | tee -a ~/.ssh/authorized_keys",
+      "chmod 0600 ~/.ssh/authorized_keys"]
+    }
+    {% endif %}
 
-  {% if ansible_dependencies is defined %}
-  provisioner "remote-exec" {
-    inline = [
-      {% for pkg in ansible_dependencies %}
-      "{{ install_command }} {{ pkg }}"{% if not loop.last %},{% endif %}
+    {% if ansible_dependencies is defined %}
+    provisioner "remote-exec" {
+      inline = [
+        {% for pkg in ansible_dependencies %}
+        "{{ install_command }} {{ pkg }}"{% if not loop.last %},{% endif %}
 
-      {% endfor %}
+        {% endfor %}
       ]
-  }
-  {% endif %}
+    }
+    {% endif %}
 
   {% if terraform_custom_provisioners is defined %}
   provisioner "remote-exec" {
     inline = [
       {% for provisioner_command in terraform_custom_provisioners %}
       "{{ provisioner_command }}"{% if not loop.last %},{% endif %}
+        {% endfor %}
+      ]
+    }
+    {% endif %}
 
-      {% endfor %}
-    ]
   }
-  {% endif %}
 
-}
+  terraform {
+    required_version = ">= {{ terraform_version }}"
+  }
 
-terraform {
-  required_version = ">= {{ terraform_version }}"
-}
-
-output "metadata" {
-  # run 'terraform refresh' if not populated
-  value = libvirt_domain.domain-terraform
-}
+  # Return the NAT ip obtained by the DHCP lease, we do this because it may be
+  # the one we declared, but also can be different (dhcp lease was still occupied)
+  output "ip" {
+    value = "${libvirt_domain.domain-terraform.network_interface.0.addresses}"
+  }

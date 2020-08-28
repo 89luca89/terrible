@@ -91,12 +91,10 @@ all:
               os_family: RedHat
               cpu: 4
               memory: 1024
-              network_name: "default"
-
-              # mac_address is optional if you have a means
-              # of controlling the dhcp-leases
-              #
-              mac_address: "AA:BB:CC:11:24:24"
+              # This is the network resource where you want
+              # to assign the default NAT network, libvirt
+              # creates this "default" when installing, being the
+              # 192.168.122.0/24 subnet.
 
               # ----
               ## Mount points are optionals, the folder are
@@ -112,18 +110,68 @@ all:
               # ----
 
               # ----
-              ## If your mean of interfacing with the VMs is
-              ## external to the hypervisor, you can declare
-              ## here the macvtap interfaces.
-              ##
-              ## It can be 1 value or more, depending on your needs.
-              ##
-              ## This is optional if you want to use the NAT network.
+              ## ansible_host is declared here as a mean for ansible
+              ## to continue the VM provisioning after the terraform apply.
               #
-              # macvtap_ifaces:
-              #   - ens1
-              #   - ens2
+              ansible_host: 172.16.0.156
               # ----
+              ## Network declaration:
+              ##
+              ## Declare each device you want to add inside the network_interfaces
+              ## dictionary.
+              ## Remember that THE ORDER OF DECLARATION is IMPORTANT, the NAT device
+              ## should always be present (unless you can control your DHCP leases
+              ## for the external devices) and that should be the FIRST device.
+              ## It is important because it's the way the role has to communicate
+              ## with the VM **BEFORE** setting up all the userspace networks.
+              ##
+              ## Other interfaces are of 2 types: macvtap, bridge
+              ##
+              ## the default_route should be assigned to ONLY ONE interface to
+              ## function properly.
+              ##
+              ## if not set it's equal to False.
+              ##
+              ##      Structure:
+              ## name_of_network:
+              ##   type:  ...  # mandatory
+              ##   ip:    ...  # mandatory
+              ##   gw:    ...  # mandatory
+              ##   dns:   ...  # optional
+              ##    - dns1
+              ##    - dns2
+              ##    ...
+              ##   mac_address: ...   # optional
+              ##   default_route: ... # at least one true mandatory, false is optional.
+              # ----
+              network_interfaces:
+                # Nat interface, it should always be the first one you declare.
+                # it does not necessary have to be your default_route or main ansible_host,
+                # but it's important to declare it so ansible has a way to communicate with
+                # the VM and setup all the remaining networks.
+                iface_1:
+                  name: nat
+                  type: nat
+                  ip: 192.168.122.155
+                  gw: 192.168.122.1
+                  dns:
+                    - 192.168.122.1
+                iface_2:
+                  name: ens1
+                  type: macvtap
+                  ip: 192.168.1.124
+                  gw: 192.168.1.1
+                  dns:
+                    - 1.1.1.1
+                    - 8.8.8.8
+                  default_route: True
+                iface_3:
+                  name: EXT_BRIDGE
+                  type: bridge
+                  ip: 172.16.0.156
+                  gw: 172.16.0.1
+                  dns:
+                    - 172.16.0.1
 
               # ----
               ## Default ssh public key location.
@@ -145,16 +193,6 @@ all:
               #
               # set_new_password: test_psk
               # ----
-
-              # ----
-              ## ansible_host is declared here as a mean for ansible
-              ## to continue the VM provisioning after the terraform apply.
-              ##
-              ## In case you want to use the macvtap_ifaces, you can declare
-              ## here one of the external IPs that ansible can use to reach
-              ## the VM.
-              #
-              ansible_host: 192.168.124.199
               # ----
               ## It is possible to specify custom commands that should be executed
               ## on a VM **BEFORE** ansible provisioning starts. This can be useful
@@ -199,28 +237,38 @@ all:
               ## it is possible to deduplicate a lot of settings.
               # cpu: 1
               # memory: 1024
-              # network_name: "default"
               # mount_points:
               #   - {src: /tmp, dest: mnt }
               #   - {src: /home, dest: home }
-              # macvtap_ifaces:
-              #   - ens1
-              #   - ens2
         slave_nodes:
           hosts:
             host-vm-2:
               os_family: RedHat
-              network_name: "default"
-              ansible_host: 192.168.124.200
-              mac_address: "AA:BB:CC:11:24:25"
+              ansible_host: 192.168.122.200
+              network_interfaces:
+                iface_1:
+                  type: nat
+                  ip: 192.168.122.200
+                  gw: 192.168.122.1
+                  dns:
+                    - 192.168.122.1
+                  mac_address: "AA:BB:CC:12:25:69"
+                  default_route: True
               cpu: 2
               memory: 1024
             host-vm-3:
               os_family: Suse
               disk_source: "~/VirtualMachines/opensuse15.2-terraform.qcow2"
-              network_name: "default"
-              ansible_host: 192.168.124.201
-              mac_address: "AA:BB:CC:11:24:26"
+              ansible_host: 192.168.122.201
+              network_interfaces:
+                iface_1:
+                  type: nat
+                  ip: 192.168.122.201
+                  gw: 192.168.122.1
+                  dns:
+                    - 192.168.122.1
+                  mac_address: "AA:BB:CC:11:25:69"
+                  default_route: True
               cpu: 2
               memory: 1024
           vars:

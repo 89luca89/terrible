@@ -7,6 +7,7 @@
 # Ensure that the os_family variable has been set for current host.
 - name: Assert os_family
   assert:
+    quiet: yes
     that:
       - "{{ item }}"
     fail_msg: >
@@ -20,6 +21,7 @@
 # Ensure that the mandatory variables for the host are set.
 - name: Assert VMs Variables
   assert:
+    quiet: yes
     that: "{{ item }} is defined"
     fail_msg: >
       You must specify {{ item }}
@@ -33,12 +35,75 @@
       - ssh_port
       - ssh_public_key_file
       - ssh_user
+      - network_interfaces
+  tags: deploy, destroy, apply, provision, generate_hcl
+
+# Ensure that the mandatory variables for the host are set.
+- name: Assert VMs Network Variables - At least one interface is defined
+  assert:
+    quiet: yes
+    that:
+      - "{{ network_interfaces.keys() | list | length }} > 0"
+    fail_msg: >
+      "Declare at least one interface"
+  tags: deploy, destroy, apply, provision, generate_hcl
+
+# Ensure that the mandatory variables for the host are set.
+- name: Assert VMs Network Variables - NAT should be our first interface
+  assert:
+    quiet: yes
+    that:
+      - "{{ network_interfaces.values() | list }}[0].type == 'nat'"
+    fail_msg: >
+      "First interface declared must be NAT type"
+  tags: deploy, destroy, apply, provision, generate_hcl
+
+# Ensure that the mandatory variables for the host are set.
+- name: Assert VMs Network Variables
+  assert:
+    quiet: yes
+    that:
+      - "{{ item }}.name is defined"
+      - "{{ item }}.type is defined"
+      - "{{ item }}.ip is defined"
+      - "{{ item }}.gw is defined"
+    fail_msg: >
+      Incomplete interface declaration for {{ item }}, missing a mandatory var
+  with_items:
+    - "{{ network_interfaces.values() | list }}"
+  tags: deploy, destroy, apply, provision, generate_hcl
+
+# Ensure that the mandatory variables for the host are set.
+- name: Assert VMs Network Type Variables
+  assert:
+    quiet: yes
+    that:
+      - "{{ item }}.type == 'nat' or {{ item }}.type == 'macvtap' or {{ item }}.type == 'bridge'"
+    fail_msg: >
+      Unsupported value for interface type.
+  with_items:
+    - "{{ network_interfaces.values() | list }}"
+  tags: deploy, destroy, apply, provision, generate_hcl
+
+# Ensure that the mandatory variables for the host are set.
+- name: Assert VMs DNS Network Variables
+  assert:
+    quiet: yes
+    that:
+      - "{{ item.dns }} | length > 0"
+    fail_msg: >
+      Incomplete interface dns specification.
+  when:
+    - "item.dns is defined"
+  with_items:
+    - "{{ network_interfaces.values() | list }}"
   tags: deploy, destroy, apply, provision, generate_hcl
 
 # If terraform_bastion_enabled is true, we need to ensure that
 # all the dependent variables are set in order to function properly.
 - name: Assert Bastion Variables
   assert:
+    quiet: yes
     that:
       - "{{ item }} is defined"
     fail_msg: >
@@ -58,20 +123,29 @@
 - include_vars: "vars/os/family/{{ os_family }}.yml"
   tags: deploy, destroy, apply, provision
 
+# Check if we have a public ssh_key file
+- name: "Ensure public key ssh file exists"
+  stat:
+    path: "{{ ssh_public_key_file }}"
+  register: ssh_public_key_file_stat
+  when:
+    - ssh_public_key_file is defined
+  tags: deploy, destroy, apply, provision, generate_hcl
+  delegate_to: terraform_node
+
+# If it exists, read it, it will be deployed in the authorized_keys of
+# the newly created hosts to perform the ansible tasks.
+- name: "Read public key for ssh"
+  set_fact:
+    ssh_public_key: "{{ lookup('file', '{{ ssh_public_key_file }}') }}"
+  when:
+    - ssh_public_key_file_stat.stat.exists
+  tags: deploy, generate_hcl
+  delegate_to: terraform_node
+
 # Deploy the HCL files, use Terraform to deploy the infrastructure.
 - include_tasks: deploy_vm.yml
   tags: deploy, destroy, apply, generate_hcl
-
-- name: Wait for system to become reachable
-  wait_for_connection:
-    delay: 1
-    timeout: 300
-  tags: provision
-
-# Ansible: gather facts of the newly created hosts.
-- name: gather facts
-  setup:
-  tags: provision
 
 # Perform post-deploy tasks, such as users, networks and so on...
 - include_tasks: post_deploy.yml
