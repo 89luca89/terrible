@@ -31,6 +31,16 @@
   with_items:
     - "{{ additional_disks.stdout_lines }}"
 
+# Check if file system is already created
+- name: Check disks file system
+  shell: |
+    /usr/sbin/fstyp /dev/{{ item }}p1
+  args:
+    executable: /bin/sh
+    register: disk_fs
+  with_items:
+    - "{{ additional_disks.stdout_lines }}"
+
 # For each partition previously created
 # the task format the unique partition with
 # the filesystem type specified into the inventory,
@@ -40,6 +50,7 @@
     /sbin/newfs -U /dev/{{ item }}p1
   args:
     executable: /bin/sh
+  when: disk_fs.rc != 0
   with_items:
     - "{{ additional_disks.stdout_lines }}"
 
