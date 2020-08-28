@@ -4,4 +4,63 @@
 #
 #
 
+# Check the additional disk that have been installed.
+- name: Retrieve additional disk list
+  shell: |
+    /sbin/geom disk list | \
+      grep '^Geom name:' | \
+      awk '{print $3}' | \
+      tail -n +2
+  register: additional_disks
+  changed_when: no
 
+# Filter the additional virtual disks and create 1 partition
+# for each disk.
+# Es. For each disk you have:
+# vdb
+# └─vdb1
+# vdc
+# └─vdc1
+- name: Create disk partitions
+  shell: |
+      /sbin/gpart create -s GPT {{ item }} && \
+      /sbin/gpart add -t freebsd-ufs -a 1M {{ item }};
+  args:
+    executable: /bin/sh
+    creates: "/dev/{{ item }}p1"
+  with_items:
+    - "{{ additional_disks.stdout_lines }}"
+
+# For each partition previously created
+# the task format the unique partition with
+# the filesystem type specified into the inventory,
+# or with the default if not specified.
+- name: Format disks
+  shell: |
+    /sbin/newfs -U /dev/{{ item }}p1
+  args:
+    executable: /bin/sh
+  with_items:
+    - "{{ additional_disks.stdout_lines }}"
+
+# For each disk, create its related mount point
+# if specified into the inventory.
+# If not specified, the assert must exit the playbook execution.
+- name: Create disks mountpoint
+  file:
+    path: "{{ item['mount_point'] }}"
+    state: directory
+  with_items:
+    - "{{ data_disks.values() | list }}"
+
+## Mount each disk on the related mountpoint,
+## generating the entry into the /etc/fstab file.
+- name: Mount disks
+  mount:
+    path: "{{ item.0['mount_point'] }}"
+    src: "/dev/{{ item.1 }}p1"
+    fstype: ufs
+    state: mounted
+  with_together:
+    - "{{ data_disks.values() | list }}"
+    - "{{ additional_disks.stdout_lines }}"
