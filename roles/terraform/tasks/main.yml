@@ -172,3 +172,7 @@
 # Perform post-deploy tasks, such as users, networks and so on...
 - include_tasks: "disk_{{ os_family }}_setup.yml"
   tags: provision
+
+# Perform post-deploy tasks, such as users, networks and so on...
+- include_tasks: "disk_{{ os_family }}_setup.yml"
+  tags: provision
