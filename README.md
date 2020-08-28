@@ -287,7 +287,7 @@ Structure:
                                   type: nat             # mandatory
                                   ip: 192.168.122.47    # mandatory
                                   gw: 192.168.122.1     # mandatory
-                                  dns:                  # optional
+                                  dns:                  # mandatory
                                    - 1.1.1.1
                                    - 8.8.8.8
                                   mac_address: "AA:BB:CC:11:24:68"   # optional
@@ -310,7 +310,7 @@ Variables explanation:
 * **ip:** `required` Specify the IP to assign to this interface.
 * **gw:** `required` Specify the Gateway of this interface.
 * **default_route:** `at least one required` Specify if this interface is the default route or not. **At least one interface at True**.
-* **dns:** `optional` Specify the dns list for this interface, this is an array of IPs.
+* **dns:** `required` Specify the dns list for this interface, this is an array of IPs.
 * **mac_address:** `optional` Specify the mac address for this interface.
 
 

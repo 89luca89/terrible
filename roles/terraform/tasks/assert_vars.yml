@@ -58,6 +58,7 @@
       - "{{ item }}.type is defined"
       - "{{ item }}.ip is defined"
       - "{{ item }}.gw is defined"
+      - "{{ item }}.dns is defined"
     fail_msg: >
       Incomplete interface declaration for {{ item }}, missing a mandatory var
   with_items:
