@@ -168,7 +168,7 @@ These variables are **required**, they should be declared on per-hypervisor scop
 * **ansible_host:** `required`. Specify the ip address for the VM. If not specified, a random ip is assigned.
 * **ansible_jump_hosts:** `required` if **terraform_bastion_enabled** is `True`. Specify one or more jumphost/bastions for the ansible provisioning part.
 * **disk_source:** `required`. Specify the (local) path to the virtual disk you want to use to deploy the VMs.
-* **network_interfaces**: `required`. Specify VM's network interfaces.
+* **network_interfaces**: `required`. Specify VM's network interfaces, check network section for internal required variables: [HERE](#network)
 * **os_family:** `required`. Specify the OS family for the installation. Possible values are: `RedHat`, `Debian`, `Suse`, `FreeBSD`.
 * **pool_name:** `required`. Specify the *storage pool* name where you want to deploy the VMs on the KVM server.
 * **provider_uri:** `required`. Specify the uri of the KVM server. You can use `qemu:///system` if the KVM server is you own computer, or `qemu+ssh://USER@IP:PORT/system` (or different) if your server is remote.
@@ -301,6 +301,17 @@ Structure:
                                    - 8.8.8.8
                                   default_route: True # at least one true mandatory, false is optional.
 ```
+
+Variables explanation:
+
+* **name:** `required` Specify the name for the connection, this is important for `bridge` and `macvtap` types as it will be the interface/bridge on the host on which they will be created.
+* **type:** `required` Specify the type of the interface, supported types are **nat**, **macvtap**, **bridge**.
+* **ip:** `required` Specify the IP to assign to this interface.
+* **gw:** `required` Specify the Gateway of this interface.
+* **default_route:** `at least one required` Specify if this interface is the default route or not. **At least one interface at True**.
+* **dns:** `optional` Specify the dns list for this interface, this is an array of IPs.
+* **mac_address:** `optional` Specify the mac address for this interface.
+
 
 The playbook will use the available IP returned from the `terraform apply` command to access the machines
 and use the `os_family` way to setup the user-space part of the network:
