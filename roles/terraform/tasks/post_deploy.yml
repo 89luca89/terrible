@@ -55,7 +55,7 @@
     # Configure network adressing each os_family separately
     # as each system differs hugely
     - name: Configure Network
-      include_tasks: "network_{{ os_family }}_setup.yml"
+      include_tasks: "network/network_{{ os_family }}_setup.yml"
 
   always:
     # We ALWAYS want to return ansible_host to it's original value,
