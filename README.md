@@ -249,9 +249,9 @@ Declare each device you want to add inside the `network_interfaces` dictionary.
 
 Supported interface types: 
 
-- nat
-- macvtap
-- bridge
+* `nat`
+* `macvtap`
+* `bridge`
 
 the default_route should be assigned to **ONE** interface to function properly.
 If not set it's equal to False.
