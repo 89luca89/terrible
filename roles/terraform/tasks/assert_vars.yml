@@ -19,11 +19,12 @@
     fail_msg: >
       You must specify {{ item }}
   with_items:
+      - hostvars['terraform_node']
+      - hostvars['terraform_node']['ansible_host']
+      - hostvars['terraform_node']['ansible_connection']
       - ansible_host
-      - terraform_bastion_enabled
       - disk_source
       - pool_name
-      - provider_uri
       - ssh_password
       - ssh_port
       - ssh_public_key_file
