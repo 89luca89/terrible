@@ -1,0 +1,88 @@
+---
+
+- name: local ansible, local terraform, local kvm
+  set_fact:
+    provider_uri: "qemu:///system"
+    terraform_bastion_enabled: False
+  when:
+    - hostvars['terraform_node']['ansible_connection'] == 'local'
+    - (hostvars['terraform_node']['qemu_machine'] is not defined or (hostvars['terraform_node']['qemu_machine'] is defined and hostvars['terraform_node']['qemu_machine'] == hostvars['terraform_node']['ansible_host'] ))
+  delegate_to: terraform_node
+
+
+######
+#  local ansible, local terraform, remote kvm
+#  1 - add to existing ansible_jump_hosts
+#  2 - define new ansible_jump_hosts
+#####
+- name: local ansible, local terraform, remote kvm
+  set_fact:
+    provider_uri: "qemu+ssh://{{ hostvars['terraform_node']['qemu_username'] | default(ssh_user,boolean=True) }}@{{ hostvars['terraform_node']['qemu_machine'] }}/system"
+    ansible_jump_hosts: "{{ [ {'user':hostvars['terraform_node']['qemu_username'] | default(ssh_user,boolean=True), 'host':hostvars['terraform_node']['qemu_machine'], 'port':hostvars['terraform_node']['qemu_port'] | default(ssh_port,boolean=True) } ] }}"
+    terraform_bastion_enabled: True
+    terraform_bastion_host: "{{ hostvars['terraform_node']['qemu_machine'] }}"
+    terraform_bastion_password: "{{ hostvars['terraform_node']['qemu_password'] | default(ssh_password,boolean=True) }}"
+    terraform_bastion_port: "{{ hostvars['terraform_node']['qemu_port'] | default(ssh_port,boolean=True) }}"
+    terraform_bastion_user: "{{ hostvars['terraform_node']['qemu_username'] | default(ssh_user,boolean=True) }}"
+  when:
+    - hostvars['terraform_node']['ansible_connection'] == 'local'
+    - hostvars['terraform_node']['qemu_machine'] is defined and hostvars['terraform_node']['qemu_machine'] != hostvars['terraform_node']['ansible_host']
+  delegate_to: terraform_node
+
+######
+#  local ansible, remote terraform + kvm
+#  1 - add to existing ansible_jump_hosts
+#  2 - define new ansible_jump_hosts
+#####
+- name: local ansible, remote terraform + kvm
+  set_fact:
+    provider_uri: "qemu:///system"
+    ansible_jump_hosts: "{{ [ {'user':hostvars['terraform_node']['qemu_username'] | default(ansible_user,boolean=True), 'host':hostvars['terraform_node']['qemu_machine'] | default(hostvars['terraform_node']['ansible_host'], boolean=True), 'port':hostvars['terraform_node']['qemu_port'] | default(22,boolean=True) } ] }}"
+    terraform_bastion_enabled: False
+  when:
+    - hostvars['terraform_node']['ansible_connection'] != 'local'
+    - hostvars['terraform_node']['qemu_machine'] is not defined or hostvars['terraform_node']['qemu_machine'] == hostvars['terraform_node']['ansible_host']
+  delegate_to: terraform_node
+
+######
+#  local ansible, remote terraform, remote_2 kvm
+#  1 - add to existing ansible_jump_hosts
+#  2 - define new ansible_jump_hosts
+#####
+- name: local ansible, remote terraform, remote_2 kvm
+  set_fact:
+    provider_uri: "qemu+ssh://{{ hostvars['terraform_node']['qemu_username'] | default(ssh_user,boolean=True) }}@{{ hostvars['terraform_node']['qemu_machine'] }}/system"
+    ansible_jump_hosts: "{{ [ {'user':ansible_user, 'host':hostvars['terraform_node']['ansible_host'], 'port':hostvars['terraform_node']['qemu_machine'] | default(22,boolean=True)  } ]  + [ {'user':hostvars['terraform_node']['qemu_username'] | default(ssh_user,boolean=True), 'host':hostvars['terraform_node']['qemu_machine'], 'port':hostvars['terraform_node']['qemu_port'] | default(ssh_port,boolean=True)  } ] }}"
+    terraform_bastion_enabled: True
+    terraform_bastion_host: "{{ hostvars['terraform_node']['qemu_machine'] }}"
+    terraform_bastion_password: "{{ hostvars['terraform_node']['qemu_password'] | default(ssh_password,boolean=True) }}"
+    terraform_bastion_port: "{{ hostvars['terraform_node']['qemu_port'] | default(ssh_port,boolean=True) }}"
+    terraform_bastion_user: "{{ hostvars['terraform_node']['qemu_username'] | default(ssh_user,boolean=True) }}"
+  when:
+    - hostvars['terraform_node']['ansible_connection'] != 'local'
+    - hostvars['terraform_node']['qemu_machine'] is defined and hostvars['terraform_node']['qemu_machine'] != hostvars['terraform_node']['ansible_host']
+  delegate_to: terraform_node
+
+- debug:
+    msg: "{{ item }}"
+  with_items:
+    - "{{ provider_uri }}"
+  delegate_to: terraform_node
+
+- debug:
+    msg: "{{ item }}"
+  with_items:
+    - "{{ ansible_jump_hosts }}"
+  when: ansible_jump_hosts is defined
+  delegate_to: terraform_node
+
+- debug:
+    msg: "{{ item }}"
+  with_items:
+    - "{{ terraform_bastion_enabled }}"
+    - "{{ terraform_bastion_host }}"
+    - "{{ terraform_bastion_password }}"
+    - "{{ terraform_bastion_port }}"
+    - "{{ terraform_bastion_user }}"
+  when: terraform_bastion_enabled
+  delegate_to: terraform_node

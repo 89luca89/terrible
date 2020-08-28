@@ -5,12 +5,12 @@
 #
 
 # Assert that all variables are well set.
-# - include_tasks:
-#     file: assert_vars.yml
-#     apply:
-#       tags:
-#         - always
-#   tags: always
+- include_tasks:
+    file: assert_vars.yml
+    apply:
+      tags:
+        - always
+  tags: always
 
 # Setup all the variables starting from existing ones.
 - include_tasks:
