@@ -3,20 +3,6 @@
 # Post deploy for VMs deployed by terraform.
 #
 
-- name: Set Root password /1
-  set_fact:
-    ansible_ssh_pass: "{{ set_new_password }}"
-  when: set_new_password is defined
-  tags: provision
-
-- name: Set Root password /2
-  user:
-    name: "root"
-    update_password: always
-    password: "{{ set_new_password | password_hash('sha512', '') }}"
-  when: set_new_password is defined
-  tags: provision
-
 # Also set a default password for ansible to use.
 # if we have a set_new_password variable, set it to this value as
 # the new hosts will have the newly setup after the deploy.
@@ -75,6 +61,22 @@
 - name: gather facts
   setup:
   tags: provision
+
+# Set password for newly created hosts
+- name: Set Root password /1
+  set_fact:
+    ansible_ssh_pass: "{{ set_new_password }}"
+  when: set_new_password is defined
+  tags: provision
+
+- name: Set Root password /2
+  user:
+    name: "root"
+    update_password: always
+    password: "{{ set_new_password | password_hash('sha512', '') }}"
+  when: set_new_password is defined
+  tags: provision
+
 
 # Upgrade systems but limit to only
 # security updates, to keep track of
