@@ -5,41 +5,6 @@ all:
       vars:
         # ----
         ## Hypervisor dependent
-
-        ## Provider URI is required. It is the uri of the KVM server.
-        ## In case the KVM server and the terraform_node correspond, retain
-        ## the default "qemu:///system", else use the form:
-        ##
-        ##      qemu+ssh://USER@IP/system
-        #
-        provider_uri: "qemu:///system"
-
-        ## BASTION SECTION: in case the terraform_node and qemu/kvm server differ,
-        ## you should enable the bastion. This will enable the use of the kvm server
-        ## as jumphost to enter the VMs via SSH.
-        ##
-        ## terraform_bastion_enabled: Bool, required argument.
-        #
-        terraform_bastion_enabled: False
-        ## terraform_bastion_host, is terraform_bastion_enabled is True, should correspond to the IP of
-        ## the qemu/kvm server.
-        #
-        # terraform_bastion_host: 192.168.1.2
-        # terraform_bastion_password: password
-        # terraform_bastion_port: 22
-        # terraform_bastion_user: root
-        # ----
-        #
-        ## list of eventual single or multiple bastion/jump hops necessar to reach the
-        ## VMs. if terraform_bastion_enabled is True, AT LEAST one jump is ncessary
-        ## and should correspond to the terraform_node user@IP.
-        #
-        ## This value can be set also if terraform_bastion_enabled is False, this way
-        ## it is possible to specify a jump host independently from the terraform node.
-        ansible_jump_hosts:
-          - {user: root, host: bastion_2.lan, port: 2222}
-          - {user: root, host: bastion.lan, port: 22}
-          - {user: bastion, host: management, port: 50363}
         #
         # ----
         ## Source image:
@@ -74,7 +39,35 @@ all:
         #
         # ----
         terraform_node:
+          # this should correspond to the ip/host of the machine where terraform
+          # is installed. If it's the same machine that is launching the ansible
+          # run, you should set it to 127.0.0.1 ans ansible_connection: local.
           ansible_host: remote_terraform_node.test.com
+          # it is better to explicitly set the ansible_connection variable.
+          # if set to `local` the role will assume that terraform is on the same
+          # node that is launching the ansible run.
+          #
+          ansible_connection: ssh
+
+          #
+          # ----
+          ## it the terraform_node is NOT local or the TARGET KVM MACHINE is not local,
+          ## we can assume that you need a bastion/jumphost to reach the VM's internal
+          ## network and perform early provisioning (such as network setup).
+          ##
+          ## if terraform is NOT local, we can assume that we have 2 type of situations:
+          ##    - terraform is on the same node where the kvm hypervisor is
+          ##    - terraform is targetting another different kvm-hypervisor node
+          ##
+          ## if terraform IS LOCAL, we are assuming that ansible and teraform are
+          ## on the same node but the target hypervisor is remote.
+          ##
+          ## we then need to specify the terraform_target_hypervisor_* variables to
+          ## let both terraform and later ansible access the final hypervisor and VMs.
+          terraform_target_hypervisor: remote_kvm_machine.foo.bar
+          terraform_target_hypervisor_user: root
+          terraform_target_hypervisor_port: 22
+          terraform_target_hypervisor_password: password
       children:
         master_nodes:
           hosts:
@@ -137,7 +130,7 @@ all:
               ##   type:  ...  # mandatory
               ##   ip:    ...  # mandatory
               ##   gw:    ...  # mandatory
-              ##   dns:   ...  # optional
+              ##   dns:   ...  # mandatory
               ##    - dns1
               ##    - dns2
               ##    ...
