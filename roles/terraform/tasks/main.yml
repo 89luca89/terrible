@@ -100,7 +100,7 @@
   tags: deploy, destroy, apply, provision, generate_hcl
 
 # If terraform_bastion_enabled is true, we need to ensure that
-# all the dependent variables are set in order to function properly.
+# all the dependent variables are set in order to work properly.
 - name: Assert Bastion Variables
   assert:
     quiet: yes
@@ -120,7 +120,7 @@
   tags: deploy, destroy, apply, provision, generate_hcl
 
 # If one (or more) additional disk is defined, we need to ensure that
-# all the dependent variables are set in order to function properly.
+# all the dependent variables are set in order to work properly.
 - name: Assert Additional Disks Varibles
   assert:
     that:
@@ -135,6 +135,41 @@
   when:
     - data_disks is defined
     - "{{ data_disks | length > 0 }}"
+  tags: deploy, destroy, apply, provision, generate_hcl
+
+# Verifiy the correctness of the parameters.
+- name: Check 'format' parameter correctness for FreeBSD
+  assert:
+    that:
+      - "{{ item }}.format == 'freebsd-ufs'"
+    fail_msg: >
+      You are trying to use an unsupported fs format.
+      Supported formats for FreeBSD: freebsd-ufs
+  with_items:
+    - "{{ data_disks.values() | list }}"
+  when:
+    - data_disks is defined
+    - "{{ data_disks | length > 0 }}"
+    - os_family == 'FreeBSD'
+  tags: deploy, destroy, apply, provision, generate_hcl
+
+# Verifiy the correctness of the parameters.
+- name: Check 'format' parameter correctness for Linux
+  assert:
+    that:
+      - "{{ item }}.format == 'ext4' or
+         {{ item }}.format == 'ext3' or
+         {{ item }}.format == 'ext2' or
+         {{ item }}.format == 'xfs'"
+    fail_msg: >
+      You are trying to use an unsupported fs format.
+      Supported formats for Linux: ext2, ext3, ext4, xfs
+  with_items:
+    - "{{ data_disks.values() | list }}"
+  when:
+    - data_disks is defined
+    - "{{ data_disks | length > 0 }}"
+    - os_family == 'RedHat' or os_family == 'Suse' or os_family == 'Debian'
   tags: deploy, destroy, apply, provision, generate_hcl
 
 # Include the variables of the os_family of the host.
