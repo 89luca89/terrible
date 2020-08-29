@@ -373,7 +373,6 @@ Let's take a look at how the *inventory* file is going to be fill.
                             		pool: default                   # Store the disk image into the pool = default.
                             		format: xfs                     # Disk Filesystem = xfs
                             		mount_point: /mnt/data_storage  # The path where the disk is mounted
-                            data_disks:
                                 # Here we declare the disk name
                             	disk-config:
                             		size: 1                         # Disk size = 1 GB
