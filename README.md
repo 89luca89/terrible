@@ -333,11 +333,11 @@ want to perform after this.
 
 This section explain how you can add some additional disk to the VMs.
 
-Suppose you want to create a VM that needs a large amount of storage space. Doing this is quite simple.
+Suppose you want to create a VM that needs a large amount of storage space, and a separated disk just to store the configurations. Doing this is quite simple.
 
 The main variable you need is `data_disks`. The you have to specify the disks and the related properties for each of them.
 
-The variables are:
+If `data_disks` is mentioned in your inventory, the following variables are required:
 
 * **size:** `required`. Specify the disk size expressed in GB. (es. `size: 1` means 1GB)
 * **pool:** `required`. Specify the pool where you want to store the additional disks.
@@ -368,11 +368,18 @@ Let's take a look at how the *inventory* file is going to be fill.
                             # the additional disk.
                             data_disks:
                                 # Here we declare the disk name
-                            	disk-1:
+                            	disk-storage:
                             		size: 100                       # Disk size = 100 GB
-                            		pool: default                   # Store the disk image into the pool: default.
+                            		pool: default                   # Store the disk image into the pool = default.
                             		format: xfs                     # Disk Filesystem = xfs
-                            		mount_point: /mnt/data_disk_1   # The path where the disk is mounted
+                            		mount_point: /mnt/data_storage  # The path where the disk is mounted
+                            data_disks:
+                                # Here we declare the disk name
+                            	disk-config:
+                            		size: 1                         # Disk size = 1 GB
+                            		pool: default                   # Store the disk image into the pool = default.
+                            		format: ext4                    # Disk Filesystem = ext4
+                            		mount_point: /mnt/data_config   # The path where the disk is mounted
 ```
 
 
