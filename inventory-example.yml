@@ -256,6 +256,12 @@ all:
                   default_route: True
               cpu: 2
               memory: 1024
+              data_disks:
+                additional_disk_1:
+                  size: 20
+                  pool: default
+                  format: ext4
+                  mount_point: /mnt/data
             host-vm-3:
               os_family: Suse
               disk_source: "~/VirtualMachines/opensuse15.2-terraform.qcow2"

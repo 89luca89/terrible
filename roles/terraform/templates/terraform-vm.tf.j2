@@ -26,6 +26,19 @@ resource "libvirt_volume" "os_image" {
   format = "qcow2"
 }
 
+{% if data_disks is defined %}
+{% for disk in data_disks %}
+# Additional data disk n. {{ loop.index }}
+resource "libvirt_volume" "data_disk_{{ loop.index }}" {
+  name = format("%s-%s-%s-%d", var.hostname, "terraform", "data_disk", "{{ loop.index }}")
+  pool = "{{ data_disks[disk].pool }}"
+  size = {{ data_disks[disk].size * 1024 * 1024 * 1024 }}
+  format = "qcow2"
+}
+
+{% endfor %}
+{% endif %}
+
 # Create the machine
 resource "libvirt_domain" "domain-terraform" {
   name   = var.hostname
@@ -36,7 +49,12 @@ resource "libvirt_domain" "domain-terraform" {
     mode = "host-passthrough"
   }
 
+  # Disk aquisition
   disk { volume_id = libvirt_volume.os_image.id }
+{% for item in data_disks %}
+  disk { volume_id = libvirt_volume.data_disk_{{ loop.index }}.id }
+{% endfor %}
+
   boot_device { dev = ["cdrom", "hd", "network"] }
 
   {% if mount_points is defined %}

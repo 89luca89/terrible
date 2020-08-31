@@ -1,6 +1,12 @@
 ansible_dependencies:
   - python3
   - unattended-upgrades
+  - parted
 
 update_command: apt update; unattended-upgrade
-install_command: apt install -y
+install_command: while pgrep apt; do sleep 2; done; apt install -y
+
+supported_fs:
+  - ext4
+  - ext3
+  - ext2

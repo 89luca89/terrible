@@ -168,6 +168,7 @@ These variables are **required**, they should be declared on per-hypervisor scop
 * **ansible_host:** `required`. Specify the ip address for the VM. If not specified, a random ip is assigned.
 * **ansible_jump_hosts:** `required` if **terraform_bastion_enabled** is `True`. Specify one or more jumphost/bastions for the ansible provisioning part.
 * **disk_source:** `required`. Specify the (local) path to the virtual disk you want to use to deploy the VMs.
+* **data_disks:** `optional`. Specify additional disks to be added to the VM. Check disks section for internal required varibles: [HERE](#disk)
 * **network_interfaces**: `required`. Specify VM's network interfaces, check network section for internal required variables: [HERE](#network)
 * **os_family:** `required`. Specify the OS family for the installation. Possible values are: `RedHat`, `Debian`, `Suse`, `FreeBSD`.
 * **pool_name:** `required`. Specify the *storage pool* name where you want to deploy the VMs on the KVM server.
@@ -327,6 +328,60 @@ the provisioning.
 This is important because it will make `ansible_host` independent from the internal management interface
 needed for this network bootstrap tasks, making it easily compatible with any type of role that you
 want to perform after this.
+
+#### Disk
+
+This section explain how you can add some additional disk to the VMs.
+
+Suppose you want to create a VM that needs a large amount of storage space, and a separated disk just to store the configurations. Doing this is quite simple.
+
+The main variable you need is `data_disks`. The you have to specify the disks and the related properties for each of them.
+
+If `data_disks` is mentioned in your inventory, the following variables are required:
+
+* **size:** `required`. Specify the disk size expressed in GB. (es. `size: 1` means 1GB)
+* **pool:** `required`. Specify the pool where you want to store the additional disks.
+* **format:** `require`. Specify the filesystem format you want to apply to the disk. Supported formats are: `ext4`, `ext3`, `ext2`, `xfs` for Linux VMs and `freebsd-ufs` for FreeBSD VMs.
+* **mount_point:** `required`. Specify the mount point of the disk.
+
+Let's take a look at how the *inventory* file is going to be fill.
+
+```yaml
+        hypervisor_1:
+            vars:
+                provider_uri: "qemu:///system"
+                pool_name: default
+                disk_source: "~/VirtualMachines/centos8-terraform.qcow2"
+            hosts:
+                terraform_node:
+                    ansible_host: 127.0.0.1
+                    ansible_connection: local
+            children:
+                group_1:
+                    hosts:
+                        host_1:
+                            ansible_host: 172.16.0.155
+                            os_family: RedHat
+                            cpu: 4
+                            memory: 8192
+                            # Here we start to declare 
+                            # the additional disk.
+                            data_disks:
+                                # Here we declare the disk name
+                            	disk-storage:
+                            		size: 100                       # Disk size = 100 GB
+                            		pool: default                   # Store the disk image into the pool = default.
+                            		format: xfs                     # Disk Filesystem = xfs
+                            		mount_point: /mnt/data_storage  # The path where the disk is mounted
+                                # Here we declare the disk name
+                            	disk-config:
+                            		size: 1                         # Disk size = 1 GB
+                            		pool: default                   # Store the disk image into the pool = default.
+                            		format: ext4                    # Disk Filesystem = ext4
+                            		mount_point: /mnt/data_config   # The path where the disk is mounted
+```
+
+
 
 ## Support
 

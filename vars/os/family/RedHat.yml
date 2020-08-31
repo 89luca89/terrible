@@ -3,3 +3,9 @@ ansible_dependencies:
 
 update_command: yum update -y --security
 install_command: yum install -y
+
+supported_fs:
+  - ext4
+  - ext3
+  - ext2
+  - xfs

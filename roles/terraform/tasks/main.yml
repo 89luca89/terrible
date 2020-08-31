@@ -18,6 +18,10 @@
       - "os_family in os_family_support"
   tags: deploy, destroy, apply, provision, generate_hcl
 
+# Include the variables of the os_family of the host.
+- include_vars: "vars/os/family/{{ os_family }}.yml"
+  tags: deploy, destroy, apply, provision
+
 # Ensure that the mandatory variables for the host are set.
 - name: Assert VMs Variables
   assert:
@@ -100,7 +104,7 @@
   tags: deploy, destroy, apply, provision, generate_hcl
 
 # If terraform_bastion_enabled is true, we need to ensure that
-# all the dependent variables are set in order to function properly.
+# all the dependent variables are set in order to work properly.
 - name: Assert Bastion Variables
   assert:
     quiet: yes
@@ -119,9 +123,53 @@
     - terraform_bastion_enabled
   tags: deploy, destroy, apply, provision, generate_hcl
 
-# Include the variables of the os_family of the host.
-- include_vars: "vars/os/family/{{ os_family }}.yml"
-  tags: deploy, destroy, apply, provision
+# If one (or more) additional disk is defined, we need to ensure that
+# all the dependent variables are set in order to work properly.
+- name: Assert Additional Disks Varibles
+  assert:
+    that:
+      - "{{ item }}.size is defined"
+      - "{{ item }}.pool is defined"
+      - "{{ item }}.format is defined"
+      - "{{ item }}.mount_point is defined"
+    fail_msg: >
+      You must specify {{ item }} when data_disks is defined
+  with_items:
+    - "{{ data_disks.values() | list }}"
+  when:
+    - data_disks is defined
+    - data_disks | length > 0
+  tags: deploy, destroy, apply, provision, generate_hcl
+
+# Verifiy the correctness of the parameters.
+- name: Check 'format' parameter correctness for FreeBSD
+  assert:
+    that:
+      - "{{ item }}.format == 'freebsd-ufs'"
+    fail_msg: >
+      You are trying to use an unsupported fs format.
+      Supported formats for FreeBSD: freebsd-ufs
+  with_items:
+    - "{{ data_disks.values() | list }}"
+  when:
+    - data_disks is defined
+    - data_disks | length > 0
+    - os_family == 'FreeBSD'
+  tags: deploy, destroy, apply, provision, generate_hcl
+
+- name: Assert supported_fs
+  assert:
+    quiet: yes
+    that:
+      - "{{ item }}.format in {{ supported_fs }}"
+    fail_msg: >
+      You must specify a valid disk format for host {{ inventory_hostname }},
+      supported values are: {{ supported_fs }}
+  when:
+      - "supported_fs is defined"
+  with_items:
+    - "{{ data_disks.values() | list }}"
+  tags: deploy, destroy, apply, provision, generate_hcl
 
 # Check if we have a public ssh_key file
 - name: "Ensure public key ssh file exists"
@@ -149,4 +197,8 @@
 
 # Perform post-deploy tasks, such as users, networks and so on...
 - include_tasks: post_deploy.yml
+  tags: provision
+
+# Perform post-deploy tasks, such as users, networks and so on...
+- include_tasks: "storage/disk_{{ os_family }}_setup.yml"
   tags: provision
