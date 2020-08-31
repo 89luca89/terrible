@@ -2,11 +2,11 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) ![Terraform Version](https://img.shields.io/badge/Terraform-v0.12-yellowgreen) ![Ansible Version](https://img.shields.io/badge/Ansible-v2.9%2B-yellowgreen)
 
-This **Ansible** role allow you to initialize and then deploy virtual machines through **Terraform** on a **KVM** server.
+This **Ansible** role allow you to initialize and then deploy virtual machines through **Terraform** on a **QEMU/KVM** server.
 
 ## How It Works
 
-The idea comes from the difficulty to automate the deployment of the VMs on a **KVM** environment.
+The idea comes from the difficulty to automate the deployment of the VMs on a **QEMU/KVM** environment.
 
 For this reason we decided to automate as much as possible the process of the deployment, using **Ansible** and **Jinja2**.
 
@@ -22,7 +22,7 @@ As you can see, we start having the templated file (`terraform-vm.tf.j2`).
 
 When Ansible run, it generates *n* `.tf` files, depending on the VM specified into the inventory. This is the result of the **init** phase. Once finished this task, the files are completed and ready to be used by **Terraform**.
 
-At this time, Ansible takes these files and use **Terraform** for each instance of them. Once finished this task, the VMs, previously described into the inventory, are correctly deployed into the **KVM** server(s).
+At this time, Ansible takes these files and use **Terraform** for each instance of them. Once finished this task, the VMs, previously described into the inventory, are correctly deployed into the **QEMU/KVM** server(s).
 
 ## Configuration
 
@@ -94,8 +94,8 @@ all:
         ...
 ```
 
-In this example we specified the *uri* of the KVM server (which is going to be common for all the VMs in this hypervisor group), 
-the *storage pool* name of the KVM server and the *terraform node* address, which specify where Terraform is installed and where is going to be ran.
+In this example we specified the *uri* of the QEMU/KVM server (which is going to be common for all the VMs in this hypervisor group), 
+the storage pool name of the QEMU/KVM server and the `terraform node` address, which specify where Terraform is installed and where is going to be ran.
 
 Now, for each VM we want to specify some property such as the number of the cpu(s), memory ram, mac_address, etc.
 
@@ -136,7 +136,7 @@ Here's a little example:
 ```
 
 In this example, we specified 2 main groups (`group_1`, `group_2`) inside the `hypervisor_1`.
-These groups are composed overall by 3 machines (`host_1`, `host_2`, `host_3`). 
+These groups are composed overall by 3 VMs (`host_1`, `host_2`, `host_3`). 
 As you can see, not all the properties are specified for each machine. This is due to the default values of the variables provided by this role. 
 
 Thanks to the variabe hierarchy in Ansible, you can configure variables:
@@ -151,7 +151,7 @@ This will make easier to manage large homogeneous clusters, still retaining the 
 
 In the example above, we can see, for `hypervisor_1`, the default OS for VMs is **Centos**, but we specified for `host_3` to be an **OpenSuse** node. Similarly for the `hypervisor_2`, the default OS for VMs is **Ubuntu**, but we specified  for the `host_4` to be a **Centos** node.
 
-This is valid for **any** variable in the playbook.
+This is valid for any variable in the playbook.
 
 You can check the default values under `default/main.yml`.
 
@@ -172,7 +172,7 @@ These variables are **required**:
 * **ssh_port:** `required`. Specify the port to access the deployed VMs.
 * **ssh_user:** `required`. Specify the user to access the deployed VMs.
 * **terraform_node:** `required`. Specify the the machine that performs the Terraform tasks. 
-The default value of 127.0.0.1 indicates that the machine that perform Terraform tasks is the same that launches the Ansible playbook. In case the Terraform machine is not the local machine, put the ip/hostname of the Terraform node.
+The default value of 127.0.0.1 indicates that the machine that perform the Terraform tasks is the same that runs the Ansible playbook. In case the Terraform machine is not the local machine, you can specify the ip/hostname of the Terraform node. More details could be found here: [HERE](#bastions & jumphosts)
 
 These variable are optional, there are sensible defaults set up, most of them can be declared from **hypervisor scope** to **vm-group scope** and **per-vm scope**:
 
@@ -181,12 +181,14 @@ These variable are optional, there are sensible defaults set up, most of them ca
 * **memory:** `optional`. Specify the memory ram for the VM. If not specified, the default value is taken. Default: `1024`
 * **set_new_password:** `optional`. Specify a new password to access the Vm. If not specified, the default value (**ssh_password**) is taken.
 
-#### Bastions, Jumphosts, Remote Nodes
+#### Bastions & Jumphosts
 
-As stated in the above list, it required to declare a `terraform_node` host in the hypervisor.
-The `terraform_node` can be a local or remote node.
+The following section will describe some different scenarios that may appear during a typical deployment day.
 
-A local node, as shown before, can be declared simply by setting:
+As described above, the `terraform_node` variable is `required`.
+The `terraform_node` could be local or remote.
+
+A really common scenario will have a local Terraform node. This could be declared as follow:
 
 ```yaml
 hypervisor_1:
@@ -198,15 +200,14 @@ hypervisor_1:
             ansible_connection: local
 ```
 
-This assumes that the `terraform_node` is the **same** host that is launching the ansible run.
-This case will tell terraform to connect to QEMU/KVM using the uri `qemu:///system`
-
-Visualization:
+This scenario assumes that the `terraform_node` is the same host that is running the Ansible playbook.
+This case will ask Terraform to connect to QEMU/KVM using the uri `qemu:///system`.
 
 ![local-all](./pics/local-all.png)
 
+---
 
-If you want to target a remote QEMU/KVM server, you have to declare it:
+If you want to use a remote QEMU/KVM server instead, you can do this as follow:
 
 ```yaml
     hypervisor_1:
@@ -216,20 +217,20 @@ If you want to target a remote QEMU/KVM server, you have to declare it:
         terraform_node:
           ansible_host: 127.0.0.1
           ansible_connection: local
-          terraform_target_hypervisor: remote_kvm_machine.foo.bar
+          terraform_target_hypervisor: remote_kvm_machine.domain
           terraform_target_hypervisor_user: root
           terraform_target_hypervisor_port: 22
           terraform_target_hypervisor_password: password
 ```
-This case will tell terraform to connect to QEMU/KVM using the uri `qemu+ssh://root@remote_kvm_machine.foo.bar/system`
-And setup the terraform's internal ssh connection to use it as a **bastion** to connect to his VMs.
-
-Visualization:
+This case will ask Terraform to connect to the QEMU/KVM server using the following uri: `qemu+ssh://root@remote_kvm_machine.domain/system`.
+This also setup the Terraform internal ssh connection to use it as a **bastion** host to connect to his VMs.
 
 ![remote-kvm](./pics/remote-kvm.png)
 
-But terraform can be separated from ansible, and be installed **on a remote node**.
-You can declare it simply using the ansible_host:
+---
+
+Also, Terraform could be separated from Ansible, and be located on a remote server.
+You can declare it simply by using the `ansible_host` variable, as follow:
 
 ```yaml
 hypervisor_1:
@@ -237,23 +238,18 @@ hypervisor_1:
         ...
     hosts:
         terraform_node:
-          ansible_host: remote_terraform_node.test.com
+          ansible_host: remote_terraform_node.domain
           ansible_connection: ssh # or paramiko or whatever NOT local
 ```
-This assumes that `terraform_node` is the **same** host that is running the QEMU/KVM hypervisor.
-This case will tell terraform to connect to QEMU/KVM using the uri `qemu:///system` because it
-is local to the KVM server.
-The post-deployment part of ansible (that sets up networks and disks) has to use a Jumphosts to
-reach the VMs in the internal network. So we will use the `terraform_node` as Jumphosts to reach
-the Vms. 
-You **CAN** declare the `terraform_target_hypervisor` and set it to the same value of `ansible_host`
-to add additional values (like port, password etc...)
-
-Visualization:
+This assumes that the `terraform_node` is the same host that is running the QEMU/KVM hypervisor.
+This case will ask Terraform to connect to QEMU/KVM using the uri `qemu:///system`.
+The *post-deployment* task of this Ansible role, has to use a **jumphost** to get access to the VMs of the internal network. For this reason we need to use the `terraform_node` as **jumphost** to reach them.
 
 ![remote-terraform](./pics/remote-terraform.png)
 
-If you want to target a remote QEMU/KVM server from your remote terraform server, you have to declare:
+---
+
+Also, if you have a remote QEMU/KVM server and a remote Terraform server, you can use them as follow:
 
 ```yaml
 hypervisor_1:
@@ -263,17 +259,15 @@ hypervisor_1:
         terraform_node:
           ansible_host: remote_terraform_node.test.com
           ansible_connection: ssh # or paramiko or whatever NOT local
-          terraform_target_hypervisor: remote_kvm_machine.foo.bar
+          terraform_target_hypervisor: remote_kvm_machine.domain
           terraform_target_hypervisor_user: root
           terraform_target_hypervisor_port: 22
           terraform_target_hypervisor_password: password
 ```
-This case will tell terraform to connect to QEMU/KVM using the uri `qemu+ssh://root@remote_kvm_machine.foo.bar/system`
-And setup the terraform's internal ssh connection to use it as a **bastion** to connect to his VMs.
-Being already remote, this will set up *2* Jumphosts for ansible, one being the `terraform_node`, the other
-being the `terraform_target_hypervisor`.
-
-Visualization:
+This case will ask Terraform to connect to QEMU/KVM using the uri: `qemu+ssh://root@remote_kvm_machine.domain/system`.
+This also setup the Terraform internal ssh connection to use it as a **bastion** to connect to its VMs.
+Being already remote, this will set up 2 **jumphost**(s) for Ansible, one is the `terraform_node`, the other
+one is the `terraform_target_hypervisor`.
 
 ![remote-all](./pics/remote-all.png)
 
@@ -372,7 +366,7 @@ This is important because it will make `ansible_host` independent from the inter
 needed for this network bootstrap tasks, making it easily compatible with any type of role that you
 want to perform after this.
 
-#### Disk
+#### Storage
 
 This section explain how you can add some additional disk to the VMs.
 
