@@ -73,7 +73,7 @@
   user:
     name: "root"
     update_password: always
-    password: "{{ set_new_password | password_hash('sha512', '') }}"
+    password: "{{ set_new_password | password_hash('sha512', provider_uri | to_uuid) }}"
   when: set_new_password is defined
   tags: provision
 
