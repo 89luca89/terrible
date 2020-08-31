@@ -172,7 +172,7 @@ These variables are **required**:
 * **ssh_port:** `required`. Specify the port to access the deployed VMs.
 * **ssh_user:** `required`. Specify the user to access the deployed VMs.
 * **terraform_node:** `required`. Specify the the machine that performs the Terraform tasks. 
-The default value of 127.0.0.1 indicates that the machine that perform the Terraform tasks is the same that runs the Ansible playbook. In case the Terraform machine is not the local machine, you can specify the ip/hostname of the Terraform node. More details could be found here: [HERE](#bastions & jumphosts)
+The default value of 127.0.0.1 indicates that the machine that perform the Terraform tasks is the same that runs the Ansible playbook. In case the Terraform machine is not the local machine, you can specify the ip/hostname of the Terraform node. More details could be found here: [HERE](#bastions_&_jumphosts)
 
 These variable are optional, there are sensible defaults set up, most of them can be declared from **hypervisor scope** to **vm-group scope** and **per-vm scope**:
 
