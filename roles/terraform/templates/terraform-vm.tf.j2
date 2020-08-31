@@ -143,11 +143,11 @@ resource "libvirt_domain" "domain-terraform" {
     }
     {% endif %}
 
-  {% if terraform_custom_provisioners is defined %}
-  provisioner "remote-exec" {
-    inline = [
-      {% for provisioner_command in terraform_custom_provisioners %}
-      "{{ provisioner_command }}"{% if not loop.last %},{% endif %}
+    {% if terraform_custom_provisioners is defined %}
+    provisioner "remote-exec" {
+      inline = [
+        {% for provisioner_command in terraform_custom_provisioners %}
+        "{{ provisioner_command }}"{% if not loop.last %},{% endif %}
         {% endfor %}
       ]
     }
