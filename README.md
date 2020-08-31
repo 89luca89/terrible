@@ -16,7 +16,7 @@ Then using **Terraform** and its amazing provider for **libvirt** (https://githu
 
 The figure below describe the process in an easy way.
 
-![![kvm-deployment]()](./pics/kvm-deployment.png)
+![![kvm-deployment]()](./pics/kvm-deployment.jpg)
 
 As you can see, we start having the templated file (`terraform-vm.tf.j2`). 
 
