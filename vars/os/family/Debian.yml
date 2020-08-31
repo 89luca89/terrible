@@ -5,3 +5,8 @@ ansible_dependencies:
 
 update_command: apt update; unattended-upgrade
 install_command: while [ -f /var/lib/dpkg/lock-frontend]; do sleep 2; done; apt install -y
+
+supported_fs:
+  - ext4
+  - ext3
+  - ext2

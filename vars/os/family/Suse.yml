@@ -3,3 +3,9 @@ ansible_dependencies:
 
 update_command: zypper patch -y
 install_command: zypper install -y
+
+supported_fs:
+  - ext4
+  - ext3
+  - ext2
+  - xfs

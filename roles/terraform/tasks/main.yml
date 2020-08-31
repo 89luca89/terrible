@@ -18,6 +18,10 @@
       - "os_family in os_family_support"
   tags: deploy, destroy, apply, provision, generate_hcl
 
+# Include the variables of the os_family of the host.
+- include_vars: "vars/os/family/{{ os_family }}.yml"
+  tags: deploy, destroy, apply, provision
+
 # Ensure that the mandatory variables for the host are set.
 - name: Assert VMs Variables
   assert:
@@ -153,28 +157,19 @@
     - os_family == 'FreeBSD'
   tags: deploy, destroy, apply, provision, generate_hcl
 
-# Verifiy the correctness of the parameters.
-- name: Check 'format' parameter correctness for Linux
+- name: Assert supported_fs
   assert:
+    quiet: yes
     that:
-      - "{{ item }}.format == 'ext4' or
-         {{ item }}.format == 'ext3' or
-         {{ item }}.format == 'ext2' or
-         {{ item }}.format == 'xfs'"
+      - "{{ item }}.format in {{ supported_fs }}"
     fail_msg: >
-      You are trying to use an unsupported fs format.
-      Supported formats for Linux: ext2, ext3, ext4, xfs
+      You must specify a valid disk format for host {{ inventory_hostname }},
+      supported values are: {{ supported_fs }}
+  when:
+      - "supported_fs is defined"
   with_items:
     - "{{ data_disks.values() | list }}"
-  when:
-    - data_disks is defined
-    - data_disks | length > 0
-    - os_family == 'RedHat' or os_family == 'Suse' or os_family == 'Debian'
   tags: deploy, destroy, apply, provision, generate_hcl
-
-# Include the variables of the os_family of the host.
-- include_vars: "vars/os/family/{{ os_family }}.yml"
-  tags: deploy, destroy, apply, provision
 
 # Check if we have a public ssh_key file
 - name: "Ensure public key ssh file exists"
