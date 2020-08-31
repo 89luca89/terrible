@@ -134,7 +134,7 @@
     - "{{ data_disks.values() | list }}"
   when:
     - data_disks is defined
-    - "{{ data_disks | length > 0 }}"
+    - data_disks | length > 0
   tags: deploy, destroy, apply, provision, generate_hcl
 
 # Verifiy the correctness of the parameters.
@@ -149,7 +149,7 @@
     - "{{ data_disks.values() | list }}"
   when:
     - data_disks is defined
-    - "{{ data_disks | length > 0 }}"
+    - data_disks | length > 0
     - os_family == 'FreeBSD'
   tags: deploy, destroy, apply, provision, generate_hcl
 
@@ -168,7 +168,7 @@
     - "{{ data_disks.values() | list }}"
   when:
     - data_disks is defined
-    - "{{ data_disks | length > 0 }}"
+    - data_disks | length > 0
     - os_family == 'RedHat' or os_family == 'Suse' or os_family == 'Debian'
   tags: deploy, destroy, apply, provision, generate_hcl
 
