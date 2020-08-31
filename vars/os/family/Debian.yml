@@ -4,4 +4,4 @@ ansible_dependencies:
   - parted
 
 update_command: apt update; unattended-upgrade
-install_command: apt install -y
+install_command: while [ -f /var/lib/dpkg/lock-frontend]; do sleep 2; done; apt install -y
