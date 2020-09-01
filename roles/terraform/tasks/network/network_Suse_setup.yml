@@ -66,11 +66,11 @@
     - "{{ network_interfaces.values() | list }}"
 
 # Set default dns for choosen device.
-- name: "Set default route"
+- name: "Set default DNS"
   blockinfile:
     path: "/etc/sysconfig/network/config"
     block: |
-      NETCONFIG_DNS_STATIC_SERVERS={% for iface in network_interfaces.values()|list %}{% for dns in iface.dns %}{{ dns }} {% endfor %}{% endfor %}
+      NETCONFIG_DNS_STATIC_SERVERS="{% for iface in network_interfaces.values()|list %}{% for dns in iface.dns %}{{ dns }} {% endfor %}{% endfor %}"
     marker: "# {mark} ANSIBLE MANAGED BLOCK"
     create: yes
   register: netconfig_file
