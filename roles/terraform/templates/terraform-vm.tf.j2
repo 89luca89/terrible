@@ -180,5 +180,5 @@ resource "libvirt_domain" "domain-terraform" {
   # Return the NAT ip obtained by the DHCP lease, we do this because it may be
   # the one we declared, but also can be different (dhcp lease was still occupied)
   output "ip" {
-    value = "${libvirt_domain.domain-terraform.network_interface.0.addresses.0}"
+    value = "${libvirt_domain.domain-terraform.network_interface.0.addresses}"
   }
