@@ -1,7 +1,6 @@
 galaxy_info:
   author: 89luca89, alegrey91
   description: ansible role to deploy IaC using terraform.
-  company: your company (optional)
   license: GPL-3.0-only
 
   min_ansible_version: 2.9

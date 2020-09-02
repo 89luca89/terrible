@@ -7,6 +7,7 @@
 # Check the additional disk that have been installed.
 - name: Retrieve additional disk list
   shell: |
+    set -o pipefail;
     /sbin/geom disk list | \
       grep '^Geom name:' | \
       awk '{print $3}' | \

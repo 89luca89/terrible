@@ -108,7 +108,9 @@
     - terraform_bastion_enabled
 
 # Include the variables of the os_family of the host.
-- include_vars: "vars/os/family/{{ os_family }}.yml"
+#
+- name: Set os_family vars
+  include_vars: "vars/os/family/{{ os_family }}.yml"
 
 # If one (or more) additional disk is defined, we need to ensure that
 # all the dependent variables are set in order to work properly.

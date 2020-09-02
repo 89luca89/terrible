@@ -7,6 +7,7 @@
 # Gather up all interfaces
 - name: get available devices
   shell: |
+    set -o pipefail;
     ifconfig -l | sed 's/lo[0-9]//g'| awk '{$1=$1};1'
   changed_when: no
   register: interfaces
