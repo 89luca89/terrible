@@ -51,9 +51,11 @@ resource "libvirt_domain" "domain-terraform" {
 
   # Disk aquisition
   disk { volume_id = libvirt_volume.os_image.id }
+{% if data_disks is defined %}
 {% for item in data_disks %}
   disk { volume_id = libvirt_volume.data_disk_{{ loop.index }}.id }
 {% endfor %}
+{% endif %}
 
   boot_device { dev = ["cdrom", "hd", "network"] }
 

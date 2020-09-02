@@ -154,6 +154,7 @@
       supported values are: {{ supported_fs }}
   when:
       - "supported_fs is defined"
+      - "data_disks is defined"
   with_items:
     - "{{ data_disks.values() | list }}"
 
