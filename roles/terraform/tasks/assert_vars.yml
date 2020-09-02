@@ -114,6 +114,7 @@
 # all the dependent variables are set in order to work properly.
 - name: Assert Additional Disks Varibles
   assert:
+    quiet: yes
     that:
       - "{{ item }}.size is defined"
       - "{{ item }}.pool is defined"
@@ -130,6 +131,7 @@
 # Verifiy the correctness of the parameters.
 - name: Check 'format' parameter correctness for FreeBSD
   assert:
+    quiet: yes
     that:
       - "{{ item }}.format == 'freebsd-ufs'"
     fail_msg: >
