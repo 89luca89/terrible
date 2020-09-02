@@ -34,7 +34,9 @@
   when: ansible_distribution != 'Ubuntu'
 
 - name: "Restart networking - apply configs"
-  command: "systemctl restart networking"
+  systemd:
+    name: networking
+    state: restarted
   async: 1
   poll: 0
   when:

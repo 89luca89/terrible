@@ -7,6 +7,7 @@
 # Check the additional disk that have been installed.
 - name: Retrieve additional disk list
   shell: |
+    set -o pipefail;
     /sbin/geom disk list | \
       grep '^Geom name:' | \
       awk '{print $3}' | \
@@ -33,8 +34,8 @@
 
 # Check if file system is already created.
 # It saves a variable 'disk_fs' to check the return code
-# of the command. This will be considered during the 
-# 'Format disks' task to decide the behaviour of the 
+# of the command. This will be considered during the
+# 'Format disks' task to decide the behaviour of the
 # execution flow.
 - name: Check disks file system
   shell: |
@@ -43,6 +44,8 @@
     executable: /bin/sh
   register: disk_fs
   ignore_errors: yes
+  changed_when: no
+  failed_when: no
   with_items:
     - "{{ additional_disks.stdout_lines }}"
 
@@ -55,7 +58,7 @@
     /sbin/newfs -U /dev/{{ item.1 }}p1
   args:
     executable: /bin/sh
-  when: "{{ disk_fs.results[item.0].rc != 0 }}"
+  when: disk_fs.results[item.0].rc != 0
   with_indexed_items:
     - "{{ additional_disks.stdout_lines }}"
 

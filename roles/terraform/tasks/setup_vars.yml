@@ -1,0 +1,77 @@
+---
+
+# local ansible, terraform and kvm
+# just use qemu:///system
+- name: local ansible, local terraform, local kvm
+  set_fact:
+    provider_uri: "qemu:///system"
+    terraform_bastion_enabled: False
+  when:
+    - hostvars['terraform_node']['ansible_connection'] == 'local'
+    - (hostvars['terraform_node']['terraform_target_hypervisor'] is not defined or (hostvars['terraform_node']['terraform_target_hypervisor'] is defined and hostvars['terraform_node']['terraform_target_hypervisor'] == hostvars['terraform_node']['ansible_host'] ))
+  delegate_to: terraform_node
+
+
+######
+#  local ansible, local terraform, remote kvm
+#  1 - add to existing ansible_jump_hosts
+#  2 - define new ansible_jump_hosts
+#
+#  use qemu+ssh://USER@HOST/system, with USER and HOST being declared as terraform_target_hypervisor_*
+#  also setup ansible_jump_hosts to the terraform_target_hypervisor.
+#####
+- name: local ansible, local terraform, remote kvm
+  set_fact:
+    provider_uri: "qemu+ssh://{{ hostvars['terraform_node']['terraform_target_hypervisor_username'] | default(ssh_user,boolean=True) }}@{{ hostvars['terraform_node']['terraform_target_hypervisor'] }}/system"
+    ansible_jump_hosts: "{{ [ {'user':hostvars['terraform_node']['terraform_target_hypervisor_username'] | default(ssh_user,boolean=True), 'host':hostvars['terraform_node']['terraform_target_hypervisor'], 'port':hostvars['terraform_node']['terraform_target_hypervisor_port'] | default(ssh_port,boolean=True) } ] }}"
+    terraform_bastion_enabled: True
+    terraform_bastion_host: "{{ hostvars['terraform_node']['terraform_target_hypervisor'] }}"
+    terraform_bastion_password: "{{ hostvars['terraform_node']['terraform_target_hypervisor_password'] | default(ssh_password,boolean=True) }}"
+    terraform_bastion_port: "{{ hostvars['terraform_node']['terraform_target_hypervisor_port'] | default(ssh_port,boolean=True) }}"
+    terraform_bastion_user: "{{ hostvars['terraform_node']['terraform_target_hypervisor_username'] | default(ssh_user,boolean=True) }}"
+  when:
+    - hostvars['terraform_node']['ansible_connection'] == 'local'
+    - hostvars['terraform_node']['terraform_target_hypervisor'] is defined and hostvars['terraform_node']['terraform_target_hypervisor'] != hostvars['terraform_node']['ansible_host']
+  delegate_to: terraform_node
+
+######
+#  local ansible, remote terraform + kvm
+#  1 - add to existing ansible_jump_hosts
+#  2 - define new ansible_jump_hosts
+#
+#  use qemu:///system as terraform will access KVM locally on the hypervisor being on the same machine.
+#  set ansible_jump_hosts to the terraform_target_hypervisor_* variables, if not defined, fallback to terraform_node variables from ansible.
+#####
+- name: local ansible, remote terraform + kvm
+  set_fact:
+    provider_uri: "qemu:///system"
+    ansible_jump_hosts: "{{ [ {'user':hostvars['terraform_node']['terraform_target_hypervisor_username'] | default(ansible_user,boolean=True), 'host':hostvars['terraform_node']['terraform_target_hypervisor'] | default(hostvars['terraform_node']['ansible_host'], boolean=True), 'port':hostvars['terraform_node']['terraform_target_hypervisor_port'] | default(22,boolean=True) } ] }}"
+    terraform_bastion_enabled: False
+  when:
+    - hostvars['terraform_node']['ansible_connection'] != 'local'
+    - hostvars['terraform_node']['terraform_target_hypervisor'] is not defined or hostvars['terraform_node']['terraform_target_hypervisor'] == hostvars['terraform_node']['ansible_host']
+  delegate_to: terraform_node
+
+######
+#  local ansible, remote terraform, remote_2 kvm
+#  1 - add to existing ansible_jump_hosts
+#  2 - define new ansible_jump_hosts
+#
+#  use qemu+ssh://USER@HOST/system where USER and HOST are delcared from the terraform_target_hypervisor_* vars.
+#  add 2 x ansible_jump_hosts
+#     first the terraform_node (the one where terraform is installed)
+#     second the hypervisor (where KVM is installed)
+#####
+- name: local ansible, remote terraform, remote_2 kvm
+  set_fact:
+    provider_uri: "qemu+ssh://{{ hostvars['terraform_node']['terraform_target_hypervisor_username'] | default(ssh_user,boolean=True) }}@{{ hostvars['terraform_node']['terraform_target_hypervisor'] }}/system"
+    ansible_jump_hosts: "{{ [ {'user':hostvars['terraform_node']['ansible_user'] | default(ssh_user,boolean=True), 'host':hostvars['terraform_node']['terraform_target_hypervisor'], 'port':hostvars['terraform_node']['terraform_target_hypervisor_port'] | default(ssh_port,boolean=True)  } ] + [ {'user':ansible_user, 'host':hostvars['terraform_node']['ansible_host'], 'port':hostvars['terraform_node']['ansible_port'] | default(22,boolean=True)  } ]  }}"
+    terraform_bastion_enabled: True
+    terraform_bastion_host: "{{ hostvars['terraform_node']['terraform_target_hypervisor'] }}"
+    terraform_bastion_password: "{{ hostvars['terraform_node']['terraform_target_hypervisor_password'] | default(ssh_password,boolean=True) }}"
+    terraform_bastion_port: "{{ hostvars['terraform_node']['terraform_target_hypervisor_port'] | default(ssh_port,boolean=True) }}"
+    terraform_bastion_user: "{{ hostvars['terraform_node']['terraform_target_hypervisor_username'] | default(ssh_user,boolean=True) }}"
+  when:
+    - hostvars['terraform_node']['ansible_connection'] != 'local'
+    - hostvars['terraform_node']['terraform_target_hypervisor'] is defined and hostvars['terraform_node']['terraform_target_hypervisor'] != hostvars['terraform_node']['ansible_host']
+  delegate_to: terraform_node

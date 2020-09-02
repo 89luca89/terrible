@@ -4,201 +4,26 @@
 #
 #
 
-# Ensure that the os_family variable has been set for current host.
-- name: Assert os_family
-  assert:
-    quiet: yes
-    that:
-      - "{{ item }}"
-    fail_msg: >
-      You must specify the os_family for host {{ inventory_hostname }},
-      supported values are: {{ os_family_support }}
-  with_items:
-      - "os_family is defined"
-      - "os_family in os_family_support"
-  tags: deploy, destroy, apply, provision, generate_hcl
+# Assert that all variables are well set.
+- include_tasks:
+    file: assert_vars.yml
+    apply:
+      tags:
+        - always
+  tags: always
 
-# Include the variables of the os_family of the host.
-- include_vars: "vars/os/family/{{ os_family }}.yml"
-  tags: deploy, destroy, apply, provision
-
-# Ensure that the mandatory variables for the host are set.
-- name: Assert VMs Variables
-  assert:
-    quiet: yes
-    that: "{{ item }} is defined"
-    fail_msg: >
-      You must specify {{ item }}
-  with_items:
-      - ansible_host
-      - terraform_bastion_enabled
-      - disk_source
-      - pool_name
-      - provider_uri
-      - ssh_password
-      - ssh_port
-      - ssh_public_key_file
-      - ssh_user
-      - network_interfaces
-  tags: deploy, destroy, apply, provision, generate_hcl
-
-# Ensure that the mandatory variables for the host are set.
-- name: Assert VMs Network Variables - At least one interface is defined
-  assert:
-    quiet: yes
-    that:
-      - "{{ network_interfaces.keys() | list | length }} > 0"
-    fail_msg: >
-      "Declare at least one interface"
-  tags: deploy, destroy, apply, provision, generate_hcl
-
-# Ensure that the mandatory variables for the host are set.
-- name: Assert VMs Network Variables - NAT should be our first interface
-  assert:
-    quiet: yes
-    that:
-      - "{{ network_interfaces.values() | list }}[0].type == 'nat'"
-    fail_msg: >
-      "First interface declared must be NAT type"
-  tags: deploy, destroy, apply, provision, generate_hcl
-
-# Ensure that the mandatory variables for the host are set.
-- name: Assert VMs Network Variables
-  assert:
-    quiet: yes
-    that:
-      - "{{ item }}.name is defined"
-      - "{{ item }}.type is defined"
-      - "{{ item }}.ip is defined"
-      - "{{ item }}.gw is defined"
-    fail_msg: >
-      Incomplete interface declaration for {{ item }}, missing a mandatory var
-  with_items:
-    - "{{ network_interfaces.values() | list }}"
-  tags: deploy, destroy, apply, provision, generate_hcl
-
-# Ensure that the mandatory variables for the host are set.
-- name: Assert VMs Network Type Variables
-  assert:
-    quiet: yes
-    that:
-      - "{{ item }}.type == 'nat' or {{ item }}.type == 'macvtap' or {{ item }}.type == 'bridge'"
-    fail_msg: >
-      Unsupported value for interface type.
-  with_items:
-    - "{{ network_interfaces.values() | list }}"
-  tags: deploy, destroy, apply, provision, generate_hcl
-
-# Ensure that the mandatory variables for the host are set.
-- name: Assert VMs DNS Network Variables
-  assert:
-    quiet: yes
-    that:
-      - "{{ item.dns }} | length > 0"
-    fail_msg: >
-      Incomplete interface dns specification.
-  when:
-    - "item.dns is defined"
-  with_items:
-    - "{{ network_interfaces.values() | list }}"
-  tags: deploy, destroy, apply, provision, generate_hcl
-
-# If terraform_bastion_enabled is true, we need to ensure that
-# all the dependent variables are set in order to work properly.
-- name: Assert Bastion Variables
-  assert:
-    quiet: yes
-    that:
-      - "{{ item }} is defined"
-    fail_msg: >
-      You must specify {{ item }} when terraform_bastion_enabled is True
-  with_items:
-      - ansible_jump_hosts
-      - terraform_bastion_host
-      - terraform_bastion_password
-      - terraform_bastion_port
-      - terraform_bastion_user
-  when:
-    - terraform_bastion_enabled is defined
-    - terraform_bastion_enabled
-  tags: deploy, destroy, apply, provision, generate_hcl
-
-# If one (or more) additional disk is defined, we need to ensure that
-# all the dependent variables are set in order to work properly.
-- name: Assert Additional Disks Varibles
-  assert:
-    that:
-      - "{{ item }}.size is defined"
-      - "{{ item }}.pool is defined"
-      - "{{ item }}.format is defined"
-      - "{{ item }}.mount_point is defined"
-    fail_msg: >
-      You must specify {{ item }} when data_disks is defined
-  with_items:
-    - "{{ data_disks.values() | list }}"
-  when:
-    - data_disks is defined
-    - data_disks | length > 0
-  tags: deploy, destroy, apply, provision, generate_hcl
-
-# Verifiy the correctness of the parameters.
-- name: Check 'format' parameter correctness for FreeBSD
-  assert:
-    that:
-      - "{{ item }}.format == 'freebsd-ufs'"
-    fail_msg: >
-      You are trying to use an unsupported fs format.
-      Supported formats for FreeBSD: freebsd-ufs
-  with_items:
-    - "{{ data_disks.values() | list }}"
-  when:
-    - data_disks is defined
-    - data_disks | length > 0
-    - os_family == 'FreeBSD'
-  tags: deploy, destroy, apply, provision, generate_hcl
-
-- name: Assert supported_fs
-  assert:
-    quiet: yes
-    that:
-      - "{{ item }}.format in {{ supported_fs }}"
-    fail_msg: >
-      You must specify a valid disk format for host {{ inventory_hostname }},
-      supported values are: {{ supported_fs }}
-  when:
-      - "supported_fs is defined"
-  with_items:
-    - "{{ data_disks.values() | list }}"
-  tags: deploy, destroy, apply, provision, generate_hcl
-
-# Check if we have a public ssh_key file
-- name: "Ensure public key ssh file exists"
-  stat:
-    path: "{{ ssh_public_key_file }}"
-  register: ssh_public_key_file_stat
-  when:
-    - ssh_public_key_file is defined
-  tags: deploy, destroy, apply, provision, generate_hcl
-  delegate_to: terraform_node
-
-# If it exists, read it, it will be deployed in the authorized_keys of
-# the newly created hosts to perform the ansible tasks.
-- name: "Read public key for ssh"
-  set_fact:
-    ssh_public_key: "{{ lookup('file', '{{ ssh_public_key_file }}') }}"
-  when:
-    - ssh_public_key_file_stat.stat.exists
-  tags: deploy, generate_hcl
-  delegate_to: terraform_node
+# Setup all the variables starting from existing ones.
+- include_tasks:
+    file: setup_vars.yml
+    apply:
+      tags:
+        - always
+  tags: always, test
 
 # Deploy the HCL files, use Terraform to deploy the infrastructure.
 - include_tasks: deploy_vm.yml
-  tags: deploy, destroy, apply, generate_hcl
+  tags: deploy, destroy, apply, generate_hcl, test
 
 # Perform post-deploy tasks, such as users, networks and so on...
 - include_tasks: post_deploy.yml
-  tags: provision
-
-# Perform post-deploy tasks, such as users, networks and so on...
-- include_tasks: "storage/disk_{{ os_family }}_setup.yml"
   tags: provision
