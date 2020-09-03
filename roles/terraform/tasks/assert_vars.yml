@@ -49,9 +49,9 @@
     quiet: yes
     that:
       - "{{ memory | int }}"
-      - memory > 127
+      - memory > 0
     fail_msg: >
-      You are trying to use an unsupported cpu value.
+      You are trying to use an unsupported memory value.
   when:
     - memory is defined
 
