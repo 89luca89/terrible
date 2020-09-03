@@ -131,11 +131,41 @@
     - data_disks | length > 0
 
 # Verifiy the correctness of the parameters.
-- name: Check 'format' parameter correctness for FreeBSD
+- name: Validate 'size' parameter
+  assert:
+    quiet: yes
+    that:
+      - "{{ item }}.size | int"
+      - "{{ item }}.size > 0"
+    fail_msg: >
+      You are trying to use an unsupported size value.
+  with_items:
+    - "{{ data_disks.values() | list }}"
+  when:
+    - data_disks is defined
+    - data_disks | length > 0
+
+# Verifiy the correctness of the parameters.
+- name: Validate 'pool' parameter
+  assert:
+    quiet: yes
+    that:
+      - "{{ item }}.pool | length > 0"
+    fail_msg: >
+      You are trying to use an unsupported pool value.
+  with_items:
+    - "{{ data_disks.values() | list }}"
+  when:
+    - data_disks is defined
+    - data_disks | length > 0
+
+# Verifiy the correctness of the parameters.
+- name: Validate 'format' parameter for FreeBSD
   assert:
     quiet: yes
     that:
       - "{{ item }}.format == 'freebsd-ufs'"
+      - "{{ item }}.format | length > 0"
     fail_msg: >
       You are trying to use an unsupported fs format.
       Supported formats for FreeBSD: freebsd-ufs
@@ -151,6 +181,7 @@
     quiet: yes
     that:
       - "{{ item }}.format in {{ supported_fs }}"
+      - "{{ item }}.format | length > 0"
     fail_msg: >
       You must specify a valid disk format for host {{ inventory_hostname }},
       supported values are: {{ supported_fs }}
@@ -159,6 +190,21 @@
       - "data_disks is defined"
   with_items:
     - "{{ data_disks.values() | list }}"
+
+# Verifiy the correctness of the parameters.
+- name: Validate 'mount_point' parameter
+  assert:
+    quiet: yes
+    that:
+      - "{{ item }}.mount_point | regex_search('^/\\w+')"
+      - "{{ item }}.mount_point | length > 0"
+    fail_msg: >
+      You are trying to use an unsupported mount_point value.
+  with_items:
+    - "{{ data_disks.values() | list }}"
+  when:
+    - data_disks is defined
+    - data_disks | length > 0
 
 # Check if we have a public ssh_key file
 - name: "Ensure public key ssh file exists"
