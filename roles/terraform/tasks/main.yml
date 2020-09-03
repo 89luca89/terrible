@@ -10,7 +10,7 @@
     apply:
       tags:
         - always
-  tags: always
+  tags: always, validate
 
 # Setup all the variables starting from existing ones.
 - include_tasks:
