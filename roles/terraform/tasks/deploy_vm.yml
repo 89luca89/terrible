@@ -39,21 +39,28 @@
   delegate_to: terraform_node
 
 - name: "Terraform renew target VMs"
+  set_fact:
+    destroy: True
+  tags: never, destroy
+  delegate_to: terraform_node
+
+- name: "Terraform shut down target VMs (preserve resources)"
   terraform:
     project_path: "{{ hcl_deploy_path }}/{{ inventory_hostname }}"
     force_init: true
     state: absent
     targets: "libvirt_domain.domain-terraform"
-  tags: deploy, apply, generate_hcl
-  when: terraform_variables.changed or terraform_disks.changed or terraform_vm.changed
+  tags: deploy, apply, destroy
+  when:
+    - (destroy is defined and destroy) or terraform_variables.changed or terraform_disks.changed or terraform_vm.changed
   delegate_to: terraform_node
 
-- name: "Terraform destroy VMs"
+- name: "Terraform destroy VMs and all resources"
   terraform:
     project_path: "{{ hcl_deploy_path }}/{{ inventory_hostname }}"
     force_init: true
     state: absent
-  tags: never, destroy
+  tags: never, purge
   delegate_to: terraform_node
 
 - name: "Terraform apply VMs"
