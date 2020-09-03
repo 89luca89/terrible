@@ -76,6 +76,32 @@
     - "{{ network_interfaces.values() | list }}"
 
 # Ensure that the mandatory variables for the host are set.
+- name: Validate 'ip' parameter
+  assert:
+    quiet: yes
+    that:
+      - "{{ item }}.ip | ipaddr"
+    fail_msg: >
+      Invalid interface ip address.
+  when:
+    - network_interfaces is defined
+  with_items:
+    - "{{ network_interfaces.values() | list }}"
+
+# Ensure that the mandatory variables for the host are set.
+- name: Validate 'gw' parameter
+  assert:
+    quiet: yes
+    that:
+      - "{{ item }}.gw | ipaddr"
+    fail_msg: >
+      Invalid interface gateway address.
+  when:
+    - network_interfaces is defined
+  with_items:
+    - "{{ network_interfaces.values() | list }}"
+
+# Ensure that the mandatory variables for the host are set.
 - name: Assert VMs DNS Network Variables
   assert:
     quiet: yes
