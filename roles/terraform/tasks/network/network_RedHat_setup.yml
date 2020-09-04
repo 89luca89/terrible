@@ -36,7 +36,7 @@
       {% else %}no
       {% endif %}
       IPV4_FAILURE_FATAL=no
-      GATEWAY0={{ item.1.gw }}
+      GATEWAY={{ item.1.gw }}
       {% for dns in item.1.dns %}
       DNS{{ loop.index }}={{ dns }}
       {% endfor %}
