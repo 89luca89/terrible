@@ -1,16 +1,3 @@
-# Ensure that the os_family variable has been set for current host.
-- name: Assert os_family
-  assert:
-    quiet: yes
-    that:
-      - "{{ item }}"
-    fail_msg: >
-      You must specify the os_family for host {{ inventory_hostname }},
-      supported values are: {{ os_family_support }}
-  with_items:
-      - "os_family is defined"
-      - "os_family in os_family_support"
-
 # Ensure that the mandatory variables for the host are set.
 - name: Assert VMs Variables
   assert:
@@ -30,6 +17,72 @@
       - ssh_public_key_file
       - ssh_user
       - network_interfaces
+
+# Verifiy the correctness of the parameters.
+- name: Validate 'ssh_port' parameter
+  assert:
+    quiet: yes
+    that:
+      - "{{ ssh_port | int }}"
+      - ssh_port > 0
+    fail_msg: >
+      You are trying to use an unsupported ssh_port value.
+
+# Verifiy the correctness of the parameters.
+- name: Validate 'ansible_host' parameter for 'terraform_node'
+  assert:
+    quiet: yes
+    that:
+      - hostvars['terraform_node']['ansible_host'] | ipaddr
+    fail_msg: >
+      You are trying to use an unsupported terraform_target_hypervisor value.
+  when:
+    - hostvars['terraform_node']['ansible_host'] is defined
+
+# Verifiy the correctness of the parameters.
+- name: Validate 'terraform_target_hypervisor' parameter
+  assert:
+    quiet: yes
+    that:
+      - hostvars['terraform_node']['terraform_target_hypervisor'] | ipaddr
+    fail_msg: >
+      You are trying to use an unsupported terraform_target_hypervisor value.
+  when:
+    - hostvars['terraform_node']['terraform_target_hypervisor'] is defined
+
+# Verifiy the correctness of the parameters.
+- name: Validate 'terraform_target_hypervisor_port' parameter
+  assert:
+    quiet: yes
+    that:
+      - "{{ hostvars['terraform_node']['terraform_target_hypervisor_port'] | int }}"
+      - "{{ ( hostvars['terraform_node']['terraform_target_hypervisor_port'] | int ) > 0 }}"
+    fail_msg: >
+      You are trying to use an unsupported terraform_target_hypervisor_port value.
+  when:
+    - hostvars['terraform_node']['terraform_target_hypervisor_port'] is defined
+
+# Ensure that the os_family variable has been set for current host.
+- name: Assert os_family
+  assert:
+    quiet: yes
+    that:
+      - "{{ item }}"
+    fail_msg: >
+      You must specify the os_family for host {{ inventory_hostname }},
+      supported values are: {{ os_family_support }}
+  with_items:
+      - "os_family is defined"
+      - "os_family in os_family_support"
+
+# Verifiy the correctness of the parameters.
+- name: Validate 'ansible_host' parameter for the single vm
+  assert:
+    quiet: yes
+    that:
+      - ansible_host | ipaddr
+    fail_msg: >
+      You are trying to use an unsupported cpu value.
 
 # Verifiy the correctness of the parameters.
 - name: Validate 'cpu' parameter
@@ -93,7 +146,9 @@
   assert:
     quiet: yes
     that:
-      - "{{ item }}.type == 'nat' or {{ item }}.type == 'macvtap' or {{ item }}.type == 'bridge'"
+      - "{{ item }}.type == 'nat' or 
+        {{ item }}.type == 'macvtap' or 
+        {{ item }}.type == 'bridge'"
     fail_msg: >
       Unsupported value for interface type.
   with_items:
