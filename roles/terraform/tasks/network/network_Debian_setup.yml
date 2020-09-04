@@ -20,6 +20,7 @@
     backup: yes
   with_items:
     - "{{ interfaces.files | sort(attribute='path') }}"
+  when: ansible_distribution != 'Ubuntu'
 
 # Use traditional /etc/network/interfaces on Debian
 - name: "Set connection setting files - Debian"
