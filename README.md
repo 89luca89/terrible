@@ -431,7 +431,7 @@ Actually the role is supporting the most common 4 OS families for the Guests:
 
 This means you are able to generate the infrastructure using the OS listed above.
 
-Hypervisor OS is agnostic, as long as **libvirt** is installed.
+Hypervisor OS is agnostic, as long as **libvirt 1.2.14 or newer** is installed.
 
 ## Usage
 
