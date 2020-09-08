@@ -29,17 +29,6 @@
       You are trying to use an unsupported ssh_port value.
 
 # Verifiy the correctness of the parameters.
-- name: Validate 'ansible_host' parameter for 'terraform_node'
-  assert:
-    quiet: yes
-    that:
-      - hostvars['terraform_node']['ansible_host'] | ipaddr
-    fail_msg: >
-      You are trying to use an unsupported terraform_target_hypervisor value.
-  when:
-    - hostvars['terraform_node']['ansible_host'] is defined
-
-# Verifiy the correctness of the parameters.
 - name: Validate 'terraform_target_hypervisor' parameter
   assert:
     quiet: yes
@@ -74,15 +63,6 @@
   with_items:
       - "os_family is defined"
       - "os_family in os_family_support"
-
-# Verifiy the correctness of the parameters.
-- name: Validate 'ansible_host' parameter for the single vm
-  assert:
-    quiet: yes
-    that:
-      - ansible_host | ipaddr
-    fail_msg: >
-      You are trying to use an unsupported cpu value.
 
 # Verifiy the correctness of the parameters.
 - name: Validate 'cpu' parameter
