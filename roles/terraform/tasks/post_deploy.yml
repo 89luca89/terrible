@@ -32,6 +32,7 @@
         ansible_host: "{{ terraform_output.outputs.ip.value[0] }}"
       when:
         - terraform_output is defined
+        - terraform_output.outputs.values() | length > 0
         - terraform_output.outputs.ip.value[0] != '127.0.0.1'
 
     # Ansible: gather facts of the newly created hosts.
@@ -89,4 +90,5 @@
 - name: Update systems
   shell: "{{ update_command }}"
   become: true
+  changed_when: no
   tags: provision

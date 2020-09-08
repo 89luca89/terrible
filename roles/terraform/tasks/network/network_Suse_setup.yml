@@ -23,7 +23,7 @@
       BOOTPROTO='static'
       IPADDR='{{ item.1.ip }}/24'
       PREFIX='24'
-      DEFROUTE={% if item.1.get('default_route', False) == True %}'yes'
+      DEFROUTE={% if item.1.get('default_route', False) %}'yes'
       {% else %}'no'
       {% endif %}
       IPV4_FAILURE_FATAL='no'
@@ -33,7 +33,7 @@
       {% endfor %}
       IPV6INIT='yes'
       IPV6_AUTOCONF='yes'
-      IPV6_DEFROUTE={% if item.1.get('default_route', False) == True %}'yes'
+      IPV6_DEFROUTE={% if item.1.get('default_route', False) %}'yes'
       {% else %}'no'
       {% endif %}
       IPV6_FAILURE_FATAL='no'
@@ -60,7 +60,7 @@
     marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.1.ip }} {{ item.0.path.split('/')[-1] }}"
     create: yes
   register: route_file
-  when: "item.1.get('default_route', False) == True"
+  when: "item.1.get('default_route', False)"
   with_together:
     - "{{ interfaces.files | sort(attribute='path') }}"
     - "{{ network_interfaces.values() | list }}"

@@ -30,7 +30,7 @@
           auto {{ item.0.path.split('/')[-1] }}
           iface {{ item.0.path.split('/')[-1] }} inet static
           address {{ item.1.ip }}/24
-          {% if item.1.get('default_route', False) == True %}
+          {% if item.1.get('default_route', False) %}
           gateway {{ item.1.gw }}
           {% endif %}
           dns-nameservers {% for dns in item.1.dns %}{{ dns }}{% endfor %}
@@ -62,7 +62,7 @@
           {{ item.0.path.split('/')[-1] }}:
             dhcp4: no
             addresses: [{{ item.1.ip }}/24]
-      {% if item.1.get('default_route', False) == True %}
+      {% if item.1.get('default_route', False) %}
             gateway4: {{ item.1.gw }}
       {% endif %}
             nameservers:

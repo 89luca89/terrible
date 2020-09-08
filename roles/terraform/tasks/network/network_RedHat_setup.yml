@@ -32,7 +32,7 @@
       BOOTPROTO=none
       IPADDR="{{ item.1.ip }}"
       PREFIX=24
-      DEFROUTE={% if item.1.get('default_route', False) == True %}yes
+      DEFROUTE={% if item.1.get('default_route', False) %}yes
       {% else %}no
       {% endif %}
       IPV4_FAILURE_FATAL=no
@@ -42,7 +42,7 @@
       {% endfor %}
       IPV6INIT=yes
       IPV6_AUTOCONF=yes
-      IPV6_DEFROUTE={% if item.1.get('default_route', False) == True %}yes
+      IPV6_DEFROUTE={% if item.1.get('default_route', False) %}yes
       {% else %}no
       {% endif %}
       IPV6_FAILURE_FATAL=no

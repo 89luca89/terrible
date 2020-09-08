@@ -126,8 +126,8 @@
   assert:
     quiet: yes
     that:
-      - "{{ item }}.type == 'nat' or 
-        {{ item }}.type == 'macvtap' or 
+      - "{{ item }}.type == 'nat' or
+        {{ item }}.type == 'macvtap' or
         {{ item }}.type == 'bridge'"
     fail_msg: >
       Unsupported value for interface type.
@@ -304,7 +304,8 @@
 # the newly created hosts to perform the ansible tasks.
 - name: "Read public key for ssh"
   set_fact:
-    ssh_public_key: "{{ lookup('file', '{{ ssh_public_key_file }}') }}"
+    ssh_public_key: "{{ lookup('file', ssh_public_key_file) }}"
   when:
+    - ssh_public_key_file is defined
     - ssh_public_key_file_stat.stat.exists
   delegate_to: terraform_node
