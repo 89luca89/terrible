@@ -1,0 +1,147 @@
+all:
+  vars:
+  children:
+    hypervisor_1:
+      vars:
+        disk_source: "~/VirtualMachines/centos8-terraform.qcow2"
+        pool_name: default
+        ssh_password: root
+        ssh_port: 22
+        ssh_user: root
+        ssh_public_key_file: '~/.ssh/id_rsa.pub'
+        set_new_password: supersecretpassword!
+      hosts:
+        terraform_node:
+          ansible_host: 127.0.0.1
+          ansible_connection: local
+          terraform_target_hypervisor: 172.16.0.12
+          terraform_target_hypervisor_user: root
+          terraform_target_hypervisor_port: 22
+          terraform_target_hypervisor_password: password
+      children:
+        master_nodes:
+          hosts:
+            master-node-0:
+              os_family: FreeBSD
+              disk_source: "~/VirtualMachines/freebsd-terraform.qcow2"
+              cpu: 2
+              memory: 1024
+              ansible_host: 192.168.122.200
+              network_interfaces:
+                if-0:
+                  name: default
+                  ip: 192.168.122.200
+                  gw: 192.168.122.1
+                  mac_address: "DE:AD:BE:EF:00:67"
+                  type: nat
+                  dns:
+                    - 192.168.122.1
+                if-1:
+                  name: LAB
+                  ip: 172.16.0.200
+                  gw: 172.16.0.1
+                  type: bridge
+                  default_route: True
+                  dns:
+                    - 172.16.0.1
+
+        slave_nodes:
+          hosts:
+            slave-node-0:
+              os_family: Debian
+              disk_source: "~/VirtualMachines/debian10-terraform.qcow2"
+              cpu: 1
+              memory: 512
+              ansible_host: 192.168.122.201
+              network_interfaces:
+                if-0:
+                  name: default
+                  ip: 192.168.122.201
+                  gw: 192.168.122.1
+                  mac_address: "DE:AD:BE:EF:00:68"
+                  type: nat
+                  dns:
+                    - 192.168.122.1
+                if-1:
+                  name: LAB
+                  ip: 172.16.0.201
+                  gw: 172.16.0.1
+                  type: bridge
+                  default_route: True
+                  dns:
+                    - 172.16.0.1
+                if-2:
+                  name: LAB
+                  ip: 172.16.0.211
+                  gw: 172.16.0.1
+                  type: bridge
+                  dns:
+                    - 172.16.0.1
+            slave-node-1:
+              os_family: Suse
+              disk_source: "~/VirtualMachines/opensuse15.2-terraform.qcow2"
+              cpu: 1
+              memory: 512
+              ansible_host: 192.168.122.202
+              network_interfaces:
+                if-0:
+                  name: default
+                  ip: 192.168.122.202
+                  gw: 192.168.122.1
+                  mac_address: "DE:AD:BE:EF:00:69"
+                  type: nat
+                  dns:
+                    - 192.168.122.1
+                if-1:
+                  name: LAB
+                  ip: 172.16.0.202
+                  gw: 172.16.0.1
+                  type: bridge
+                  default_route: True
+                  dns:
+                    - 172.16.0.1
+            slave-node-2:
+              os_family: RedHat
+              cpu: 1
+              memory: 512
+              ansible_host: 192.168.122.203
+              network_interfaces:
+                if-0:
+                  name: default
+                  ip: 192.168.122.203
+                  gw: 192.168.122.1
+                  mac_address: "DE:AD:BE:EF:00:70"
+                  type: nat
+                  dns:
+                    - 192.168.122.1
+                if-1:
+                  name: LAB
+                  ip: 172.16.0.203
+                  gw: 172.16.0.1
+                  type: bridge
+                  default_route: True
+                  dns:
+                    - 172.16.0.1
+            slave-node-3:
+              os_family: Debian
+              disk_source: "~/VirtualMachines/ubuntu20-terraform.qcow2"
+              cpu: 1
+              memory: 512
+              ansible_host: 192.168.122.204
+              network_interfaces:
+                if-0:
+                  name: default
+                  ip: 192.168.122.204
+                  gw: 192.168.122.1
+                  mac_address: "DE:AD:BE:EF:00:71"
+                  type: nat
+                  dns:
+                    - 192.168.122.1
+                if-1:
+                  name: LAB
+                  ip: 172.16.0.204
+                  gw: 172.16.0.1
+                  type: bridge
+                  default_route: True
+                  dns:
+                    - 172.16.0.1
