@@ -1,16 +1,3 @@
-# Ensure that the os_family variable has been set for current host.
-- name: Assert os_family
-  assert:
-    quiet: yes
-    that:
-      - "{{ item }}"
-    fail_msg: >
-      You must specify the os_family for host {{ inventory_hostname }},
-      supported values are: {{ os_family_support }}
-  with_items:
-      - "os_family is defined"
-      - "os_family in os_family_support"
-
 # Ensure that the mandatory variables for the host are set.
 - name: Assert VMs Variables
   assert:
@@ -30,6 +17,76 @@
       - ssh_public_key_file
       - ssh_user
       - network_interfaces
+
+# Verifiy the correctness of the parameters.
+- name: Validate 'ssh_port' parameter
+  assert:
+    quiet: yes
+    that:
+      - "{{ ssh_port | int }}"
+      - ssh_port > 0
+    fail_msg: >
+      You are trying to use an unsupported ssh_port value.
+
+# Verifiy the correctness of the parameters.
+- name: Validate 'terraform_target_hypervisor' parameter
+  assert:
+    quiet: yes
+    that:
+      - hostvars['terraform_node']['terraform_target_hypervisor'] | ipaddr
+    fail_msg: >
+      You are trying to use an unsupported terraform_target_hypervisor value.
+  when:
+    - hostvars['terraform_node']['terraform_target_hypervisor'] is defined
+
+# Verifiy the correctness of the parameters.
+- name: Validate 'terraform_target_hypervisor_port' parameter
+  assert:
+    quiet: yes
+    that:
+      - "{{ hostvars['terraform_node']['terraform_target_hypervisor_port'] | int }}"
+      - "{{ ( hostvars['terraform_node']['terraform_target_hypervisor_port'] | int ) > 0 }}"
+    fail_msg: >
+      You are trying to use an unsupported terraform_target_hypervisor_port value.
+  when:
+    - hostvars['terraform_node']['terraform_target_hypervisor_port'] is defined
+
+# Ensure that the os_family variable has been set for current host.
+- name: Assert os_family
+  assert:
+    quiet: yes
+    that:
+      - "{{ item }}"
+    fail_msg: >
+      You must specify the os_family for host {{ inventory_hostname }},
+      supported values are: {{ os_family_support }}
+  with_items:
+      - "os_family is defined"
+      - "os_family in os_family_support"
+
+# Verifiy the correctness of the parameters.
+- name: Validate 'cpu' parameter
+  assert:
+    quiet: yes
+    that:
+      - "{{ cpu | int }}"
+      - cpu > 0
+    fail_msg: >
+      You are trying to use an unsupported cpu value.
+  when:
+    - cpu is defined
+
+# Verifiy the correctness of the parameters.
+- name: Validate 'memory' parameter
+  assert:
+    quiet: yes
+    that:
+      - "{{ memory | int }}"
+      - memory > 0
+    fail_msg: >
+      You are trying to use an unsupported memory value.
+  when:
+    - memory is defined
 
 # Ensure that the mandatory variables for the host are set.
 - name: Assert VMs Network Variables - At least one interface is defined
@@ -69,9 +126,37 @@
   assert:
     quiet: yes
     that:
-      - "{{ item }}.type == 'nat' or {{ item }}.type == 'macvtap' or {{ item }}.type == 'bridge'"
+      - "{{ item }}.type == 'nat' or 
+        {{ item }}.type == 'macvtap' or 
+        {{ item }}.type == 'bridge'"
     fail_msg: >
       Unsupported value for interface type.
+  with_items:
+    - "{{ network_interfaces.values() | list }}"
+
+# Ensure that the mandatory variables for the host are set.
+- name: Validate 'ip' parameter
+  assert:
+    quiet: yes
+    that:
+      - "{{ item }}.ip | ipaddr"
+    fail_msg: >
+      Invalid interface ip address.
+  when:
+    - network_interfaces is defined
+  with_items:
+    - "{{ network_interfaces.values() | list }}"
+
+# Ensure that the mandatory variables for the host are set.
+- name: Validate 'gw' parameter
+  assert:
+    quiet: yes
+    that:
+      - "{{ item }}.gw | ipaddr"
+    fail_msg: >
+      Invalid interface gateway address.
+  when:
+    - network_interfaces is defined
   with_items:
     - "{{ network_interfaces.values() | list }}"
 
@@ -131,11 +216,41 @@
     - data_disks | length > 0
 
 # Verifiy the correctness of the parameters.
-- name: Check 'format' parameter correctness for FreeBSD
+- name: Validate 'size' parameter
+  assert:
+    quiet: yes
+    that:
+      - "{{ item }}.size | int"
+      - "{{ item }}.size > 0"
+    fail_msg: >
+      You are trying to use an unsupported size value.
+  with_items:
+    - "{{ data_disks.values() | list }}"
+  when:
+    - data_disks is defined
+    - data_disks | length > 0
+
+# Verifiy the correctness of the parameters.
+- name: Validate 'pool' parameter
+  assert:
+    quiet: yes
+    that:
+      - "{{ item }}.pool | length > 0"
+    fail_msg: >
+      You are trying to use an unsupported pool value.
+  with_items:
+    - "{{ data_disks.values() | list }}"
+  when:
+    - data_disks is defined
+    - data_disks | length > 0
+
+# Verifiy the correctness of the parameters.
+- name: Validate 'format' parameter for FreeBSD
   assert:
     quiet: yes
     that:
       - "{{ item }}.format == 'freebsd-ufs'"
+      - "{{ item }}.format | length > 0"
     fail_msg: >
       You are trying to use an unsupported fs format.
       Supported formats for FreeBSD: freebsd-ufs
@@ -151,6 +266,7 @@
     quiet: yes
     that:
       - "{{ item }}.format in {{ supported_fs }}"
+      - "{{ item }}.format | length > 0"
     fail_msg: >
       You must specify a valid disk format for host {{ inventory_hostname }},
       supported values are: {{ supported_fs }}
@@ -159,6 +275,21 @@
       - "data_disks is defined"
   with_items:
     - "{{ data_disks.values() | list }}"
+
+# Verifiy the correctness of the parameters.
+- name: Validate 'mount_point' parameter
+  assert:
+    quiet: yes
+    that:
+      - "{{ item }}.mount_point | regex_search('^/\\w+')"
+      - "{{ item }}.mount_point | length > 0"
+    fail_msg: >
+      You are trying to use an unsupported mount_point value.
+  with_items:
+    - "{{ data_disks.values() | list }}"
+  when:
+    - data_disks is defined
+    - data_disks | length > 0
 
 # Check if we have a public ssh_key file
 - name: "Ensure public key ssh file exists"
