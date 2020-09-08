@@ -12,20 +12,55 @@
   delegate_to: terraform_node
 
 # Deploy the terraform files for each host. Use jinja2 for templating.
-- name: "Deploy terraform files"
+- name: "Deploy terraform files - variables"
   template:
-    src: terraform-vm.tf.j2
-    dest: "{{ hcl_deploy_path }}/{{ inventory_hostname }}/{{ inventory_hostname }}.tf"
-  register: terraform_status
+    src: variables.tf.j2
+    dest: "{{ hcl_deploy_path }}/{{ inventory_hostname }}/{{ inventory_hostname }}-variables.tf"
+  register: terraform_variables
   tags: deploy, generate_hcl
   delegate_to: terraform_node
 
-- name: "Terraform destroy VMs"
+# Deploy the terraform files for each host. Use jinja2 for templating.
+- name: "Deploy terraform files - disks"
+  template:
+    src: disks.tf.j2
+    dest: "{{ hcl_deploy_path }}/{{ inventory_hostname }}/{{ inventory_hostname }}-disks.tf"
+  register: terraform_disks
+  tags: deploy, generate_hcl
+  delegate_to: terraform_node
+
+# Deploy the terraform files for each host. Use jinja2 for templating.
+- name: "Deploy terraform files - VM"
+  template:
+    src: terraform-vm.tf.j2
+    dest: "{{ hcl_deploy_path }}/{{ inventory_hostname }}/{{ inventory_hostname }}.tf"
+  register: terraform_vm
+  tags: deploy, generate_hcl
+  delegate_to: terraform_node
+
+- name: "Terraform renew target VMs"
+  set_fact:
+    destroy: True
+  tags: never, destroy
+  delegate_to: terraform_node
+
+- name: "Terraform shut down target VMs (preserve resources)"
   terraform:
     project_path: "{{ hcl_deploy_path }}/{{ inventory_hostname }}"
     force_init: true
     state: absent
-  tags: never, destroy
+    targets: "libvirt_domain.domain-terraform"
+  tags: deploy, apply, destroy
+  when:
+    - (destroy is defined and destroy) or terraform_variables.changed or terraform_disks.changed or terraform_vm.changed
+  delegate_to: terraform_node
+
+- name: "Terraform destroy VMs and all resources"
+  terraform:
+    project_path: "{{ hcl_deploy_path }}/{{ inventory_hostname }}"
+    force_init: true
+    state: absent
+  tags: never, purge
   delegate_to: terraform_node
 
 - name: "Terraform apply VMs"

@@ -1,44 +1,3 @@
-# variables that can be overriden
-#
-#
-#
-variable "cpu" { default = {{ cpu }} }
-variable "disk_source" { default = "{{ disk_source }}" }
-variable "hostname" { default = "{{ inventory_hostname }}" }
-
-variable "memory_mb" { default = {{ memory }} }
-variable "provider_uri" { default = "{{ provider_uri }}" }
-variable "pool_name" { default = "{{ pool_name }}" }
-
-variable "ssh_public_key" { default = "{{ ssh_public_key }}" }
-
-# instance the provider
-provider "libvirt" {
-  uri = var.provider_uri
-}
-
-# Base OS image to use to create a cluster of different
-# nodes
-resource "libvirt_volume" "os_image" {
-  name   = format("%s-%s", var.hostname, "terraform")
-  source = pathexpand(var.disk_source)
-  pool   = var.pool_name
-  format = "qcow2"
-}
-
-{% if data_disks is defined %}
-{% for disk in data_disks %}
-# Additional data disk n. {{ loop.index }}
-resource "libvirt_volume" "data_disk_{{ loop.index }}" {
-  name = format("%s-%s-%s-%d", var.hostname, "terraform", "data_disk", "{{ loop.index }}")
-  pool = "{{ data_disks[disk].pool }}"
-  size = {{ data_disks[disk].size * 1024 * 1024 * 1024 }}
-  format = "qcow2"
-}
-
-{% endfor %}
-{% endif %}
-
 # Create the machine
 resource "libvirt_domain" "domain-terraform" {
   name   = var.hostname
@@ -59,58 +18,58 @@ resource "libvirt_domain" "domain-terraform" {
 
   boot_device { dev = ["cdrom", "hd", "network"] }
 
-  {% if mount_points is defined %}
-  {% for item in mount_points %}
+{% if mount_points is defined %}
+{% for item in mount_points %}
   filesystem {
     source   = pathexpand("{{ item.src }}")
     target   = "{{ item.dest }}"
     readonly = false
   }
-  {% endfor %}
-  {% endif %}
+{% endfor %}
+{% endif %}
 
-  {% for iface in network_interfaces %}
+{% for iface in network_interfaces %}
 
 
   # We first add the NAT device, so we are sure that interface[0] is where
   # we have the DHCP lease
-  {% if network_interfaces[iface].type  == "nat" %}
+{% if network_interfaces[iface].type  == "nat" %}
   # uses static  IP
   network_interface {
     network_name   = "{{ network_name }}"
     hostname       = var.hostname
-    {% if network_interfaces[iface].ip is defined %}
+{% if network_interfaces[iface].ip is defined %}
     addresses      = ["{{ network_interfaces[iface].ip }}"]
-    {% endif %}
+{% endif %}
 
-    {% if network_interfaces[iface].mac_address  is defined %}
+{% if network_interfaces[iface].mac_address  is defined %}
     mac            = "{{ network_interfaces[iface].mac_address }}"
-    {% endif %}
+{% endif %}
 
     wait_for_lease = true
   }
 
   # We then add all additional interfaces
-  {% elif network_interfaces[iface].type == "bridge" %}
+{% elif network_interfaces[iface].type == "bridge" %}
 
   network_interface {
     bridge  = "{{ network_interfaces[iface].name }}"
     hostname = var.hostname
-    {% if network_interfaces[iface].mac_address  is defined %}
+{% if network_interfaces[iface].mac_address  is defined %}
     mac            = "{{ network_interfaces[iface].mac_address }}"
-    {% endif %}
+{% endif %}
   }
-  {% elif network_interfaces[iface].type == "macvtap" %}
+{% elif network_interfaces[iface].type == "macvtap" %}
 
   network_interface {
     macvtap  = "{{ network_interfaces[iface].name }}"
     hostname = var.hostname
-    {% if network_interfaces[iface].mac_address  is defined %}
+{% if network_interfaces[iface].mac_address  is defined %}
     mac            = "{{ network_interfaces[iface].mac_address }}"
-    {% endif %}
+{% endif %}
   }
-  {% endif %}
-  {% endfor %}
+{% endif %}
+{% endfor %}
 
   # IMPORTANT
   # it will show no console otherwise
@@ -131,34 +90,34 @@ resource "libvirt_domain" "domain-terraform" {
     password         = "{{ ssh_password }}"
     port             = "{{ ssh_port }}"
 
-    {% if terraform_bastion_enabled %}
+{% if terraform_bastion_enabled %}
     bastion_host     = "{{ terraform_bastion_host }}"
     bastion_port     = "{{ terraform_bastion_port }}"
     bastion_user     = "{{ terraform_bastion_user }}"
     bastion_password = "{{ terraform_bastion_password }}"
-    {% endif %}
+{% endif %}
   }
   # Hostdev passtrought
   # provisioner "local-exec" {
   #   command = "virsh --connect ${var.provider_uri} attach-device ${var.hostname} --file passtrought-host.xml --live --persistent"
   # }
 
-  {% if ssh_public_key is defined %}
+{% if ssh_public_key is defined %}
   provisioner "remote-exec" {
     inline = [
       "mkdir -m 0700 ~/.ssh",
       "echo '${var.ssh_public_key}' | tee -a ~/.ssh/authorized_keys",
       "chmod 0600 ~/.ssh/authorized_keys"]
     }
-    {% endif %}
+{% endif %}
 
-    {% if ansible_dependencies is defined %}
+{% if ansible_dependencies is defined %}
     provisioner "remote-exec" {
       inline = [
-        {% for pkg in ansible_dependencies %}
+{% for pkg in ansible_dependencies %}
         "{{ install_command }} {{ pkg }}"{% if not loop.last %},{% endif %}
 
-        {% endfor %}
+{% endfor %}
       ]
     }
     {% endif %}
@@ -166,21 +125,21 @@ resource "libvirt_domain" "domain-terraform" {
     {% if terraform_custom_provisioners is defined %}
     provisioner "remote-exec" {
       inline = [
-        {% for provisioner_command in terraform_custom_provisioners %}
+{% for provisioner_command in terraform_custom_provisioners %}
         "{{ provisioner_command }}"{% if not loop.last %},{% endif %}
-        {% endfor %}
+{% endfor %}
       ]
     }
-    {% endif %}
+{% endif %}
 
-  }
+}
 
-  terraform {
-    required_version = ">= {{ terraform_version }}"
-  }
+terraform {
+  required_version = ">= {{ terraform_version }}"
+}
 
-  # Return the NAT ip obtained by the DHCP lease, we do this because it may be
-  # the one we declared, but also can be different (dhcp lease was still occupied)
-  output "ip" {
-    value = "${libvirt_domain.domain-terraform.network_interface.0.addresses}"
-  }
+# Return the NAT ip obtained by the DHCP lease, we do this because it may be
+# the one we declared, but also can be different (dhcp lease was still occupied)
+output "ip" {
+  value = "${libvirt_domain.domain-terraform.network_interface.0.addresses}"
+}

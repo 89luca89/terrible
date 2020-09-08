@@ -18,11 +18,11 @@
     apply:
       tags:
         - always
-  tags: always, test
+  tags: always
 
 # Deploy the HCL files, use Terraform to deploy the infrastructure.
 - include_tasks: deploy_vm.yml
-  tags: deploy, destroy, apply, generate_hcl, test
+  tags: deploy, destroy, apply, generate_hcl, purge
 
 # Perform post-deploy tasks, such as users, networks and so on...
 - include_tasks: post_deploy.yml

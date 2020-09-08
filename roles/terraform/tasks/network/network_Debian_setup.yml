@@ -12,10 +12,20 @@
     file_type: any
   register: interfaces
 
+- name: Remove unmanaged networks
+  replace:
+    path: "/etc/network/interfaces"
+    regexp: "^(.*){{ item.path.split('/')[-1] }}(.*)$"
+    replace: ''
+    backup: yes
+  with_items:
+    - "{{ interfaces.files | sort(attribute='path') }}"
+  when: ansible_distribution != 'Ubuntu'
+
 # Use traditional /etc/network/interfaces on Debian
 - name: "Set connection setting files - Debian"
   blockinfile:
-    path: "/etc/network/interfaces"
+    path: "/etc/network/interfaces.d/ifcfg-managed-{{ network_name }}-{{ item.0.path.split('/')[-1] }}"
     block: |
           auto {{ item.0.path.split('/')[-1] }}
           iface {{ item.0.path.split('/')[-1] }} inet static
