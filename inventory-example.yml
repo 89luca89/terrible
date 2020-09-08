@@ -22,7 +22,7 @@ all:
         # ----
         ##
         # Default ssh public key location.
-        # ssh_public_key_file: '~/.ssh/id_rsa.pub'
+        ssh_public_key_file: '~/.ssh/id_rsa.pub'
       hosts:
         #
         # ----
@@ -196,6 +196,29 @@ all:
               #
               terraform_custom_provisioners:
                 - "echo {{ ansible_host }} > /tmp/test_provisioning_success.log"
+
+
+              # ----
+              ## This section explain how you can add some additional disk to the VMs.
+              ## Suppose you want to create a VM that needs a large amount of storage space, and a separated disk just to store the configurations. Doing this is quite simple.
+              ## The main variable you need is data_disks. The you have to specify the disks and the related properties for each of them.
+              ## If data_disks is mentioned in your inventory, the following variables are required:
+              #
+              ##     size: required. Specify the disk size expressed in GB. (es. size: 1 means 1GB)
+              ##     pool: required. Specify the pool where you want to store the additional disks.
+              ##     format: require. Specify the filesystem format you want to apply to the disk. Supported formats are: ext4, ext3, ext2, xfs for Linux VMs and freebsd-ufs for FreeBSD VMs.
+              ##     mount_point: required. Specify the mount point of the disk.
+              data_disks:
+                disk-0:
+                  size: 1
+                  pool: default
+                  format: ext4
+                  mount_point: /mnt/config
+                disk-1:
+                  size: 1
+                  pool: default
+                  format: ext3
+                  mount_point: /mnt/config-1
           vars:
               ## It is possible to specify per-GROUP disk source.
               ## This is useful for mixed environments with
