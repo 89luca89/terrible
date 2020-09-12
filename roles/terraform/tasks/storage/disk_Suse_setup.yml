@@ -2,7 +2,24 @@
 
 # additional disks setup for terraform role
 #
-#
+#         [ Start ]
+#             |
+# [ Create disk partitions ]
+#     ┌───────┴─────────┐
+#     |                 |
+#     |           [ Copy file to remote host ]
+#     |                 |
+#     |           [ Create LUKS container ]
+#     |                 |
+# [ Format diks]  [ Format encrypted disk ]
+#     |                 |
+#     └───────┬─────────┘
+# [ Create disk mountpoint ]
+#     ┌───────┴─────────┐
+#     |                 |
+# [ Mount disks ] [ Mount encrypted disks ]
+#     └───────┬─────────┘
+#          [ End ] 
 
 # Filter the additional virtual disks and create 1 partition
 # for each disk.
