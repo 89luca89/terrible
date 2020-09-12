@@ -1,5 +1,6 @@
 ansible_dependencies:
   - python3
+  - cryptsetup
 
 update_command: yum update -y --security
 install_command: yum install -y

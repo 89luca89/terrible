@@ -2,6 +2,7 @@ ansible_dependencies:
   - python3
   - unattended-upgrades
   - parted
+  - cryptsetup
 
 update_command: apt update; unattended-upgrade
 install_command: while pgrep apt; do sleep 2; done; apt install -y

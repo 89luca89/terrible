@@ -1,5 +1,6 @@
 ansible_dependencies:
   - python3
+  - cryptsetup
 
 update_command: zypper patch -y
 install_command: zypper install -y
