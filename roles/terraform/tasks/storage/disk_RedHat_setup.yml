@@ -19,19 +19,6 @@
   with_items:
     - "{{ ansible_devices.keys() | select('match','vd[b-z]') | list }}"
 
-# For each partition previously created
-# the task format the unique partition with
-# the filesystem type specified into the inventory,
-# or with the default if not specified.
-- name: Format disks
-  filesystem:
-    dev: "/dev/{{ item.1 }}1"
-    fstype: "{{ item.0['format'] }}"
-    force: yes
-  with_together:
-    - "{{ data_disks.values() | list }}"
-    - "{{ ansible_devices.keys() | select('match','vd[b-z]') | sort | list }}"
-
 # Copy the keyfile to the remote host, to allow 
 # luks utility to encrypt disks.
 - name: Copy keyfile to remote host
@@ -53,6 +40,37 @@
     device: "/dev/{{ item.1 }}1"
     state: "opened"
     keyfile: "/tmp/keyfile"
+  with_together:
+    - "{{ data_disks.values() | list }}"
+    - "{{ ansible_devices.keys() | select('match','vd[b-z]') | sort | list }}"
+  when:
+    - "{{ item.0['encryption'] }}"
+
+# For each partition previously created
+# the task format the unique partition with
+# the filesystem type specified into the inventory,
+# or with the default if not specified.
+- name: Format disks
+  filesystem:
+    dev: "/dev/{{ item.1 }}1"
+    fstype: "{{ item.0['format'] }}"
+    force: yes
+  with_together:
+    - "{{ data_disks.values() | list }}"
+    - "{{ ansible_devices.keys() | select('match','vd[b-z]') | sort | list }}"
+  when:
+    - "not {{ item.0['encryption'] }}"
+
+# For each partition previously created
+# the task format the unique partition with
+# the filesystem type specified into the inventory,
+# or with the default if not specified.
+- name: Format encrypted disks
+  filesystem:
+    dev: "/dev/mapper/disk-{{ item.1 }}1-enc"
+    fstype: "{{ item.0['format'] }}"
+    force: yes
+  ignore_errors: yes
   with_together:
     - "{{ data_disks.values() | list }}"
     - "{{ ansible_devices.keys() | select('match','vd[b-z]') | sort | list }}"
@@ -90,3 +108,17 @@
     - "{{ ansible_devices.keys() | select('match','vd[b-z]') | sort | list }}"
   when:
     - "not {{ item.0['encryption'] }}"
+
+# Mount each disk on the related mountpoint,
+# generating the entry into the /etc/fstab file.
+- name: Mount encrypted disks
+  mount:
+    path: "{{ item.0['mount_point'] }}"
+    src: "/dev/mapper/disk-{{ item.1 }}1-enc"
+    fstype: "{{ item.0['format'] }}"
+    state: mounted
+  with_together:
+    - "{{ data_disks.values() | list }}"
+    - "{{ ansible_devices.keys() | select('match','vd[b-z]') | sort | list }}"
+  when:
+    - "{{ item.0['encryption'] }}"
