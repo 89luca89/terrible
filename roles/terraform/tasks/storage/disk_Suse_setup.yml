@@ -27,9 +27,37 @@
   filesystem:
     dev: "/dev/{{ item.1 }}1"
     fstype: "{{ item.0['format'] }}"
+    force: yes
   with_together:
     - "{{ data_disks.values() | list }}"
     - "{{ ansible_devices.keys() | select('match','vd[b-z]') | sort | list }}"
+
+# Copy the keyfile to the remote host, to allow 
+# luks utility to encrypt disks.
+- name: Copy keyfile to remote host
+  copy:
+    src: "{{ item.0['keyfile'] }}"
+    dest: /tmp/keyfile
+    mode: '0400'
+  with_together:
+    - "{{ data_disks.values() | list }}"
+    - "{{ ansible_devices.keys() | select('match','vd[b-z]') | sort | list }}"
+  when:
+    - "{{ item.0['encryption'] }}"
+
+# For each partition create a luks container
+# using the specified keyfile to encrypt it.
+- name: Create LUKS container
+  luks_device:
+    name: "disk-{{ item.1 }}1-enc"
+    device: "/dev/{{ item.1 }}1"
+    state: "opened"
+    keyfile: "/tmp/keyfile"
+  with_together:
+    - "{{ data_disks.values() | list }}"
+    - "{{ ansible_devices.keys() | select('match','vd[b-z]') | sort | list }}"
+  when:
+    - "{{ item.0['encryption'] }}"
 
 # Set the facts again after the previous tasks
 # to update the informations about created disks.
@@ -60,3 +88,5 @@
   with_together:
     - "{{ data_disks.values() | list }}"
     - "{{ ansible_devices.keys() | select('match','vd[b-z]') | sort | list }}"
+  when:
+    - "not {{ item.0['encryption'] }}"
