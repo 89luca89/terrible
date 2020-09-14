@@ -2,17 +2,12 @@
 #
 #
 #
-variable "cpu" { default = {{ cpu }} }
-variable "disk_source" { default = "{{ disk_source }}" }
-variable "hostname" { default = "{{ inventory_hostname }}" }
-
-variable "memory_mb" { default = {{ memory }} }
-variable "provider_uri" { default = "{{ provider_uri }}" }
-variable "pool_name" { default = "{{ pool_name }}" }
-{% if ssh_public_key is defined %}
-variable "ssh_public_key" { default = "{{ ssh_public_key }}" }
-{% endif %}
 # instance the provider
 provider "libvirt" {
-  uri = var.provider_uri
+  uri = "{{ provider_uri }}"
+}
+
+
+terraform {
+  required_version = ">= {{ terraform_version }}"
 }

@@ -6,7 +6,7 @@
 # Create the directory tree for the temprorary files.
 - name: Ensures terraform dirs exists
   file:
-    path: "{{ hcl_deploy_path }}/{{ inventory_hostname }}"
+    path: "{{ hcl_deploy_path }}/"
     state: directory
   tags: deploy, generate_hcl
   delegate_to: terraform_node
@@ -15,27 +15,48 @@
 - name: "Deploy terraform files - variables"
   template:
     src: variables.tf.j2
-    dest: "{{ hcl_deploy_path }}/{{ inventory_hostname }}/{{ inventory_hostname }}-variables.tf"
+    dest: "{{ hcl_deploy_path }}/variables.tf"
   register: terraform_variables
   tags: deploy, generate_hcl
-  delegate_to: terraform_node
-
-# Deploy the terraform files for each host. Use jinja2 for templating.
-- name: "Deploy terraform files - disks"
-  template:
-    src: disks.tf.j2
-    dest: "{{ hcl_deploy_path }}/{{ inventory_hostname }}/{{ inventory_hostname }}-disks.tf"
-  register: terraform_disks
-  tags: deploy, generate_hcl
+  run_once: yes
   delegate_to: terraform_node
 
 # Deploy the terraform files for each host. Use jinja2 for templating.
 - name: "Deploy terraform files - VM"
   template:
     src: terraform-vm.tf.j2
-    dest: "{{ hcl_deploy_path }}/{{ inventory_hostname }}/{{ inventory_hostname }}.tf"
+    dest: "{{ hcl_deploy_path }}/{{ inventory_hostname }}.tf"
   register: terraform_vm
   tags: deploy, generate_hcl
+  delegate_to: terraform_node
+
+- name: "Remove unmanaged nodes - generate list of managed files"
+  set_fact:
+    managed_files: "[{% for host in play_hosts %} '{{ host }}.tf' {%if not loop.last %},{% endif %}{% endfor %}]"
+  tags: deploy, generate_hcl
+  run_once: yes
+  delegate_to: terraform_node
+
+- name: "Remove unmanaged nodes - find all files"
+  find:
+    paths: "{{ hcl_deploy_path }}/"
+    patterns: "*.tf"
+  register: nodes_tf
+  tags: deploy, generate_hcl
+  run_once: yes
+  delegate_to: terraform_node
+
+- name: "Remove unmanaged nodes - delete unmanaged files"
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items:
+    - "{{ nodes_tf.files | sort(attribute='path') }}"
+  when:
+    - not "variables.tf" in item.path
+    - item.path.split('/')[-1] not in managed_files
+  tags: deploy, generate_hcl
+  run_once: yes
   delegate_to: terraform_node
 
 - name: "Terraform renew target VMs"
@@ -46,30 +67,38 @@
 
 - name: "Terraform shut down target VMs (preserve resources)"
   terraform:
-    project_path: "{{ hcl_deploy_path }}/{{ inventory_hostname }}"
+    project_path: "{{ hcl_deploy_path }}/"
     force_init: true
     state: absent
-    targets: "libvirt_domain.domain-terraform"
+    targets: "libvirt_domain.domain_{{ inventory_hostname }}"
   tags: deploy, apply, destroy
+  run_once: yes
   when:
-    - (destroy is defined and destroy) or terraform_variables.changed or terraform_disks.changed or terraform_vm.changed
+    - (destroy is defined and destroy) or terraform_variables.changed or terraform_vm.changed
   delegate_to: terraform_node
 
 - name: "Terraform destroy VMs and all resources"
   terraform:
-    project_path: "{{ hcl_deploy_path }}/{{ inventory_hostname }}"
+    project_path: "{{ hcl_deploy_path }}/"
     force_init: true
     state: absent
   tags: never, purge
+  run_once: yes
   delegate_to: terraform_node
 
 - name: "Terraform apply VMs"
   terraform:
-    project_path: "{{ hcl_deploy_path }}/{{ inventory_hostname }}"
+    project_path: "{{ hcl_deploy_path }}/"
     force_init: true
     state: present
   register: terraform_output
   tags: deploy, apply
+  run_once: yes
+  delegate_to: terraform_node
+
+- debug:
+    msg: "{{ terraform_output.outputs[inventory_hostname]['value'][0] }}"
+  tags: apply
   delegate_to: terraform_node
 
 ### !!! Important
