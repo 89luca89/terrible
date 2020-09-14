@@ -207,6 +207,7 @@
       - "{{ item }}.pool is defined"
       - "{{ item }}.format is defined"
       - "{{ item }}.mount_point is defined"
+      - "{{ item }}.encryption is defined"
     fail_msg: >
       You must specify {{ item }} when data_disks is defined
   with_items:
