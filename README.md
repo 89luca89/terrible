@@ -479,6 +479,15 @@ This means you are able to generate the infrastructure using the OS listed above
 
 Hypervisor OS is agnostic, as long as requirements are met.
 
+## Installation
+
+Use the following command to satisfy the project's dependencies:
+
+```bash
+pip3 install --user -r requirements.txt
+```
+
+
 ## Usage
 
 Once composed the inventory file, it's time to run your playbook.
