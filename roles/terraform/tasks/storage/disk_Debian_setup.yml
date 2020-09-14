@@ -53,7 +53,7 @@
 # using the specified keyfile to encrypt it.
 - name: Create LUKS container
   luks_device:
-    name: "disk-{{ item.1 }}1-enc"
+    name: "enc{{ item.1 }}1"
     device: "/dev/{{ item.1 }}1"
     state: "opened"
     keyfile: "/tmp/keyfile"
@@ -71,7 +71,6 @@
   filesystem:
     dev: "/dev/{{ item.1 }}1"
     fstype: "{{ item.0['format'] }}"
-    force: yes
   with_together:
     - "{{ data_disks.values() | list }}"
     - "{{ ansible_devices.keys() | select('match','vd[b-z]') | sort | list }}"
@@ -84,10 +83,8 @@
 # or with the default if not specified.
 - name: Format encrypted disks
   filesystem:
-    dev: "/dev/mapper/disk-{{ item.1 }}1-enc"
+    dev: "/dev/mapper/enc{{ item.1 }}1"
     fstype: "{{ item.0['format'] }}"
-    force: yes
-  ignore_errors: yes
   with_together:
     - "{{ data_disks.values() | list }}"
     - "{{ ansible_devices.keys() | select('match','vd[b-z]') | sort | list }}"
@@ -120,6 +117,7 @@
     src: "UUID={{ ( ansible_devices[item.1].partitions.values() | list )[0].uuid }}"
     fstype: "{{ item.0['format'] }}"
     state: mounted
+    opts: nofail
   with_together:
     - "{{ data_disks.values() | list }}"
     - "{{ ansible_devices.keys() | select('match','vd[b-z]') | sort | list }}"
@@ -131,9 +129,10 @@
 - name: Mount encrypted disks
   mount:
     path: "{{ item.0['mount_point'] }}"
-    src: "/dev/mapper/disk-{{ item.1 }}1-enc"
+    src: "/dev/mapper/enc{{ item.1 }}1"
     fstype: "{{ item.0['format'] }}"
     state: mounted
+    opts: nofail
   with_together:
     - "{{ data_disks.values() | list }}"
     - "{{ ansible_devices.keys() | select('match','vd[b-z]') | sort | list }}"
