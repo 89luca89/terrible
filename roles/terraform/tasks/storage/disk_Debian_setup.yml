@@ -41,7 +41,7 @@
 - name: Copy keyfile to remote host
   copy:
     src: "{{ item.0['keyfile'] }}"
-    dest: /tmp/keyfile
+    dest: "/tmp/{{ item.0['keyfile'] | basename }}"
     mode: '0400'
   with_together:
     - "{{ data_disks.values() | list }}"
@@ -56,7 +56,7 @@
     name: "enc{{ item.1 }}1"
     device: "/dev/{{ item.1 }}1"
     state: "opened"
-    keyfile: "/tmp/keyfile"
+    keyfile: "/tmp/{{ item.0['keyfile'] | basename }}"
   with_together:
     - "{{ data_disks.values() | list }}"
     - "{{ ansible_devices.keys() | select('match','vd[b-z]') | sort | list }}"
@@ -133,6 +133,18 @@
     fstype: "{{ item.0['format'] }}"
     state: mounted
     opts: nofail
+  with_together:
+    - "{{ data_disks.values() | list }}"
+    - "{{ ansible_devices.keys() | select('match','vd[b-z]') | sort | list }}"
+  when:
+    - "{{ item.0['encryption'] }}"
+
+# Remove the keyfile which contains the passphrase to 
+# access the disk.
+- name: Remove keyfiles
+  file:
+    path: "/tmp/{{ item.0['keyfile'] | basename }}"
+    state: absent
   with_together:
     - "{{ data_disks.values() | list }}"
     - "{{ ansible_devices.keys() | select('match','vd[b-z]') | sort | list }}"
