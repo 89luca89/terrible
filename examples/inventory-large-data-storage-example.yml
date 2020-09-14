@@ -50,6 +50,7 @@ all:
                   pool: default
                   format: freebsd-ufs
                   mount_point: /mnt/data_configs
+                  encription: False
         slave_nodes:
           hosts:
             slave-node-0:
@@ -88,8 +89,11 @@ all:
                   pool: default
                   format: ext4
                   mount_point: /mnt/data_storage_1
+                  encription: True
+                  keyfile: "./file.txt"
                 disk-config:
                   size: 500
                   pool: default
                   format: ext4
                   mount_point: /mnt/data_storage_2
+                  encription: False
