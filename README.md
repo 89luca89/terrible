@@ -455,7 +455,7 @@ Let's take a look at how the *inventory* file is going to be fill.
                             		mount_point: /mnt/data_storage  # The path where the disk is mounted
                             		encryption: True                # Enable disk encryption
                             		keyfile: "./passphrase.txt"     # Specify local file which contain the passphrase
-                            		                                # to encrypt the disk.
+                                                                    # to encrypt the disk.
                                 # Here we declare the disk name
                             	disk-config:
                             		size: 1                         # Disk size = 1 GB
