@@ -412,17 +412,17 @@ If `data_disks` is mentioned in your inventory, the following variables are requ
 
 * **size:** `required`. Specify the disk size expressed in GB. (es. `size: 1` means 1GB)
 * **pool:** `required`. Specify the pool where you want to store the additional disks.
-* **format:** `require`. Specify the filesystem format you want to apply to the disk. 
-* **mount_point:** `required`. Specify the mount point of the disk.
-* **encryption:** `required`. Specify the mount point of the disk. Possible values colud be `True` or `False`.
-* **keyfile:** `required` when **encryption** is set to `True`. Specify the local file containing the *passphrase* to encrypt the disks.
+* **format:** `require`. Specify the filesystem format you want to apply to the disk. Available filesystems are specified below.
+* **mount_point:** `required`. Specify the mount point you want to create for the disk.
+* **encryption:** `required`. Specify the mount point of the disk. Available values could be `True` or `False`.
+* **keyfile:** `required`, when **encryption** is set to `True`. Specify your local file containing the *passphrase* to encrypt the disks.
 
-| OS Family   |  Supported Disk Format      |
-|----------|:-------------|
-| Debian |  `ext2`, `ext3`, `ext4` |
-| FreeBSD |  `freebsd-ufs`     |
-| RedHat | `ext2`, `ext3`, `ext4`, `xfs` |
-| Suse | `ext2`, `ext3`, `ext4`, `xfs`  |
+| OS Family   |  Supported Disk Format      |  Encryption  |
+|----------|:-------------|--------------|
+| Debian |  `ext2`, `ext3`, `ext4` | yes |
+| FreeBSD |  `freebsd-ufs`     |  no  |
+| RedHat | `ext2`, `ext3`, `ext4`, `xfs` | yes |
+| Suse | `ext2`, `ext3`, `ext4`, `xfs` | yes |
 
 Let's take a look at how the *inventory* file is going to be fill.
 
@@ -454,8 +454,7 @@ Let's take a look at how the *inventory* file is going to be fill.
                             		format: xfs                     # Disk Filesystem = xfs
                             		mount_point: /mnt/data_storage  # The path where the disk is mounted
                             		encryption: True                # Enable disk encryption
-                            		keyfile: "./passphrase.txt"     # Specify local file which contain the passphrase
-                                                                    # to encrypt the disk.
+                            		keyfile: ./passphrase.txt       # Specify the local file which contain the passphrase to encrypt the disk
                                 # Here we declare the disk name
                             	disk-config:
                             		size: 1                         # Disk size = 1 GB
