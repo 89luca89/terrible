@@ -30,6 +30,7 @@
   tags: deploy, generate_hcl
   delegate_to: terraform_node
 
+# Create an array containing the list of nodes in the form of node-name.j2,...
 - name: "Remove unmanaged nodes - generate list of managed files"
   set_fact:
     managed_files: "[{% for host in play_hosts %} '{{ host }}.tf' {%if not loop.last %},{% endif %}{% endfor %}]"
@@ -37,6 +38,7 @@
   run_once: yes
   delegate_to: terraform_node
 
+# Create an array containing the list of files representing the nodes in the folder.
 - name: "Remove unmanaged nodes - find all files"
   find:
     paths: "{{ hcl_deploy_path }}/"
@@ -46,6 +48,9 @@
   run_once: yes
   delegate_to: terraform_node
 
+# Remove files that are orphan in the inventory.
+# This will make terraform remove the nodes that are undefined from
+# the inventory.
 - name: "Remove unmanaged nodes - delete unmanaged files"
   file:
     path: "{{ item.path }}"
