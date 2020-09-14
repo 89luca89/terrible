@@ -414,13 +414,15 @@ If `data_disks` is mentioned in your inventory, the following variables are requ
 * **pool:** `required`. Specify the pool where you want to store the additional disks.
 * **format:** `require`. Specify the filesystem format you want to apply to the disk. 
 * **mount_point:** `required`. Specify the mount point of the disk.
+* **encryption:** `required`. Specify the mount point of the disk. Possible values colud be `True` or `False`.
+* **keyfile:** `required` when **encryption** is set to `True`. Specify the local file containing the *passphrase* to encrypt the disks.
 
-| OS Family   |  Supported Disk Format      | 
+| OS Family   |  Supported Disk Format      |
 |----------|:-------------|
-| Debian |  `ext2`, `ext3`, `ext4` | 
-| FreeBSD |  `freebsd-ufs`     | 
-| RedHat | `ext2`, `ext3`, `ext4`, `xfs` | 
-| Suse | `ext2`, `ext3`, `ext4`, `xfs`  | 
+| Debian |  `ext2`, `ext3`, `ext4` |
+| FreeBSD |  `freebsd-ufs`     |
+| RedHat | `ext2`, `ext3`, `ext4`, `xfs` |
+| Suse | `ext2`, `ext3`, `ext4`, `xfs`  |
 
 Let's take a look at how the *inventory* file is going to be fill.
 
@@ -451,12 +453,16 @@ Let's take a look at how the *inventory* file is going to be fill.
                             		pool: default                   # Store the disk image into the pool = default.
                             		format: xfs                     # Disk Filesystem = xfs
                             		mount_point: /mnt/data_storage  # The path where the disk is mounted
+                            		encryption: True                # Enable disk encryption
+                            		keyfile: "./passphrase.txt"     # Specify local file which contain the passphrase
+                            		                                # to encrypt the disk.
                                 # Here we declare the disk name
                             	disk-config:
                             		size: 1                         # Disk size = 1 GB
                             		pool: default                   # Store the disk image into the pool = default.
                             		format: ext4                    # Disk Filesystem = ext4
                             		mount_point: /mnt/data_config   # The path where the disk is mounted
+                            		encryption: False               # Enable disk encryption
 ```
 
 
