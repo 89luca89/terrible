@@ -74,10 +74,10 @@
   terraform:
     project_path: "{{ hcl_deploy_path }}/"
     force_init: true
+    lock: no
     state: absent
     targets: "libvirt_domain.domain_{{ inventory_hostname }}"
   tags: deploy, apply, destroy
-  run_once: yes
   when:
     - (destroy is defined and destroy) or terraform_variables.changed or terraform_vm.changed
   delegate_to: terraform_node
