@@ -6,7 +6,6 @@
 cpu: 1
 memory: 1024
 network_name: "default"
-encryption: False
 
 terraform_version: 0.12
 
