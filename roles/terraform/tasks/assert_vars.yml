@@ -293,12 +293,26 @@
     - data_disks | length > 0
 
 # Verifiy the correctness of the parameters.
+- name: Validate 'encryption' parameter compatibility with os_family
+  assert:
+    quiet: yes
+    that:
+      - not {{ item }}.encryption
+    fail_msg: >
+      You are trying to use an unsupported encryption value. FreeBSD family doesn't support encryption.
+  with_items:
+    - "{{ data_disks.values() | list }}"
+  when:
+    - data_disks is defined
+    - data_disks | length > 0
+    - os_family == 'FreeBSD'
+
+# Verifiy the correctness of the parameters.
 - name: Validate 'encryption' parameter
   assert:
     quiet: yes
     that:
-      - "{{ item }}.encryption == True or
-         {{ item }}.encryption == False"
+      - "{{ item }}.encryption == True or {{ item }}.encryption == False"
     fail_msg: >
       You are trying to use an unsupported encryption value. Possible values could be 'True' or 'False'.
   with_items:
