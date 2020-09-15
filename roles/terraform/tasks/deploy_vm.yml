@@ -61,7 +61,6 @@
     - not "variables.tf" in item.path
     - item.path.split('/')[-1] not in managed_files
   tags: deploy, generate_hcl
-  run_once: yes
   delegate_to: terraform_node
 
 - name: "Terraform renew target VMs"
@@ -87,8 +86,8 @@
     project_path: "{{ hcl_deploy_path }}/"
     force_init: true
     state: absent
+    lock: no
   tags: never, purge
-  run_once: yes
   delegate_to: terraform_node
 
 - name: "Terraform apply VMs"
