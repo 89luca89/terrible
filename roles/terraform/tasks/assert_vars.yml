@@ -29,17 +29,6 @@
       You are trying to use an unsupported ssh_port value.
 
 # Verifiy the correctness of the parameters.
-- name: Validate 'terraform_target_hypervisor' parameter
-  assert:
-    quiet: yes
-    that:
-      - hostvars['terraform_node']['terraform_target_hypervisor'] | ipaddr
-    fail_msg: >
-      You are trying to use an unsupported terraform_target_hypervisor value.
-  when:
-    - hostvars['terraform_node']['terraform_target_hypervisor'] is defined
-
-# Verifiy the correctness of the parameters.
 - name: Validate 'terraform_target_hypervisor_port' parameter
   assert:
     quiet: yes
