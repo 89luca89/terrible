@@ -1,18 +1,39 @@
+# Base OS image to use to create a cluster of different
+# nodes
+resource "libvirt_volume" "os_image_{{ inventory_hostname }}" {
+  name   = format("%s-%s", "{{ inventory_hostname }}", "terraform")
+  source = pathexpand("{{ disk_source }}")
+  pool   = "{{ pool_name }}"
+  format = "qcow2"
+}
+
+{% if data_disks is defined %}
+{% for disk in data_disks %}
+# Additional data disk n. {{ loop.index }}
+resource "libvirt_volume" "data_disk_{{ inventory_hostname }}_{{ loop.index }}" {
+  name = format("%s-%s-%s-%d", "{{ inventory_hostname }}", "terraform", "data_disk", "{{ loop.index }}")
+  pool = "{{ data_disks[disk].pool }}"
+  size = {{ data_disks[disk].size * 1024 * 1024 * 1024 }}
+  format = "qcow2"
+}
+{% endfor %}
+{% endif %}
+
 # Create the machine
-resource "libvirt_domain" "domain-terraform" {
-  name   = var.hostname
-  memory = var.memory_mb
-  vcpu   = var.cpu
+resource "libvirt_domain" "domain_{{ inventory_hostname }}" {
+  name   = "{{ inventory_hostname }}"
+  memory = {{ memory }}
+  vcpu   = {{ cpu }}
 
   cpu = {
     mode = "host-passthrough"
   }
 
   # Disk aquisition
-  disk { volume_id = libvirt_volume.os_image.id }
+  disk { volume_id = libvirt_volume.os_image_{{ inventory_hostname }}.id }
 {% if data_disks is defined %}
 {% for item in data_disks %}
-  disk { volume_id = libvirt_volume.data_disk_{{ loop.index }}.id }
+  disk { volume_id = libvirt_volume.data_disk_{{ inventory_hostname }}_{{ loop.index }}.id }
 {% endfor %}
 {% endif %}
 
@@ -37,7 +58,7 @@ resource "libvirt_domain" "domain-terraform" {
   # uses static  IP
   network_interface {
     network_name   = "{{ network_name }}"
-    hostname       = var.hostname
+    hostname       = "{{ inventory_hostname }}"
 {% if network_interfaces[iface].ip is defined %}
     addresses      = ["{{ network_interfaces[iface].ip }}"]
 {% endif %}
@@ -54,7 +75,7 @@ resource "libvirt_domain" "domain-terraform" {
 
   network_interface {
     bridge  = "{{ network_interfaces[iface].name }}"
-    hostname = var.hostname
+    hostname = "{{ inventory_hostname }}"
 {% if network_interfaces[iface].mac_address  is defined %}
     mac            = "{{ network_interfaces[iface].mac_address }}"
 {% endif %}
@@ -63,7 +84,7 @@ resource "libvirt_domain" "domain-terraform" {
 
   network_interface {
     macvtap  = "{{ network_interfaces[iface].name }}"
-    hostname = var.hostname
+    hostname = "{{ inventory_hostname }}"
 {% if network_interfaces[iface].mac_address  is defined %}
     mac            = "{{ network_interfaces[iface].mac_address }}"
 {% endif %}
@@ -99,14 +120,14 @@ resource "libvirt_domain" "domain-terraform" {
   }
   # Hostdev passtrought
   # provisioner "local-exec" {
-  #   command = "virsh --connect ${var.provider_uri} attach-device ${var.hostname} --file passtrought-host.xml --live --persistent"
+  #   command = "virsh --connect {{ provider_uri }} attach-device {{ inventory_hostname }} --file passtrought-host.xml --live --persistent"
   # }
 
 {% if ssh_public_key is defined %}
   provisioner "remote-exec" {
     inline = [
       "mkdir -m 0700 ~/.ssh",
-      "echo '${var.ssh_public_key}' | tee -a ~/.ssh/authorized_keys",
+      "echo '{{ ssh_public_key }}' | tee -a ~/.ssh/authorized_keys",
       "chmod 0600 ~/.ssh/authorized_keys"]
     }
 {% endif %}
@@ -134,12 +155,8 @@ resource "libvirt_domain" "domain-terraform" {
 
 }
 
-terraform {
-  required_version = ">= {{ terraform_version }}"
-}
-
 # Return the NAT ip obtained by the DHCP lease, we do this because it may be
 # the one we declared, but also can be different (dhcp lease was still occupied)
-output "ip" {
-  value = "${libvirt_domain.domain-terraform.network_interface.0.addresses}"
+output "{{ inventory_hostname }}" {
+  value = "${libvirt_domain.domain_{{ inventory_hostname }}.network_interface.0.addresses}"
 }
