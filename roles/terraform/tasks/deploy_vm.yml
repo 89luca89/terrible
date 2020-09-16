@@ -65,17 +65,17 @@
 
 - name: "Terraform renew target VMs"
   set_fact:
-    destroy: True
+    destroy: yes
   tags: never, destroy
   delegate_to: terraform_node
 
 - name: "Terraform shut down target VMs (preserve resources)"
   terraform:
     project_path: "{{ hcl_deploy_path }}/"
-    force_init: true
-    lock: no
+    force_init: yes
     state: absent
     targets: "libvirt_domain.domain_{{ inventory_hostname }}"
+  throttle: 1
   tags: deploy, apply, destroy
   when:
     - (destroy is defined and destroy) or (terraform_variables is defined and terraform_variables.changed) or (terraform_vm is defined and terraform_vm.changed)
@@ -84,25 +84,30 @@
 - name: "Terraform destroy VMs and all resources"
   terraform:
     project_path: "{{ hcl_deploy_path }}/"
-    force_init: true
+    force_init: yes
     state: absent
-    lock: no
+  throttle: 1
   tags: never, purge
+  delegate_to: terraform_node
+
+- name: "Terraform init VMs and all resources"
+  terraform:
+    project_path: "{{ hcl_deploy_path }}/"
+    force_init: yes
+    state: present
+  throttle: 1
+  check_mode: yes
+  tags: deploy, apply
   delegate_to: terraform_node
 
 - name: "Terraform apply VMs"
   terraform:
     project_path: "{{ hcl_deploy_path }}/"
-    force_init: true
     state: present
     targets: "libvirt_domain.domain_{{ inventory_hostname }}"
-  register: terraform_output
+  throttle: 1
   tags: deploy, apply
-  delegate_to: terraform_node
-
-- debug:
-    msg: "{{ terraform_output.outputs[inventory_hostname]['value'][0] }}"
-  tags: apply
+  register: terraform_output
   delegate_to: terraform_node
 
 ### !!! Important
