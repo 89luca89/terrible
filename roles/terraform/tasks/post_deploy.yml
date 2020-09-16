@@ -76,6 +76,7 @@
     update_password: always
     password: "{{ set_new_password | password_hash('sha512') }}"
   when: set_new_password is defined
+  changed_when: no
   tags: provision
 
 
@@ -89,6 +90,6 @@
 # the packages versions.
 - name: Update systems
   shell: "{{ update_command }}"
-  become: true
+  become: yes
   changed_when: no
   tags: provision
