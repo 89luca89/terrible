@@ -29,6 +29,15 @@
   tags: deploy, generate_hcl
   delegate_to: terraform_node
 
+- name: "Find hypervisors file tree"
+  find:
+    path: "{{ lookup('env','HOME') }}/.terrible/{{ ansible_inventory_sources[0].split('/')[-1] }}"
+    file_type: directory
+  register: hypervisors_tf
+  tags: deploy, destroy, apply, generate_hcl, purge
+  run_once: yes
+  delegate_to: terraform_node
+
 # Create an array containing the list of nodes in the form of node-name.j2,...
 - name: "Remove unmanaged nodes - generate list of managed files"
   set_fact:
@@ -83,34 +92,49 @@
 
 - name: "Terraform destroy VMs and all resources"
   terraform:
-    project_path: "{{ hcl_deploy_path }}/"
+    project_path: "{{ item.path }}"
     force_init: yes
     state: absent
-  throttle: 1
   tags: never, purge
+  run_once: yes
+  with_items:
+    - "{{ hypervisors_tf.files | sort(attribute='path') }}"
   delegate_to: terraform_node
 
 - name: "Terraform init VMs and all resources"
   terraform:
-    project_path: "{{ hcl_deploy_path }}/"
+    project_path: "{{ item.path }}"
     force_init: yes
     state: present
-  throttle: 1
-  check_mode: yes
   tags: deploy, apply
+  run_once: yes
+  check_mode: yes
+  with_items:
+    - "{{ hypervisors_tf.files | sort(attribute='path') }}"
   delegate_to: terraform_node
 
 - name: "Terraform apply VMs"
   terraform:
-    project_path: "{{ hcl_deploy_path }}/"
+    project_path: "{{ item.path }}"
     state: present
-    targets: "libvirt_domain.domain_{{ inventory_hostname }}"
-  throttle: 1
   tags: deploy, apply
-  register: terraform_output
+  run_once: yes
+  with_items:
+    - "{{ hypervisors_tf.files | sort(attribute='path') }}"
+  register: terraform_outputs_multiple
   delegate_to: terraform_node
 
 ### !!! Important
 # Here we register the terraform_output that in combination with the
 # output provider in the .tf file will return us the DHCP lease IP of
 # the NAT network we use as management for the role.
+#
+# We merge now the results of all hypervisors in a single dictionary to
+# lookup after.
+- name: "Merge hypervisors results"
+  set_fact:
+    terraform_output: "{{ terraform_output|default({}) | combine(item.outputs) }}"
+  with_items:
+    - "{{ terraform_outputs_multiple.results }}"
+  tags: deploy, apply
+  delegate_to: terraform_node

@@ -29,11 +29,11 @@
     # have that output
     - name: "Pivoting ansible_host: set to terraform temporary ip..."
       set_fact:
-        ansible_host: "{{ terraform_output.outputs[inventory_hostname]['value'][0]  }}"
+        ansible_host: "{{ terraform_output[inventory_hostname]['value'][0]  }}"
       when:
         - terraform_output is defined
-        - terraform_output.outputs.values() | length > 0
-        - terraform_output.outputs[inventory_hostname]['value'][0] != '127.0.0.1'
+        - terraform_output.values() | length > 0
+        - terraform_output[inventory_hostname]['value'][0] != '127.0.0.1'
 
     # Ansible: gather facts of the newly created hosts.
     - name: gather facts
