@@ -90,7 +90,6 @@ all:
                   format: ext4
                   mount_point: /mnt/data_storage_1
                   encription: True
-                  keyfile: "./file.txt"
                 disk-config:
                   size: 500
                   pool: default
