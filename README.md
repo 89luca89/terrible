@@ -417,7 +417,7 @@ If `data_disks` is mentioned in your inventory, the following variables are requ
 * **encryption:** `required`. Specify the mount point of the disk. Available values could be `True` or `False`.
 * **keyfile:** `required`, when **encryption** is set to `True`. Specify your local file containing the *passphrase* to encrypt the disks.
 
-| OS Family   |  Supported Disk Format      |  Encryption  |
+| OS Family   |  Supported Disk Format      |  Encryption Supported  |
 |----------|:-------------|--------------|
 | Debian |  `ext2`, `ext3`, `ext4` | yes |
 | FreeBSD |  `freebsd-ufs`     |  no  |
