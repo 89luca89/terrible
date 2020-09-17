@@ -1,6 +1,19 @@
 ansible_dependencies:
   - python3
-  - cryptsetup
+  # Decide if encryption is set to True at least one time 
+  # in the single machine inventory, and enable the download
+  # of cryptsetup based on this.
+  - "{% set enc = { 'flag': False } %}
+      {% for item in data_disks.values() %}
+        {%- if item['encryption'] %}
+          {%-   if enc.update({'flag':True}) %}{%- endif %}
+        {%- endif %}
+      {% endfor %}
+    {% if enc.flag %}
+      cryptsetup
+    {% else %}
+      None
+    {% endif %}"
 
 update_command: zypper patch -y
 install_command: zypper install -y

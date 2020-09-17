@@ -115,7 +115,9 @@ resource "libvirt_domain" "domain-terraform" {
     provisioner "remote-exec" {
       inline = [
 {% for pkg in ansible_dependencies %}
+    {% if not 'None' in pkg %}
         "{{ install_command }} {{ pkg }}"{% if not loop.last %},{% endif %}
+    {% endif %}
 
 {% endfor %}
       ]
