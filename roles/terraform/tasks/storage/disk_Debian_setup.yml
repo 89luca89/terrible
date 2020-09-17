@@ -38,7 +38,7 @@
 
 # Create directory under /root to store keyfiles that
 # are going to be generated.
-- name: Create directory to store keyfiles
+- name: Create directory to store keyfiles (remote)
   file:
     path: /root/keyfiles
     state: directory
@@ -50,15 +50,16 @@
     - "{{ item.0['encryption'] }}"
 
 # Generate local directory to store keyfiles.
-- name: Create directory to store keyfiles
+- name: Create directory to store keyfiles (local)
   file:
-    path: keyfiles
+    path: "{{ hcl_deploy_path | expanduser }}/keyfiles"
     state: directory
     mode: '0755'
   delegate_to: localhost
   with_together:
     - "{{ data_disks.values() | list }}"
     - "{{ ansible_devices.keys() | select('match','vd[b-z]') | sort | list }}"
+    - "{{ data_disks.keys() | list }}"
   when:
     - "{{ item.0['encryption'] }}"
 
@@ -66,8 +67,8 @@
 # into a local directory
 - name: Generate keyfiles
   shell: |
-    if [ ! -f ./keyfiles/{{ item.1 }} ]; then
-      dd if=/dev/urandom of=./keyfiles/{{ item.1 }} bs=1024 count=1
+    if [ ! -f {{ hcl_deploy_path | expanduser }}/keyfiles/{{ inventory_hostname }}-{{ item.1 }} ]; then
+      dd if=/dev/urandom of={{ hcl_deploy_path | expanduser }}/keyfiles/{{ inventory_hostname }}-{{ item.1 }} bs=1024 count=1;
     fi
   delegate_to: localhost
   with_together:
@@ -80,8 +81,8 @@
 # luks utility to encrypt disks.
 - name: Copy keyfile to remote host
   copy:
-    src: "./keyfiles/{{ item.1 }}"
-    dest: "/root/keyfiles/{{ item.1}}"
+    src: "{{ hcl_deploy_path | expanduser }}/keyfiles/{{ inventory_hostname }}-{{ item.1 }}"
+    dest: "/root/keyfiles/{{ item.1 }}"
     mode: '0400'
   with_together:
     - "{{ data_disks.values() | list }}"
