@@ -321,21 +321,6 @@
     - data_disks is defined
     - data_disks | length > 0
 
-# Verifiy the correctness of the parameters.
-- name: Validate 'keyfile' parameter
-  assert:
-    quiet: yes
-    that:
-      - "{{ item }}.keyfile | length > 0"
-    fail_msg: >
-      You are trying to use an unsupported keyfile value.
-  with_items:
-    - "{{ data_disks.values() | list }}"
-  when:
-    - data_disks is defined
-    - data_disks | length > 0
-    - "{{ item }}.encryption"
-
 # Check if we have a public ssh_key file
 - name: "Ensure public key ssh file exists"
   stat:
