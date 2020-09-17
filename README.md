@@ -415,7 +415,6 @@ If `data_disks` is mentioned in your inventory, the following variables are requ
 * **format:** `require`. Specify the filesystem format you want to apply to the disk. Available filesystems are specified below.
 * **mount_point:** `required`. Specify the mount point you want to create for the disk.
 * **encryption:** `required`. Specify the mount point of the disk. Available values could be `True` or `False`.
-* **keyfile:** `required`, when **encryption** is set to `True`. Specify your local file containing the *passphrase* to encrypt the disks.
 
 | OS Family   |  Supported Disk Format      |  Encryption Supported  |
 |----------|:-------------|--------------|
@@ -454,7 +453,7 @@ Let's take a look at how the *inventory* file is going to be fill.
                             		format: xfs                     # Disk Filesystem = xfs
                             		mount_point: /mnt/data_storage  # The path where the disk is mounted
                             		encryption: True                # Enable disk encryption
-                            		keyfile: ./passphrase.txt       # Specify the local file which contain the passphrase to encrypt the disk
+
                                 # Here we declare the disk name
                             	disk-config:
                             		size: 1                         # Disk size = 1 GB
