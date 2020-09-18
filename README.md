@@ -135,6 +135,7 @@ Here's a little example:
 
 ```yaml
         ...
+all:
     hosts:
         terraform_node:
             ansible_host: 127.0.0.1
