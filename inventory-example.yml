@@ -85,6 +85,13 @@ all:
               os_family: RedHat
               cpu: 4
               memory: 1024
+
+              ## Hypervisor
+              # this variable is required and decides on which hypervisor
+              # the VM should be deployed, this value should be the inventory_hostname
+              # of the target hypervisor declared ad the start of the inventory
+              hypervisor: hypervisor_1
+
               # This is the network resource where you want
               # to assign the default NAT network, libvirt
               # creates this "default" when installing, being the
@@ -261,6 +268,7 @@ all:
           hosts:
             host-vm-2:
               os_family: RedHat
+              hypervisor: hypervisor_1
               ansible_host: 192.168.122.200
               network_interfaces:
                 iface_1:
@@ -283,6 +291,7 @@ all:
               os_family: Suse
               disk_source: "~/VirtualMachines/opensuse15.2-terraform.qcow2"
               ansible_host: 192.168.122.201
+              hypervisor: hypervisor_1
               network_interfaces:
                 iface_1:
                   type: nat
