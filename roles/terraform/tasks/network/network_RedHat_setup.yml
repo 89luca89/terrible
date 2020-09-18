@@ -4,14 +4,6 @@
   hostname:
     name: "{{ inventory_hostname }}"
 
-# Remove networks we do not manage in order to have control
-- name: Remove unmanaged networks
-  shell: |
-    find /etc/sysconfig/network-scripts -type f ! -iname "*managed*" -delete
-  changed_when: no
-  async: 5
-  poll: 0
-
 # Gather up all interfaces
 - name: get available devices
   find:
@@ -19,6 +11,12 @@
     excludes: "lo"
     file_type: any
   register: interfaces
+
+# Remove networks we do not manage in order to have control
+- name: Remove unmanaged networks
+  shell: |
+    find /etc/sysconfig/network-scripts -type f -iname "ifcfg*" {% for item in interfaces.files | sort(attribute='path') | list %} ! -iname "ifcfg-managed-*-{{ item.path.split('/')[-1] }}" {% endfor %} -delete
+  changed_when: no
 
 # Deploy multiple ifcfg-namaget-NET_POOL-ETHX files, this is more easy to
 # keep track than using directly nmcli
