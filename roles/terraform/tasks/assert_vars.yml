@@ -53,6 +53,18 @@
       - "os_family is defined"
       - "os_family in os_family_support"
 
+# Ensure that the hypervisor variable has been set for current host.
+- name: Assert hypervisor variable
+  assert:
+    quiet: yes
+    that:
+      - "{{ item }}"
+    fail_msg: >
+      You must specify the hyperisor value for host {{ inventory_hostname }}
+  with_items:
+      - "hypervisor is defined"
+      - "hostvars[hypervisor]['ansible_host'] is defined"
+
 # Verifiy the correctness of the parameters.
 - name: Validate 'cpu' parameter
   assert:
