@@ -14,10 +14,10 @@ all:
         terraform_node:
           ansible_host: 127.0.0.1
           ansible_connection: local
-          terraform_target_hypervisor: 172.16.0.12
-          terraform_target_hypervisor_user: root
-          terraform_target_hypervisor_port: 22
-          terraform_target_hypervisor_password: password
+          ansible_host: 172.16.0.12
+          ansible_host_user: root
+          ansible_port: 22
+          ansible_ssh_pass: password
       children:
         master_nodes:
           hosts:
@@ -150,10 +150,10 @@ all:
         terraform_node:
           ansible_host: 127.0.0.1
           ansible_connection: local
-          terraform_target_hypervisor: 172.16.0.13
-          terraform_target_hypervisor_user: root
-          terraform_target_hypervisor_port: 22
-          terraform_target_hypervisor_password: password
+          ansible_host: 172.16.0.13
+          ansible_host_user: root
+          ansible_port: 22
+          ansible_ssh_pass: password
       children:
         master_nodes:
           hosts:

@@ -252,10 +252,10 @@ If you want to use a remote QEMU/KVM server instead, you can do this as follow:
         terraform_node:
           ansible_host: 127.0.0.1
           ansible_connection: local
-          terraform_target_hypervisor: remote_kvm_machine.domain
-          terraform_target_hypervisor_user: root
-          terraform_target_hypervisor_port: 22
-          terraform_target_hypervisor_password: password
+          ansible_host: remote_kvm_machine.domain
+          ansible_host_user: root
+          ansible_port: 22
+          ansible_ssh_pass: password
 ```
 This case will ask Terraform to connect to the QEMU/KVM server using the following uri: `qemu+ssh://root@remote_kvm_machine.domain/system`.
 This also setup the Terraform internal ssh connection to use it as a **bastion** host to connect to his VMs.
@@ -294,15 +294,15 @@ hypervisor_1:
         terraform_node:
           ansible_host: remote_terraform_node.test.com
           ansible_connection: ssh # or paramiko or whatever NOT local
-          terraform_target_hypervisor: remote_kvm_machine.domain
-          terraform_target_hypervisor_user: root
-          terraform_target_hypervisor_port: 22
-          terraform_target_hypervisor_password: password
+          ansible_host: remote_kvm_machine.domain
+          ansible_host_user: root
+          ansible_port: 22
+          ansible_ssh_pass: password
 ```
 This case will ask Terraform to connect to QEMU/KVM using the uri: `qemu+ssh://root@remote_kvm_machine.domain/system`.
 This also setup the Terraform internal ssh connection to use it as a bastion to connect to its VMs.
 Being already remote, this will set up 2 jumphost(s) for Ansible, one is the `terraform_node`, the other
-one is the `terraform_target_hypervisor`.
+one is the `ansible_host`.
 
 ![remote-all](./pics/remote-all.png)
 

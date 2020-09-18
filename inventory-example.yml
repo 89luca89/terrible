@@ -62,12 +62,12 @@ all:
           ## if terraform IS LOCAL, we are assuming that ansible and teraform are
           ## on the same node but the target hypervisor is remote.
           ##
-          ## we then need to specify the terraform_target_hypervisor_* variables to
+          ## we then need to specify the ansible_host_* variables to
           ## let both terraform and later ansible access the final hypervisor and VMs.
-          terraform_target_hypervisor: remote_kvm_machine.foo.bar
-          terraform_target_hypervisor_user: root
-          terraform_target_hypervisor_port: 22
-          terraform_target_hypervisor_password: password
+          ansible_host: remote_kvm_machine.foo.bar
+          ansible_host_user: root
+          ansible_port: 22
+          ansible_ssh_pass: password
       children:
         master_nodes:
           hosts:

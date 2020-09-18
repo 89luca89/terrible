@@ -29,16 +29,16 @@
       You are trying to use an unsupported ssh_port value.
 
 # Verifiy the correctness of the parameters.
-- name: Validate 'terraform_target_hypervisor_port' parameter
+- name: Validate 'ansible_port' parameter
   assert:
     quiet: yes
     that:
-      - "{{ hostvars[hypervisor]['terraform_target_hypervisor_port'] | int }}"
-      - "{{ ( hostvars[hypervisor]['terraform_target_hypervisor_port'] | int ) > 0 }}"
+      - "{{ hostvars[hypervisor]['ansible_port'] | int }}"
+      - "{{ ( hostvars[hypervisor]['ansible_port'] | int ) > 0 }}"
     fail_msg: >
-      You are trying to use an unsupported terraform_target_hypervisor_port value.
+      You are trying to use an unsupported ansible_port value.
   when:
-    - hostvars[hypervisor]['terraform_target_hypervisor_port'] is defined
+    - hostvars[hypervisor]['ansible_port'] is defined
 
 # Ensure that the os_family variable has been set for current host.
 - name: Assert os_family
