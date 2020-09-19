@@ -6,11 +6,13 @@ ansible_dependencies:
   # in the single machine inventory, and enable the download
   # of cryptsetup based on this.
   - "{% set enc = { 'flag': False } %}
+    {% if data_disks is defined %}
       {% for item in data_disks.values() %}
         {%- if item['encryption'] %}
           {%-   if enc.update({'flag':True}) %}{%- endif %}
         {%- endif %}
       {% endfor %}
+    {% endif %}
     {% if enc.flag %}
       cryptsetup
     {% else %}
