@@ -70,6 +70,8 @@
     if [ ! -f {{ hcl_deploy_path | expanduser }}/keyfiles/{{ inventory_hostname }}-{{ item.1 }} ]; then
       dd if=/dev/urandom of={{ hcl_deploy_path | expanduser }}/keyfiles/{{ inventory_hostname }}-{{ item.1 }} bs=1024 count=1;
     fi
+  register: gen_keyfile
+  changed_when: '"copied" in gen_keyfile.stderr'
   delegate_to: localhost
   with_together:
     - "{{ data_disks.values() | list }}"
