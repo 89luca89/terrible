@@ -416,6 +416,8 @@ If `data_disks` is mentioned in your inventory, the following variables are requ
 * **mount_point:** `required`. Specify the mount point you want to create for the disk.
 * **encryption:** `required`. Specify the mount point of the disk. Available values could be `True` or `False`.
 
+​	**N.B.** Each disk declared needs to have a unique name (ex. you can't have the name `disk0` declared twice).
+
 | OS Family   |  Supported Disk Format      |  Encryption Supported  |
 |----------|:-------------|--------------|
 | Debian |  `ext2`, `ext3`, `ext4` | yes |
@@ -447,7 +449,7 @@ Let's take a look at how the *inventory* file is going to be fill.
                             # the additional disk.
                             data_disks:
                                 # Here we declare the disk name
-                            	disk-storage:
+                            	disk-storage:                       # Uniqe name to identify the disk unit.
                             		size: 100                       # Disk size = 100 GB
                             		pool: default                   # Store the disk image into the pool = default.
                             		format: xfs                     # Disk Filesystem = xfs
@@ -455,7 +457,7 @@ Let's take a look at how the *inventory* file is going to be fill.
                             		encryption: True                # Enable disk encryption
 
                                 # Here we declare the disk name
-                            	disk-config:
+                            	disk-config:                       # Uniqe name to identify the disk unit.
                             		size: 1                         # Disk size = 1 GB
                             		pool: default                   # Store the disk image into the pool = default.
                             		format: ext4                    # Disk Filesystem = ext4
