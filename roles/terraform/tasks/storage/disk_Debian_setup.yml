@@ -2,7 +2,24 @@
 
 # additional disks setup for terraform role
 #
-#
+#         [ Start ]
+#             |
+# [ Create disk partitions ]
+#     ┌───────┴─────────┐
+#     |                 |
+#     |           [ Copy file to remote host ]
+#     |                 |
+#     |           [ Create LUKS container ]
+#     |                 |
+# [ Format diks]  [ Format encrypted disk ]
+#     |                 |
+#     └───────┬─────────┘
+# [ Create disk mountpoint ]
+#     ┌───────┴─────────┐
+#     |                 |
+# [ Mount disks ] [ Mount encrypted disks ]
+#     └───────┬─────────┘
+#          [ End ] 
 
 # Filter the additional virtual disks and create 1 partition
 # for each disk.
@@ -19,6 +36,77 @@
   with_items:
     - "{{ ansible_devices.keys() | select('match','vd[b-z]') | list }}"
 
+# Create directory under /root to store keyfiles that
+# are going to be generated.
+- name: Create directory to store keyfiles (remote)
+  file:
+    path: /root/keyfiles
+    state: directory
+    mode: '0600'
+  with_together:
+    - "{{ data_disks.values() | list }}"
+    - "{{ ansible_devices.keys() | select('match','vd[b-z]') | sort | list }}"
+  when:
+    - "{{ item.0['encryption'] }}"
+
+# Generate local directory to store keyfiles.
+- name: Create directory to store keyfiles (local)
+  file:
+    path: "{{ hcl_deploy_path | expanduser }}/keyfiles"
+    state: directory
+    mode: '0755'
+  delegate_to: localhost
+  with_together:
+    - "{{ data_disks.values() | list }}"
+    - "{{ ansible_devices.keys() | select('match','vd[b-z]') | sort | list }}"
+    - "{{ data_disks.keys() | list }}"
+  when:
+    - "{{ item.0['encryption'] }}"
+
+# Generate keyfiles using /dev/urandom and store them 
+# into a local directory
+- name: Generate keyfiles
+  shell: |
+    if [ ! -f {{ hcl_deploy_path | expanduser }}/keyfiles/{{ inventory_hostname }}-{{ item.1 }} ]; then
+      dd if=/dev/urandom of={{ hcl_deploy_path | expanduser }}/keyfiles/{{ inventory_hostname }}-{{ item.1 }} bs=1024 count=1;
+    fi
+  register: gen_keyfile
+  changed_when: '"copied" in gen_keyfile.stderr'
+  delegate_to: localhost
+  with_together:
+    - "{{ data_disks.values() | list }}"
+    - "{{ data_disks.keys() | list }}"
+  when:
+    - "{{ item.0['encryption'] }}"
+
+# Copy the keyfile to the remote host, to allow 
+# luks utility to encrypt disks.
+- name: Copy keyfile to remote host
+  copy:
+    src: "{{ hcl_deploy_path | expanduser }}/keyfiles/{{ inventory_hostname }}-{{ item.1 }}"
+    dest: "/root/keyfiles/{{ item.1 }}"
+    mode: '0400'
+  with_together:
+    - "{{ data_disks.values() | list }}"
+    - "{{ data_disks.keys() | list }}"
+  when:
+    - "{{ item.0['encryption'] }}"
+
+# For each partition create a luks container
+# using the specified keyfile to encrypt it.
+- name: Create LUKS container
+  luks_device:
+    name: "enc{{ item.1 }}1"
+    device: "/dev/{{ item.1 }}1"
+    state: "opened"
+    keyfile: "/root/keyfiles/{{ item.2 }}"
+  with_together:
+    - "{{ data_disks.values() | list }}"
+    - "{{ ansible_devices.keys() | select('match','vd[b-z]') | sort | list }}"
+    - "{{ data_disks.keys() | list }}"
+  when:
+    - "{{ item.0['encryption'] }}"
+
 # For each partition previously created
 # the task format the unique partition with
 # the filesystem type specified into the inventory,
@@ -30,6 +118,22 @@
   with_together:
     - "{{ data_disks.values() | list }}"
     - "{{ ansible_devices.keys() | select('match','vd[b-z]') | sort | list }}"
+  when:
+    - "not {{ item.0['encryption'] }}"
+
+# For each partition previously created
+# the task format the unique partition with
+# the filesystem type specified into the inventory,
+# or with the default if not specified.
+- name: Format encrypted disks
+  filesystem:
+    dev: "/dev/mapper/enc{{ item.1 }}1"
+    fstype: "{{ item.0['format'] }}"
+  with_together:
+    - "{{ data_disks.values() | list }}"
+    - "{{ ansible_devices.keys() | select('match','vd[b-z]') | sort | list }}"
+  when:
+    - "{{ item.0['encryption'] }}"
 
 # Set the facts again after the previous tasks
 # to update the informations about created disks.
@@ -57,6 +161,40 @@
     src: "UUID={{ ( ansible_devices[item.1].partitions.values() | list )[0].uuid }}"
     fstype: "{{ item.0['format'] }}"
     state: mounted
+    opts: nofail
   with_together:
     - "{{ data_disks.values() | list }}"
     - "{{ ansible_devices.keys() | select('match','vd[b-z]') | sort | list }}"
+  when:
+    - "not {{ item.0['encryption'] }}"
+
+# Mount each disk on the related mountpoint,
+# generating the entry into the /etc/fstab file.
+- name: Mount encrypted disks
+  mount:
+    path: "{{ item.0['mount_point'] }}"
+    src: "/dev/mapper/enc{{ item.1 }}1"
+    fstype: "{{ item.0['format'] }}"
+    state: mounted
+    opts: nofail
+  with_together:
+    - "{{ data_disks.values() | list }}"
+    - "{{ ansible_devices.keys() | select('match','vd[b-z]') | sort | list }}"
+  when:
+    - "{{ item.0['encryption'] }}"
+
+# For each encrypted disk, initialize its own entry 
+# into the /etc/crypttab file, to enable auto mount
+# at boot passing its keyfile.
+- name: Initialize /etc/crypttab file
+  crypttab:
+    name: "enc{{ item.1 }}1"
+    backing_device: "/dev/{{ item.1 }}1"
+    state: present
+    password: "/root/keyfiles/{{ item.2 }}"
+  with_together:
+    - "{{ data_disks.values() | list }}"
+    - "{{ ansible_devices.keys() | select('match','vd[b-z]') | sort | list }}"
+    - "{{ data_disks.keys() | list }}"
+  when:
+    - "{{ item.0['encryption'] }}"

@@ -412,15 +412,18 @@ If `data_disks` is mentioned in your inventory, the following variables are requ
 
 * **size:** `required`. Specify the disk size expressed in GB. (es. `size: 1` means 1GB)
 * **pool:** `required`. Specify the pool where you want to store the additional disks.
-* **format:** `require`. Specify the filesystem format you want to apply to the disk. 
-* **mount_point:** `required`. Specify the mount point of the disk.
+* **format:** `require`. Specify the filesystem format you want to apply to the disk. Available filesystems are specified below.
+* **mount_point:** `required`. Specify the mount point you want to create for the disk.
+* **encryption:** `required`. Specify the mount point of the disk. Available values could be `True` or `False`.
 
-| OS Family   |  Supported Disk Format      | 
-|----------|:-------------|
-| Debian |  `ext2`, `ext3`, `ext4` | 
-| FreeBSD |  `freebsd-ufs`     | 
-| RedHat | `ext2`, `ext3`, `ext4`, `xfs` | 
-| Suse | `ext2`, `ext3`, `ext4`, `xfs`  | 
+​	**N.B.** Each disk declared needs to have a unique name (ex. you can't have the name `disk0` declared twice).
+
+| OS Family   |  Supported Disk Format      |  Encryption Supported  |
+|----------|:-------------|--------------|
+| Debian |  `ext2`, `ext3`, `ext4` | yes |
+| FreeBSD |  `freebsd-ufs`     |  no  |
+| RedHat | `ext2`, `ext3`, `ext4`, `xfs` | yes |
+| Suse | `ext2`, `ext3`, `ext4`, `xfs` | yes |
 
 Let's take a look at how the *inventory* file is going to be fill.
 
@@ -446,17 +449,20 @@ Let's take a look at how the *inventory* file is going to be fill.
                             # the additional disk.
                             data_disks:
                                 # Here we declare the disk name
-                            	disk-storage:
+                            	disk-storage:                       # Uniqe name to identify the disk unit.
                             		size: 100                       # Disk size = 100 GB
                             		pool: default                   # Store the disk image into the pool = default.
                             		format: xfs                     # Disk Filesystem = xfs
                             		mount_point: /mnt/data_storage  # The path where the disk is mounted
+                            		encryption: True                # Enable disk encryption
+
                                 # Here we declare the disk name
-                            	disk-config:
+                            	disk-config:                       # Uniqe name to identify the disk unit.
                             		size: 1                         # Disk size = 1 GB
                             		pool: default                   # Store the disk image into the pool = default.
                             		format: ext4                    # Disk Filesystem = ext4
                             		mount_point: /mnt/data_config   # The path where the disk is mounted
+                            		encryption: False               # Enable disk encryption
 ```
 
 
@@ -473,6 +479,15 @@ Actually the playbook is supporting the most common 4 OS families for the Guests
 This means you are able to generate the infrastructure using the OS listed above.
 
 Hypervisor OS is agnostic, as long as requirements are met.
+
+## Installation
+
+Use the following command to satisfy the project's dependencies:
+
+```bash
+pip3 install --user -r requirements.txt
+```
+
 
 ## Usage
 
