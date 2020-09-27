@@ -212,7 +212,7 @@ These variables are **required**:
 * **ssh_port:** `required`. Specify the port to access the deployed VMs.
 * **ssh_user:** `required`. Specify the user to access the deployed VMs.
 * **ssh_public_key_file:** `required`. Specify the ssh public key file to deploy on the VMs.
-* **hypervisor:** `required`. Specify on which hypervisor to deploy the VMs.
+* **hypervisor:** `required`. Specify on which hypervisor to deploy the Infrastructure.
 
 Ansible hosts required outside the `deploy` group:
 
