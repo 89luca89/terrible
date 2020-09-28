@@ -18,7 +18,6 @@
     dest: "{{ hcl_deploy_path }}/variables.tf"
   register: terraform_variables
   tags: deploy, generate_hcl
-  run_once: yes
   delegate_to: terraform_node
 
 # Deploy the terraform files for each host. Use jinja2 for templating.
@@ -30,12 +29,23 @@
   tags: deploy, generate_hcl
   delegate_to: terraform_node
 
+- name: "Find hypervisors file tree"
+  find:
+    path: "{{ lookup('env','HOME') }}/.terrible/{{ ansible_inventory_sources[0].split('/')[-1] }}"
+    file_type: directory
+  register: hypervisors_tf
+  tags: deploy, destroy, apply, generate_hcl, purge
+  run_once: yes
+  delegate_to: terraform_node
+
 # Create an array containing the list of nodes in the form of node-name.j2,...
 - name: "Remove unmanaged nodes - generate list of managed files"
   set_fact:
-    managed_files: "[{% for host in play_hosts %} '{{ host }}.tf' {%if not loop.last %},{% endif %}{% endfor %}]"
+    managed_files: "{{ managed_files|default([]) + [hostvars[item]['hcl_deploy_path'] + '/' + item + '.tf' ] }}"
   tags: deploy, generate_hcl
   run_once: yes
+  with_items:
+    - "{{ play_hosts }}"
   delegate_to: terraform_node
 
 # Create an array containing the list of files representing the nodes in the folder.
@@ -45,7 +55,6 @@
     patterns: "*.tf"
   register: nodes_tf
   tags: deploy, generate_hcl
-  run_once: yes
   delegate_to: terraform_node
 
 # Remove files that are orphan in the inventory.
@@ -59,53 +68,73 @@
     - "{{ nodes_tf.files | sort(attribute='path') }}"
   when:
     - not "variables.tf" in item.path
-    - item.path.split('/')[-1] not in managed_files
+    - item.path not in managed_files
   tags: deploy, generate_hcl
   delegate_to: terraform_node
 
 - name: "Terraform renew target VMs"
   set_fact:
-    destroy: True
+    destroy: yes
   tags: never, destroy
   delegate_to: terraform_node
 
 - name: "Terraform shut down target VMs (preserve resources)"
   terraform:
     project_path: "{{ hcl_deploy_path }}/"
-    force_init: true
-    lock: no
+    force_init: yes
     state: absent
     targets: "libvirt_domain.domain_{{ inventory_hostname }}"
+  throttle: 1
   tags: deploy, apply, destroy
   when:
-    - (destroy is defined and destroy) or terraform_variables.changed or terraform_vm.changed
+    - (destroy is defined and destroy) or (terraform_variables is defined and terraform_variables.changed) or (terraform_vm is defined and terraform_vm.changed)
   delegate_to: terraform_node
 
 - name: "Terraform destroy VMs and all resources"
   terraform:
-    project_path: "{{ hcl_deploy_path }}/"
-    force_init: true
+    project_path: "{{ item.path }}"
+    force_init: yes
     state: absent
-    lock: no
   tags: never, purge
+  run_once: yes
+  with_items:
+    - "{{ hypervisors_tf.files | sort(attribute='path') }}"
+  delegate_to: terraform_node
+
+- name: "Terraform init VMs and all resources"
+  terraform:
+    project_path: "{{ item.path }}"
+    force_init: yes
+    state: present
+  tags: deploy, apply
+  run_once: yes
+  check_mode: yes
+  with_items:
+    - "{{ hypervisors_tf.files | sort(attribute='path') }}"
   delegate_to: terraform_node
 
 - name: "Terraform apply VMs"
   terraform:
-    project_path: "{{ hcl_deploy_path }}/"
-    force_init: true
+    project_path: "{{ item.path }}"
     state: present
-  register: terraform_output
   tags: deploy, apply
   run_once: yes
-  delegate_to: terraform_node
-
-- debug:
-    msg: "{{ terraform_output.outputs[inventory_hostname]['value'][0] }}"
-  tags: apply
+  with_items:
+    - "{{ hypervisors_tf.files | sort(attribute='path') }}"
+  register: terraform_outputs_multiple
   delegate_to: terraform_node
 
 ### !!! Important
 # Here we register the terraform_output that in combination with the
 # output provider in the .tf file will return us the DHCP lease IP of
 # the NAT network we use as management for the role.
+#
+# We merge now the results of all hypervisors in a single dictionary to
+# lookup after.
+- name: "Merge hypervisors results"
+  set_fact:
+    terraform_output: "{{ terraform_output|default({}) | combine(item.outputs) }}"
+  with_items:
+    - "{{ terraform_outputs_multiple.results }}"
+  tags: deploy, apply
+  delegate_to: terraform_node

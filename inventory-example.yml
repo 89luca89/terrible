@@ -1,7 +1,53 @@
 all:
   vars:
-  children:
+  hosts:
+    #
+    # ----
+    ## Terraform node is required; it is the IP of the machine
+    ## that performs the terraform tasks. The default value of
+    ## 127.0.0.1 indicates that the machine that performs terraform
+    ## tasks is the same that launches the ansible playbook.
+    ##
+    ## When using 127.0.0.1 for the terraform_node, it is advisable to also
+    ## set ansible_connection to local, so it does not use ssh for localhost.
+    ##
+    ## In case the terraform machine is NOT the local machine, put here the
+    ## IP/hostname of the terraform node.
+    #
+    # ----
+    terraform_node:
+      # this should correspond to the ip/host of the machine where terraform
+      # is installed. If it's the same machine that is launching the ansible
+      # run, you should set it to 127.0.0.1 ans ansible_connection: local.
+      ansible_host: remote_terraform_node.test.com
+      # it is better to explicitly set the ansible_connection variable.
+      # if set to `local` the role will assume that terraform is on the same
+      # node that is launching the ansible run.
+      #
+      ansible_connection: ssh
+
+      #
+      # ----
+      ## it the terraform_node is NOT local or the TARGET KVM MACHINE is not local,
+      ## we can assume that you need a bastion/jumphost to reach the VM's internal
+      ## network and perform early provisioning (such as network setup).
+      ##
+      ## if terraform is NOT local, we can assume that we have 2 type of situations:
+      ##    - terraform is on the same node where the kvm hypervisor is
+      ##    - terraform is targetting another different kvm-hypervisor node
+      ##
+      ## if terraform IS LOCAL, we are assuming that ansible and teraform are
+      ## on the same node but the target hypervisor is remote.
+      ##
+      ## we then need to specify the ansible_host_* variables to
+      ## let both terraform and later ansible access the final hypervisor and VMs.
     hypervisor_1:
+      ansible_host: remote_kvm_machine.foo.bar
+      ansible_user: root
+      ansible_port: 22
+      ansible_ssh_pass: password
+  children:
+    deploy:
       vars:
         # ----
         ## Hypervisor dependent
@@ -23,51 +69,6 @@ all:
         ##
         # Default ssh public key location.
         ssh_public_key_file: '~/.ssh/id_rsa.pub'
-      hosts:
-        #
-        # ----
-        ## Terraform node is required; it is the IP of the machine
-        ## that performs the terraform tasks. The default value of
-        ## 127.0.0.1 indicates that the machine that performs terraform
-        ## tasks is the same that launches the ansible playbook.
-        ##
-        ## When using 127.0.0.1 for the terraform_node, it is advisable to also
-        ## set ansible_connection to local, so it does not use ssh for localhost.
-        ##
-        ## In case the terraform machine is NOT the local machine, put here the
-        ## IP/hostname of the terraform node.
-        #
-        # ----
-        terraform_node:
-          # this should correspond to the ip/host of the machine where terraform
-          # is installed. If it's the same machine that is launching the ansible
-          # run, you should set it to 127.0.0.1 ans ansible_connection: local.
-          ansible_host: remote_terraform_node.test.com
-          # it is better to explicitly set the ansible_connection variable.
-          # if set to `local` the role will assume that terraform is on the same
-          # node that is launching the ansible run.
-          #
-          ansible_connection: ssh
-
-          #
-          # ----
-          ## it the terraform_node is NOT local or the TARGET KVM MACHINE is not local,
-          ## we can assume that you need a bastion/jumphost to reach the VM's internal
-          ## network and perform early provisioning (such as network setup).
-          ##
-          ## if terraform is NOT local, we can assume that we have 2 type of situations:
-          ##    - terraform is on the same node where the kvm hypervisor is
-          ##    - terraform is targetting another different kvm-hypervisor node
-          ##
-          ## if terraform IS LOCAL, we are assuming that ansible and teraform are
-          ## on the same node but the target hypervisor is remote.
-          ##
-          ## we then need to specify the terraform_target_hypervisor_* variables to
-          ## let both terraform and later ansible access the final hypervisor and VMs.
-          terraform_target_hypervisor: remote_kvm_machine.foo.bar
-          terraform_target_hypervisor_user: root
-          terraform_target_hypervisor_port: 22
-          terraform_target_hypervisor_password: password
       children:
         master_nodes:
           hosts:
@@ -84,6 +85,13 @@ all:
               os_family: RedHat
               cpu: 4
               memory: 1024
+
+              ## Hypervisor
+              # this variable is required and decides on which hypervisor
+              # the VM should be deployed, this value should be the inventory_hostname
+              # of the target hypervisor declared ad the start of the inventory
+              hypervisor: hypervisor_1
+
               # This is the network resource where you want
               # to assign the default NAT network, libvirt
               # creates this "default" when installing, being the
@@ -260,6 +268,7 @@ all:
           hosts:
             host-vm-2:
               os_family: RedHat
+              hypervisor: hypervisor_1
               ansible_host: 192.168.122.200
               network_interfaces:
                 iface_1:
@@ -282,6 +291,7 @@ all:
               os_family: Suse
               disk_source: "~/VirtualMachines/opensuse15.2-terraform.qcow2"
               ansible_host: 192.168.122.201
+              hypervisor: hypervisor_1
               network_interfaces:
                 iface_1:
                   type: nat

@@ -29,16 +29,16 @@
       You are trying to use an unsupported ssh_port value.
 
 # Verifiy the correctness of the parameters.
-- name: Validate 'terraform_target_hypervisor_port' parameter
+- name: Validate 'ansible_port' parameter
   assert:
     quiet: yes
     that:
-      - "{{ hostvars['terraform_node']['terraform_target_hypervisor_port'] | int }}"
-      - "{{ ( hostvars['terraform_node']['terraform_target_hypervisor_port'] | int ) > 0 }}"
+      - "{{ hostvars[hypervisor]['ansible_port'] | int }}"
+      - "{{ ( hostvars[hypervisor]['ansible_port'] | int ) > 0 }}"
     fail_msg: >
-      You are trying to use an unsupported terraform_target_hypervisor_port value.
+      You are trying to use an unsupported ansible_port value.
   when:
-    - hostvars['terraform_node']['terraform_target_hypervisor_port'] is defined
+    - hostvars[hypervisor]['ansible_port'] is defined
 
 # Ensure that the os_family variable has been set for current host.
 - name: Assert os_family
@@ -52,6 +52,18 @@
   with_items:
       - "os_family is defined"
       - "os_family in os_family_support"
+
+# Ensure that the hypervisor variable has been set for current host.
+- name: Assert hypervisor variable
+  assert:
+    quiet: yes
+    that:
+      - "{{ item }}"
+    fail_msg: >
+      You must specify the hyperisor value for host {{ inventory_hostname }}
+  with_items:
+      - "hypervisor is defined"
+      - "hostvars[hypervisor]['ansible_host'] is defined"
 
 # Verifiy the correctness of the parameters.
 - name: Validate 'cpu' parameter
@@ -161,25 +173,6 @@
     - "item.dns is defined"
   with_items:
     - "{{ network_interfaces.values() | list }}"
-
-# If terraform_bastion_enabled is true, we need to ensure that
-# all the dependent variables are set in order to function properly.
-- name: Assert Bastion Variables
-  assert:
-    quiet: yes
-    that:
-      - "{{ item }} is defined"
-    fail_msg: >
-      You must specify {{ item }} when terraform_bastion_enabled is True
-  with_items:
-      - ansible_jump_hosts
-      - terraform_bastion_host
-      - terraform_bastion_password
-      - terraform_bastion_port
-      - terraform_bastion_user
-  when:
-    - terraform_bastion_enabled is defined
-    - terraform_bastion_enabled
 
 # Include the variables of the os_family of the host.
 #

@@ -12,6 +12,12 @@
     file_type: any
   register: interfaces
 
+# Remove networks we do not manage in order to have control
+- name: Remove unmanaged networks
+  shell: |
+    find /etc/sysconfig/network/ -type f -iname "ifcfg*" {% for item in interfaces.files | sort(attribute='path') | list %} ! -iname "*{{ item.path.split('/')[-1] }}*" {% endfor %} -delete
+  changed_when: no
+
 # Deploy multiple ifcfg-namaget-NET_POOL-ETHX files
 - name: "Set connection setting files"
   blockinfile:

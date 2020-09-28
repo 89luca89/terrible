@@ -22,6 +22,13 @@
     - "{{ interfaces.files | sort(attribute='path') }}"
   when: ansible_distribution != 'Ubuntu'
 
+# Remove networks we do not manage in order to have control
+- name: Remove unmanaged networks /2
+  shell: |
+    find /etc/network/interfaces.d/ -type f -iname "ifcfg*" {% for item in interfaces.files | sort(attribute='path') | list %} ! -iname "*{{ item.path.split('/')[-1] }}*" {% endfor %} -delete
+  changed_when: no
+  when: ansible_distribution != 'Ubuntu'
+
 # Use traditional /etc/network/interfaces on Debian
 - name: "Set connection setting files - Debian"
   blockinfile:

@@ -70,14 +70,18 @@ Below you can check the basic structure for the inventory.
 all:
     vars:
         ...
-    children:
+    hosts:
+        terraform_node:
+            ...
         hypervisor_1:
+            ...
+        hypervisor_2:
+            ...
+    children:
+        deploy:
             vars:
                 pool_name: ...
                 ...
-            hosts:
-                terraform_node:
-                    ansible_host: ...
             children:
                 group_1:
                     hosts:
@@ -91,14 +95,6 @@ all:
                             ...
                         host_3:
                             ...
-        hypervisor_2:
-            vars:
-                pool_name: ...
-                ...
-            hosts:
-                terraform_node:
-                    ansible_host: ...
-            children:
                 group_3:
                     hosts:
                         host_4:
@@ -117,14 +113,16 @@ Here's a little example:
 
 ```yaml
 all:
+    hosts:
+        terraform_node:
+            ansible_host: 127.0.0.1
+            ansible_connection: local
     vars:
-        hypervisor_1:
+        ...
+    children:
+        deploy:
             vars:
                 pool_name: defaul
-            hosts:
-                terraform_node:
-                    ansible_host: 127.0.0.1
-                    ansible_connection: local
         ...
 ```
 
@@ -137,14 +135,19 @@ Here's a little example:
 
 ```yaml
         ...
+all:
+    hosts:
+        terraform_node:
+            ansible_host: 127.0.0.1
+            ansible_connection: local
         hypervisor_1:
+            ansible_host: 127.0.0.1
+            ansible_connection: local
+    children:
+        deploy:
             vars:
                 pool_name: default
                 disk_source: "~/VirtualMachines/centos8-terraform.qcow2"
-            hosts:
-                terraform_node:
-                    ansible_host: 127.0.0.1
-                    ansible_connection: local
             children:
                 group_1:
                     hosts:
@@ -152,6 +155,7 @@ Here's a little example:
                             os_family: RedHat
                             cpu: 4
                             memory: 8192
+                            hypervisor: hypervisor_1
                             network_interfaces:
                                 ...
                 group_2:
@@ -159,17 +163,19 @@ Here's a little example:
                         host_2:
                             os_family: RedHat
                             cpu: 2
+                            hypervisor: hypervisor_1
                         host_3:
                             os_family: Suse
                             disk_source: "~/VirtualMachines/opensuse15.2-terraform.qcow2"
                             cpu: 4
                             memory: 4096
                             set_new_passowrd: password123
+                            hypervisor: hypervisor_1
                             network_interfaces:
                                 ...
 ```
 
-In this example, we specified 2 main groups (`group_1`, `group_2`) inside the `hypervisor_1`.
+In this example, we specified 2 main groups (`group_1`, `group_2`) and linked the VMs to `hypervisor_1`.
 These groups are composed overall by 3 VMs (`host_1`, `host_2`, `host_3`). 
 As you can see, not all the properties are specified for each machine. This is due to the default values of the variables provided by this playbook. 
 
@@ -206,7 +212,12 @@ These variables are **required**:
 * **ssh_port:** `required`. Specify the port to access the deployed VMs.
 * **ssh_user:** `required`. Specify the user to access the deployed VMs.
 * **ssh_public_key_file:** `required`. Specify the ssh public key file to deploy on the VMs.
+* **hypervisor:** `required`. Specify on which hypervisor to deploy the Infrastructure.
+
+Ansible hosts required outside the `deploy` group:
+
 * **terraform_node:** `required`. Specify the the machine that performs the Terraform tasks. 
+* **hypvervisor_[0-9+]:** `required`. Specify at least one machine that is the QEMU/KVM hypervisor. 
 The default value of 127.0.0.1 indicates that the machine that perform the Terraform tasks is the same that runs the Ansible playbook. In case the Terraform machine is not the local machine, you can specify the ip/hostname of the Terraform node. More details could be found here: [HERE](#terraform-node-bastions--jumphosts)
 
 These variable are optional, there are sensible defaults set up, most of them can be declared from <ins>hypervisor scope</ins> to <ins>vm-group scope</ins> and <ins>per-vm scope</ins>:
@@ -226,11 +237,14 @@ The `terraform_node` could be local or remote.
 A really common scenario will have a local Terraform node. This could be declared as follow:
 
 ```yaml
-hypervisor_1:
+all:
     vars:
         ...
     hosts:
         terraform_node:
+            ansible_host: 127.0.0.1
+            ansible_connection: local
+        hypervisor_1:
             ansible_host: 127.0.0.1
             ansible_connection: local
 ```
@@ -245,17 +259,18 @@ This case will ask Terraform to connect to QEMU/KVM using the uri `qemu:///syste
 If you want to use a remote QEMU/KVM server instead, you can do this as follow:
 
 ```yaml
-    hypervisor_1:
+all: 
     vars:
         ...
     hosts:
         terraform_node:
           ansible_host: 127.0.0.1
           ansible_connection: local
-          terraform_target_hypervisor: remote_kvm_machine.domain
-          terraform_target_hypervisor_user: root
-          terraform_target_hypervisor_port: 22
-          terraform_target_hypervisor_password: password
+        hypervisor_1:
+          ansible_host: remote_kvm_machine.domain
+          ansible_user: root
+          ansible_port: 22
+          ansible_ssh_pass: password
 ```
 This case will ask Terraform to connect to the QEMU/KVM server using the following uri: `qemu+ssh://root@remote_kvm_machine.domain/system`.
 This also setup the Terraform internal ssh connection to use it as a **bastion** host to connect to his VMs.
@@ -268,13 +283,19 @@ Also, Terraform could be separated from Ansible, and be located on a remote serv
 You can declare it simply by using the `ansible_host` variable, as follow:
 
 ```yaml
-hypervisor_1:
+all:
     vars:
         ...
     hosts:
         terraform_node:
           ansible_host: remote_terraform_node.domain
           ansible_connection: ssh # or paramiko or whatever NOT local
+        hypervisor_1:
+          ansible_host: remote_terraform_node.domain
+          ansible_connection: ssh # or paramiko or whatever NOT local
+          ansible_user: root
+          ansible_port: 22
+          ansible_ssh_pass: password
 ```
 This assumes that the `terraform_node` is the same host that is running the QEMU/KVM hypervisor.
 This case will ask Terraform to connect to QEMU/KVM using the uri `qemu:///system`.
@@ -287,22 +308,23 @@ The *post-deployment* task of this Ansible playbook, has to use a **jumphost** t
 Also, if you have a remote QEMU/KVM server and a remote Terraform server, you can use them as follow:
 
 ```yaml
-hypervisor_1:
+all:
     vars:
         ...
     hosts:
         terraform_node:
           ansible_host: remote_terraform_node.test.com
           ansible_connection: ssh # or paramiko or whatever NOT local
-          terraform_target_hypervisor: remote_kvm_machine.domain
-          terraform_target_hypervisor_user: root
-          terraform_target_hypervisor_port: 22
-          terraform_target_hypervisor_password: password
+        hypervisor_1:
+          ansible_host: remote_kvm_machine.domain
+          ansible_user: root
+          ansible_port: 22
+          ansible_ssh_pass: password
 ```
 This case will ask Terraform to connect to QEMU/KVM using the uri: `qemu+ssh://root@remote_kvm_machine.domain/system`.
 This also setup the Terraform internal ssh connection to use it as a bastion to connect to its VMs.
 Being already remote, this will set up 2 jumphost(s) for Ansible, one is the `terraform_node`, the other
-one is the `terraform_target_hypervisor`.
+one is the `ansible_host`.
 
 ![remote-all](./pics/remote-all.png)
 
@@ -332,12 +354,15 @@ Supported interface types:
 Structure:
 
 ```yaml
-        hypervisor_1:
+        all:
             vars:
                 pool_name: default
                 disk_source: "~/VirtualMachines/centos8-terraform.qcow2"
             hosts:
                 terraform_node:
+                    ansible_host: 127.0.0.1
+                    ansible_connection: local
+                hypervisor_1:
                     ansible_host: 127.0.0.1
                     ansible_connection: local
             children:
@@ -348,6 +373,7 @@ Structure:
                             os_family: RedHat
                             cpu: 4
                             memory: 8192
+                            hypervisor: hypervisor_1
                             network_interfaces:
                                 # Nat interface, it should always be the first one you declare.
                                 # it does not necessary have to be your default_route or main ansible_host,
@@ -428,13 +454,16 @@ If `data_disks` is mentioned in your inventory, the following variables are requ
 Let's take a look at how the *inventory* file is going to be fill.
 
 ```yaml
-        hypervisor_1:
+        all:
             vars:
                 provider_uri: "qemu:///system"
                 pool_name: default
                 disk_source: "~/VirtualMachines/centos8-terraform.qcow2"
             hosts:
                 terraform_node:
+                    ansible_host: 127.0.0.1
+                    ansible_connection: local
+                hypervisor_1:
                     ansible_host: 127.0.0.1
                     ansible_connection: local
             children:
@@ -445,6 +474,7 @@ Let's take a look at how the *inventory* file is going to be fill.
                             os_family: RedHat
                             cpu: 4
                             memory: 8192
+                            hypervisor: hypervisor_1
                             # Here we start to declare 
                             # the additional disk.
                             data_disks:
