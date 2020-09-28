@@ -294,7 +294,7 @@
   assert:
     quiet: yes
     that:
-      - "{{ item }}.encryption == True or {{ item }}.encryption == False"
+      - "{{ item }}.encryption or not {{ item }}.encryption"
     fail_msg: >
       You are trying to use an unsupported encryption value. Possible values could be 'True' or 'False'.
   with_items:
