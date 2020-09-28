@@ -2,15 +2,7 @@
 # tasks file for terraform
 #
 #
-
-# Create the directory tree for the temprorary files.
-- name: Ensures terraform dirs exists
-  file:
-    path: "{{ hcl_deploy_path }}/"
-    state: directory
-  tags: deploy, generate_hcl
-  delegate_to: terraform_node
-
+#
 # Deploy the terraform files for each host. Use jinja2 for templating.
 - name: "Deploy terraform files - variables"
   template:
@@ -88,6 +80,7 @@
   tags: deploy, apply, destroy
   when:
     - (destroy is defined and destroy) or (terraform_variables is defined and terraform_variables.changed) or (terraform_vm is defined and terraform_vm.changed)
+  register: terraform_command
   delegate_to: terraform_node
 
 - name: "Terraform destroy VMs and all resources"
@@ -97,6 +90,7 @@
     state: absent
   tags: never, purge
   run_once: yes
+  register: terraform_command
   with_items:
     - "{{ hypervisors_tf.files | sort(attribute='path') }}"
   delegate_to: terraform_node
@@ -121,7 +115,7 @@
   run_once: yes
   with_items:
     - "{{ hypervisors_tf.files | sort(attribute='path') }}"
-  register: terraform_outputs_multiple
+  register: terraform_command
   delegate_to: terraform_node
 
 ### !!! Important
@@ -135,6 +129,6 @@
   set_fact:
     terraform_output: "{{ terraform_output|default({}) | combine(item.outputs) }}"
   with_items:
-    - "{{ terraform_outputs_multiple.results }}"
+    - "{{ terraform_command.results }}"
   tags: deploy, apply
   delegate_to: terraform_node

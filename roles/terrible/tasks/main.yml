@@ -4,26 +4,77 @@
 #
 #
 
+# -----------------------------------------------------------------------------
 # Assert that all variables are well set.
+
 - include_tasks:
     file: assert_vars.yml
     apply:
       tags:
         - always
   tags: always, validate
+# -----------------------------------------------------------------------------
 
+# -----------------------------------------------------------------------------
 # Setup all the variables starting from existing ones.
+
 - include_tasks:
     file: setup_vars.yml
     apply:
       tags:
         - always
   tags: always
+# -----------------------------------------------------------------------------
 
+# -----------------------------------------------------------------------------
+# State management:
+#   Check if we already have a state file, in case unpack it and use it
+#   else just continue
+
+- name: Check that a state file exists for current inventory
+  stat:
+    path: "{{ ansible_inventory_sources[0] }}-state.tar.gz"
+  tags: always, restore
+  register: inventory_status
+  delegate_to: terraform_node
+
+- name: Unpack saved state to "{{ hcl_deploy_path |dirname }}"
+  unarchive:
+    src: "{{ ansible_inventory_sources[0] }}-state.tar.gz"
+    dest: "{{ hcl_deploy_path |dirname }}"
+    creates: "{{ hcl_deploy_path }}/.terraform"
+    remote_src: yes
+  tags: always,restore
+  run_once: yes
+  delegate_to: terraform_node
+#
+# -----------------------------------------------------------------------------
+
+
+# -----------------------------------------------------------------------------
 # Deploy the HCL files, use Terraform to deploy the infrastructure.
+
 - include_tasks: deploy_vm.yml
   tags: deploy, destroy, apply, generate_hcl, purge
+# -----------------------------------------------------------------------------
 
+# -----------------------------------------------------------------------------
 # Perform post-deploy tasks, such as users, networks and so on...
+
 - include_tasks: post_deploy.yml
   tags: provision
+# -----------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------
+# Output current state to file, do this only if we have changes in the terraform
+# commands, else preserve the already existing file.
+
+- name: Saving state file "{{ hcl_deploy_path }}" into "{{ ansible_inventory_sources[0] }}-state.tar.gz"
+  shell: |
+    cd {{ hcl_deploy_path | dirname }}
+    tar cfv {{ ansible_inventory_sources[0] }}-state.tar.gz ./
+  when: (terraform_command is defined and terraform_command.changed)
+  tags: deploy, destroy, apply, generate_hcl, purge
+  run_once: yes
+  delegate_to: terraform_node
+# -----------------------------------------------------------------------------
