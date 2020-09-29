@@ -4,26 +4,50 @@
 #
 #
 
+# -----------------------------------------------------------------------------
 # Assert that all variables are well set.
+
 - include_tasks:
     file: assert_vars.yml
     apply:
       tags:
         - always
   tags: always, validate
+# -----------------------------------------------------------------------------
 
+# -----------------------------------------------------------------------------
 # Setup all the variables starting from existing ones.
+
 - include_tasks:
     file: setup_vars.yml
     apply:
       tags:
         - always
   tags: always
+# -----------------------------------------------------------------------------
 
+# -----------------------------------------------------------------------------
+# Setup the state.
+
+- include_tasks:
+    file: state_restore.yml
+    apply:
+      tags:
+        - always
+        - restore
+  tags: always, restore
+# -----------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------
 # Deploy the HCL files, use Terraform to deploy the infrastructure.
+
 - include_tasks: deploy_vm.yml
   tags: deploy, destroy, apply, generate_hcl, purge
+# -----------------------------------------------------------------------------
 
+# -----------------------------------------------------------------------------
 # Perform post-deploy tasks, such as users, networks and so on...
+
 - include_tasks: post_deploy.yml
   tags: provision
+# -----------------------------------------------------------------------------
