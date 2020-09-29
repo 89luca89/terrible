@@ -1,0 +1,13 @@
+---
+
+# -----------------------------------------------------------------------------
+# Output current state to file, do this only if we have changes in the terraform
+# commands, else preserve the already existing file.
+
+- name: Save state file
+  shell: |
+    cd {{ hcl_deploy_path | dirname }}
+    tar cfv {{ ansible_inventory_sources[0] }}-state.tar.gz ./
+  run_once: yes
+  delegate_to: terraform_node
+# -----------------------------------------------------------------------------
