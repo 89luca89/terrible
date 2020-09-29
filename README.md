@@ -547,6 +547,15 @@ To completely delete the infrastructure:
 ansible-playbook -i inventory.yml -u root main.yml --tags purge
 ```
 
+### Outputs
+
+Based on your inventory, the complete state of the infrastructure (TF files, TF states, LUKS keys etc...)
+will be outputted to `${INVENTORY_NAME}-state.tar.gz` this file is important to track the
+state of an infrastructure.
+
+You can (and should) save this state file to keep track of the infrastructure complete state, the *.tar.gz
+will be restored and saved on each run.
+
 ## Authors
 
 - Luca Di Maio      <luca.dimaio1@gmail.com>
