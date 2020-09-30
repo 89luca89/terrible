@@ -1,6 +1,7 @@
 name: Ansible Lint  # feel free to pick your own name
 
 on: [push, pull_request]
+branches: master
 
 jobs:
   build:
@@ -10,6 +11,12 @@ jobs:
     steps:
     # Important: This sets up your GITHUB_WORKSPACE environment variable
     - uses: actions/checkout@v2
+
+    - name: Install dependencies
+      shell: bash
+      run: |
+        apt-get install -y python3-pip
+        yes | pip3 install -r requirements.txt
 
     - name: Lint Ansible Playbook
       # replace "master" with any valid ref
