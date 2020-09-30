@@ -14,8 +14,8 @@ jobs:
     - name: Install dependencies
       shell: bash
       run: |
-        apt install -y python3-pip
-        yes | pip3 install -r requirements.txt
+        sudo apt install -y python3-pip
+        yes | sudo pip3 install -r requirements.txt
 
     - name: Lint Ansible Playbook
       # replace "master" with any valid ref
