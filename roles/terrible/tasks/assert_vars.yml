@@ -232,7 +232,7 @@
   assert:
     quiet: yes
     that:
-      - "{{ item }}.format == 'freebsd-ufs'"
+      - "{{ item }}.format == 'freebsd-ufs' or {{ item }}.format == 'swap'"
       - "{{ item }}.format | length > 0"
     fail_msg: >
       You are trying to use an unsupported fs format.
@@ -264,7 +264,7 @@
   assert:
     quiet: yes
     that:
-      - "{{ item }}.mount_point | regex_search('^/\\w+')"
+      - '{{ item }}.mount_point == "none" or {{ item }}.mount_point | regex_search("^/\\w+")'
       - "{{ item }}.mount_point | length > 0"
     fail_msg: >
       You are trying to use an unsupported mount_point value.
