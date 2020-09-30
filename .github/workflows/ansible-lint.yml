@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: fedora-latest
 
     steps:
     # Important: This sets up your GITHUB_WORKSPACE environment variable
@@ -14,7 +14,7 @@ jobs:
     - name: Install dependencies
       shell: bash
       run: |
-        apt-get install -y python3-pip
+        dnf install -y python3-pip
         yes | pip3 install -r requirements.txt
 
     - name: Lint Ansible Playbook
