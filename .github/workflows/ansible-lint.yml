@@ -4,11 +4,9 @@ on: [push, pull_request]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
-    # Important: This sets up your GITHUB_WORKSPACE environment variable
+
     - uses: actions/checkout@v2
 
     - name: Install dependencies
@@ -18,7 +16,6 @@ jobs:
         sudo pip3 install -r requirements.txt
 
     - name: Lint Ansible Playbook
-      # replace "master" with any valid ref
       uses: ansible/ansible-lint-action@master
       with:
         # [required]
@@ -33,9 +30,9 @@ jobs:
         # [optional]
         # Arguments to override a package and its version to be set explicitly.
         # Must follow the example syntax.
-        #override-deps: |
-        #  ansible==2.9
-        #  ansible-lint==4.3.4
+        override-deps: |
+          ansible==2.9
+          ansible-lint==4.3.4
         # [optional]
         # Arguments to be passed to the ansible-lint
 
