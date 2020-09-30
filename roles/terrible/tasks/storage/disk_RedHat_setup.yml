@@ -19,7 +19,7 @@
 #     |                 |
 # [ Mount disks ] [ Mount encrypted disks ]
 #     └───────┬─────────┘
-#          [ End ] 
+#          [ End ]
 
 # Filter the additional virtual disks and create 1 partition
 # for each disk.
@@ -63,7 +63,7 @@
   when:
     - "{{ item.0['encryption'] }}"
 
-# Generate keyfiles using /dev/urandom and store them 
+# Generate keyfiles using /dev/urandom and store them
 # into a local directory
 - name: Generate keyfiles
   shell: |
@@ -79,7 +79,7 @@
   when:
     - "{{ item.0['encryption'] }}"
 
-# Copy the keyfile to the remote host, to allow 
+# Copy the keyfile to the remote host, to allow
 # luks utility to encrypt disks.
 - name: Copy keyfile to remote host
   copy:
@@ -150,6 +150,7 @@
   file:
     path: "{{ item['mount_point'] }}"
     state: directory
+  when: item['mount_point'] != "none"
   with_items:
     - "{{ data_disks.values() | list }}"
 
@@ -160,8 +161,8 @@
     path: "{{ item.0['mount_point'] }}"
     src: "UUID={{ ( ansible_devices[item.1].partitions.values() | list )[0].uuid }}"
     fstype: "{{ item.0['format'] }}"
-    state: mounted
-    opts: nofail
+    state: "{%if item.0['mount_point'] != 'none' %}mounted{%else%}present{%endif%}"
+    opts: defaults,nofail
   with_together:
     - "{{ data_disks.values() | list }}"
     - "{{ ansible_devices.keys() | select('match','vd[b-z]') | sort | list }}"
@@ -176,14 +177,14 @@
     src: "/dev/mapper/enc{{ item.1 }}1"
     fstype: "{{ item.0['format'] }}"
     state: mounted
-    opts: nofail
+    opts: defaults,nofail
   with_together:
     - "{{ data_disks.values() | list }}"
     - "{{ ansible_devices.keys() | select('match','vd[b-z]') | sort | list }}"
   when:
     - "{{ item.0['encryption'] }}"
 
-# For each encrypted disk, initialize its own entry 
+# For each encrypted disk, initialize its own entry
 # into the /etc/crypttab file, to enable auto mount
 # at boot passing its keyfile.
 - name: Initialize /etc/crypttab file
@@ -198,3 +199,20 @@
     - "{{ data_disks.keys() | list }}"
   when:
     - "{{ item.0['encryption'] }}"
+
+- name: Retrieve swap disk list
+  shell: |
+    swapon | tail -n +2 | cut -d' ' -f1
+  changed_when: no
+  register: swap_disks
+
+# Swapon if we have declared any swap disk.
+- name: Swapon
+  command: |
+    swapon /dev/{{ item.1 }}1
+  when:
+    - item.0['format'] == 'swap'
+    - ("/dev/" + item.1 + "1") not in swap_disks.stdout_lines
+  with_together:
+    - "{{ data_disks.values() | list }}"
+    - "{{ ansible_devices.keys() | select('match','vd[b-z]') | sort | list }}"
