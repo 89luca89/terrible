@@ -15,6 +15,15 @@ jobs:
         sudo apt install -y python3-pip
         sudo pip3 install -r requirements.txt
 
+    - name: Generate custom config file for ansible-lint
+      shell: bash
+      run: |
+        cat << EOF > .ansible-lint
+        warn_list:
+          - '503'
+          - '204'
+        EOF
+
     - name: Lint Ansible Playbook
       uses: ansible/ansible-lint-action@master
       with:
@@ -55,4 +64,4 @@ jobs:
         #                         path to directories or files to skip. This option is
         #                         repeatable.
         #   -c C                  Specify configuration file to use. Defaults to ".ansible-lint"
-        args: "-w 503 -w 204"
+        args: "-c .ansible-lint"
