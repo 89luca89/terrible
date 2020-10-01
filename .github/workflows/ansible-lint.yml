@@ -32,7 +32,7 @@ jobs:
         # Must follow the example syntax.
         override-deps: |
           ansible==2.9
-          ansible-lint==4.3.4
+        #  ansible-lint==4.3.4
         # [optional]
         # Arguments to be passed to the ansible-lint
 
