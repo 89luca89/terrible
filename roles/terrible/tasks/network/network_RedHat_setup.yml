@@ -56,7 +56,7 @@
     - "{{ interfaces.files | sort(attribute='path') }}"
     - "{{ network_interfaces.values() | list }}"
 
-- name: "Restart networking - apply configs"
+- name: "Restart networking - apply configs"  # noqa 503
   command: "reboot"
   async: 1
   poll: 0
