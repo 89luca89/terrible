@@ -18,11 +18,16 @@ jobs:
     - name: Generate custom config file for ansible-lint
       shell: bash
       run: |
-        cat << EOF > .ansible-lint
+        cat << EOF > .ansible-lint-custom
         warn_list:
           - '503'
           - '204'
         EOF
+
+    - name: Check .ansible-lint-custom file
+      shell: bash
+      run: |
+        cat .ansible-lint-custom
 
     - name: Lint Ansible Playbook
       uses: ansible/ansible-lint-action@master
@@ -64,4 +69,4 @@ jobs:
         #                         path to directories or files to skip. This option is
         #                         repeatable.
         #   -c C                  Specify configuration file to use. Defaults to ".ansible-lint"
-        args: "-c .ansible-lint"
+        args: "-c .ansible-lint-custom"
