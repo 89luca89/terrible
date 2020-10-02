@@ -81,7 +81,7 @@
     create: yes
   register: netconfig_file
 
-- name: "Restart networking - apply configs"
+- name: "Restart networking - apply configs"  # noqa 503
   systemd:
     name: network
     state: restarted

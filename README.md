@@ -1,8 +1,13 @@
 # Terrible: IaC for QEMU/KVM
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) ![Terraform Version](https://img.shields.io/badge/Terraform-v0.12-yellowgreen) ![Ansible Version](https://img.shields.io/badge/Ansible-v2.9%2B-yellowgreen) ![terraform_provider_libvirt](https://img.shields.io/badge/Terraform%20Provider%20Libvirt-v0.6-yellowgreen)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) ![Terraform Version](https://img.shields.io/badge/Terraform-v0.12-yellowgreen) ![Ansible Version](https://img.shields.io/badge/Ansible-v2.9%2B-yellowgreen) ![terraform_provider_libvirt](https://img.shields.io/badge/Terraform%20Provider%20Libvirt-v0.6-yellowgreen) ![Made_with_love](https://img.shields.io/badge/made%20with-%E2%9D%A4%EF%B8%8E-red)
 
 ![logo](./pics/logo.png)
+
+### Workflows Status
+
+[![Actions Status](https://github.com/89luca89/terrible/workflows/Ansible%20Lint/badge.svg)](https://github.com/89luca89/terrible/actions)
+
 
 
 This **Ansible** playbook allow you to initialize and then deploy virtual machines through **Terraform** on a **QEMU/KVM** server.

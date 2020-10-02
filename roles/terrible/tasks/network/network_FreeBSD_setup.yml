@@ -53,7 +53,7 @@
     create: yes
   register: resolvconf_file
 
-- name: "Restart networking - apply configs"
+- name: "Restart networking - apply configs"  # noqa 503
   command: "/etc/netstart"
   async: 1
   poll: 0
