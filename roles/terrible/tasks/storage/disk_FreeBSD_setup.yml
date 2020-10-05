@@ -69,6 +69,7 @@
   file:
     path: "{{ item['mount_point'] }}"
     state: directory
+    mode: 0755
   with_items:
     - "{{ data_disks.values() | list }}"
 

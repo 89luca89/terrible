@@ -15,6 +15,7 @@
 - name: "Set connection setting files"
   blockinfile:
     path: "/etc/rc.conf"
+    mode: 0644
     block: |
       ifconfig_{{ item.0 }}="inet {{ item.1.ip }} netmask 255.255.255.0"
       {% if item.1.get('default_route', False) %}
@@ -30,6 +31,7 @@
 - name: "Set connection setting files"
   blockinfile:
     path: "/etc/resolv.conf"
+    mode: 0644
     block: |
       {% if item.1.get('default_route', False) %}
       nameserver {{ item.1.gw }}
@@ -47,6 +49,7 @@
 - name: "Set connection setting files"
   blockinfile:
     path: "/etc/resolvconf.conf"
+    mode: 0644
     block: |
       resolvconf=NO
     marker: "# {mark} ANSIBLE MANAGED BLOCK"

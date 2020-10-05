@@ -15,7 +15,9 @@
 # Remove networks we do not manage in order to have control
 - name: Remove unmanaged networks
   shell: |
-    find /etc/sysconfig/network-scripts -type f -iname "ifcfg*" {% for item in interfaces.files | sort(attribute='path') | list %} ! -iname "ifcfg-managed-*-{{ item.path.split('/')[-1] }}" {% endfor %} -delete
+    find /etc/sysconfig/network-scripts -type f -iname "ifcfg*" \
+    {% for item in interfaces.files | sort(attribute='path') | list %} \
+    ! -iname "ifcfg-managed-*-{{ item.path.split('/')[-1] }}" {% endfor %} -delete
   changed_when: no
 
 # Deploy multiple ifcfg-namaget-NET_POOL-ETHX files, this is more easy to
@@ -23,6 +25,7 @@
 - name: "Set connection setting files"
   blockinfile:
     path: "/etc/sysconfig/network-scripts/ifcfg-managed-{{ network_name }}-{{ item.0.path.split('/')[-1] }}"
+    mode: 0644
     block: |
       TYPE=Ethernet
       PROXY_METHOD=none
