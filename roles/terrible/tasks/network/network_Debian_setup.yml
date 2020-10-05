@@ -25,7 +25,9 @@
 # Remove networks we do not manage in order to have control
 - name: Remove unmanaged networks /2
   shell: |
-    find /etc/network/interfaces.d/ -type f -iname "ifcfg*" {% for item in interfaces.files | sort(attribute='path') | list %} ! -iname "*{{ item.path.split('/')[-1] }}*" {% endfor %} -delete
+    find /etc/network/interfaces.d/ -type f -iname "ifcfg*" \
+    {% for item in interfaces.files | sort(attribute='path') | list %} \
+    ! -iname "*{{ item.path.split('/')[-1] }}*" {% endfor %} -delete
   changed_when: no
   when: ansible_distribution != 'Ubuntu'
 
