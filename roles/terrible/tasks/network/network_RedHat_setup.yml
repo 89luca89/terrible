@@ -23,6 +23,7 @@
 - name: "Set connection setting files"
   blockinfile:
     path: "/etc/sysconfig/network-scripts/ifcfg-managed-{{ network_name }}-{{ item.0.path.split('/')[-1] }}"
+    mode: 0644
     block: |
       TYPE=Ethernet
       PROXY_METHOD=none

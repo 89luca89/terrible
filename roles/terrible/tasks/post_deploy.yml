@@ -88,7 +88,7 @@
 # Upgrade systems but limit to only
 # security updates, to keep track of
 # the packages versions.
-- name: Update systems
+- name: Update systems # noqa 305
   shell: "{{ update_command }}"
   become: yes
   changed_when: no

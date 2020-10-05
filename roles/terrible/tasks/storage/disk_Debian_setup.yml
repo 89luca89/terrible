@@ -19,7 +19,7 @@
 #     |                 |
 # [ Mount disks ] [ Mount encrypted disks ]
 #     └───────┬─────────┘
-#          [ End ] 
+#          [ End ]
 
 # Filter the additional virtual disks and create 1 partition
 # for each disk.
@@ -63,7 +63,7 @@
   when:
     - "{{ item.0['encryption'] }}"
 
-# Generate keyfiles using /dev/urandom and store them 
+# Generate keyfiles using /dev/urandom and store them
 # into a local directory
 - name: Generate keyfiles
   shell: |
@@ -79,7 +79,7 @@
   when:
     - "{{ item.0['encryption'] }}"
 
-# Copy the keyfile to the remote host, to allow 
+# Copy the keyfile to the remote host, to allow
 # luks utility to encrypt disks.
 - name: Copy keyfile to remote host
   copy:
@@ -150,6 +150,7 @@
   file:
     path: "{{ item['mount_point'] }}"
     state: directory
+    mode: 0755
   with_items:
     - "{{ data_disks.values() | list }}"
 
@@ -183,7 +184,7 @@
   when:
     - "{{ item.0['encryption'] }}"
 
-# For each encrypted disk, initialize its own entry 
+# For each encrypted disk, initialize its own entry
 # into the /etc/crypttab file, to enable auto mount
 # at boot passing its keyfile.
 - name: Initialize /etc/crypttab file

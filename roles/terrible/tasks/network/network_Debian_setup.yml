@@ -33,6 +33,7 @@
 - name: "Set connection setting files - Debian"
   blockinfile:
     path: "/etc/network/interfaces.d/ifcfg-managed-{{ network_name }}-{{ item.0.path.split('/')[-1] }}"
+    mode: 0644
     block: |
           auto {{ item.0.path.split('/')[-1] }}
           iface {{ item.0.path.split('/')[-1] }} inet static
@@ -64,6 +65,7 @@
 - name: "Set connection setting files - Ubuntu"
   blockinfile:
     path: /etc/netplan/01-netcfg.yaml
+    mode: 0644
     block: |
       #
           {{ item.0.path.split('/')[-1] }}:

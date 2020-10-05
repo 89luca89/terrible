@@ -22,6 +22,7 @@
 - name: "Set connection setting files"
   blockinfile:
     path: "/etc/sysconfig/network/ifcfg-{{ item.0.path.split('/')[-1] }}"
+    mode: 0644
     block: |
       TYPE=Ethernet
       PROXY_METHOD='none'
@@ -60,6 +61,7 @@
 - name: "Set default route"
   blockinfile:
     path: "/etc/sysconfig/network/routes"
+    mode: 0644
     block: |
       # Destination   Gateway                 Netmask                 Device
       default         {{ item.1.gw }}            -                       {{ item.0.path.split('/')[-1] }}
@@ -75,6 +77,7 @@
 - name: "Set default DNS"
   blockinfile:
     path: "/etc/sysconfig/network/config"
+    mode: 0644
     block: |
       NETCONFIG_DNS_STATIC_SERVERS="{% for iface in network_interfaces.values()|list %}{% for dns in iface.dns %}{{ dns }} {% endfor %}{% endfor %}"
     marker: "# {mark} ANSIBLE MANAGED BLOCK"

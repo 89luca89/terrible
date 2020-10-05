@@ -8,6 +8,7 @@
   template:
     src: variables.tf.j2
     dest: "{{ hcl_deploy_path }}/variables.tf"
+    mode: 0644
   register: terraform_variables
   tags: deploy, generate_hcl
   delegate_to: terraform_node
@@ -17,6 +18,7 @@
   template:
     src: terraform-vm.tf.j2
     dest: "{{ hcl_deploy_path }}/{{ inventory_hostname }}.tf"
+    mode: 0644
   register: terraform_vm
   tags: deploy, generate_hcl
   delegate_to: terraform_node

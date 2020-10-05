@@ -17,6 +17,7 @@
     dest: "{{ hcl_deploy_path |dirname }}"
     creates: "{{ hcl_deploy_path }}/.terraform"
     remote_src: yes
+    mode: 0755
   run_once: yes
   delegate_to: terraform_node
 #
