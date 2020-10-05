@@ -227,23 +227,6 @@
     - data_disks is defined
     - data_disks | length > 0
 
-# Verifiy the correctness of the parameters.
-- name: Validate 'format' parameter for FreeBSD
-  assert:
-    quiet: yes
-    that:
-      - "{{ item }}.format == 'freebsd-ufs' or {{ item }}.format == 'swap'"
-      - "{{ item }}.format | length > 0"
-    fail_msg: >
-      You are trying to use an unsupported fs format.
-      Supported formats for FreeBSD: freebsd-ufs
-  with_items:
-    - "{{ data_disks.values() | list }}"
-  when:
-    - data_disks is defined
-    - data_disks | length > 0
-    - os_family == 'FreeBSD'
-
 - name: Assert supported_fs
   assert:
     quiet: yes
