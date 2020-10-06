@@ -18,6 +18,7 @@
     creates: "{{ hcl_deploy_path }}/.terraform"
     remote_src: yes
   run_once: yes
+  when: inventory_status.stat.exists
   delegate_to: terraform_node
 #
 # -----------------------------------------------------------------------------
