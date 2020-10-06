@@ -19,6 +19,7 @@
     remote_src: yes
     mode: 0755
   run_once: yes
+  when: inventory_status.stat.exists
   delegate_to: terraform_node
 #
 # -----------------------------------------------------------------------------
