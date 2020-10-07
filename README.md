@@ -444,17 +444,17 @@ If `data_disks` is mentioned in your inventory, the following variables are requ
 * **size:** `required`. Specify the disk size expressed in GB. (es. `size: 1` means 1GB)
 * **pool:** `required`. Specify the pool where you want to store the additional disks.
 * **format:** `require`. Specify the filesystem format you want to apply to the disk. Available filesystems are specified below.
-* **mount_point:** `required`. Specify the mount point you want to create for the disk.
+* **mount_point:** `required`. Specify the mount point you want to create for the disk, use `none` if declaring a swap disk.
 * **encryption:** `required`. Specify the mount point of the disk. Available values could be `True` or `False`.
 
 ​	**N.B.** Each disk declared needs to have a unique name (ex. you can't have the name `disk0` declared twice).
 
 | OS Family   |  Supported Disk Format      |  Encryption Supported  |
 |----------|:-------------|--------------|
-| Debian |  `ext2`, `ext3`, `ext4` | yes |
-| FreeBSD |  `freebsd-ufs`     |  no  |
-| RedHat | `ext2`, `ext3`, `ext4`, `xfs` | yes |
-| Suse | `ext2`, `ext3`, `ext4`, `xfs` | yes |
+| Debian |  `ext2`, `ext3`, `ext4`, `swap` | yes |
+| FreeBSD |  `freebsd-ufs`, `swap`     |  no  |
+| RedHat | `ext2`, `ext3`, `ext4`, `xfs`, `swap` | yes |
+| Suse | `ext2`, `ext3`, `ext4`, `xfs`, `swap` | yes |
 
 Let's take a look at how the *inventory* file is going to be fill.
 
@@ -488,15 +488,15 @@ Let's take a look at how the *inventory* file is going to be fill.
                             		size: 100                       # Disk size = 100 GB
                             		pool: default                   # Store the disk image into the pool = default.
                             		format: xfs                     # Disk Filesystem = xfs
-                            		mount_point: /mnt/data_storage  # The path where the disk is mounted
+                            		mount_point: /mnt/data_storage  # The path where the disk is mounted, none is using swap
                             		encryption: True                # Enable disk encryption
 
                                 # Here we declare the disk name
-                            	disk-config:                       # Uniqe name to identify the disk unit.
+                            	disk-swap:                          # Uniqe name to identify the disk unit.
                             		size: 1                         # Disk size = 1 GB
                             		pool: default                   # Store the disk image into the pool = default.
-                            		format: ext4                    # Disk Filesystem = ext4
-                            		mount_point: /mnt/data_config   # The path where the disk is mounted
+                            		format: swap                    # Disk Filesystem = ext4
+                            		mount_point: none               # The path where the disk is mounted, none if using swap
                             		encryption: False               # Enable disk encryption
 ```
 
