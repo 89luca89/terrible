@@ -203,6 +203,7 @@
 
 - name: Retrieve swap disk list
   shell: |
+    set -o pipefail;
     swapon | tail -n +2 | cut -d' ' -f1
   changed_when: no
   register: swap_disks
