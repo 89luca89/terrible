@@ -70,6 +70,7 @@
     path: "{{ item['mount_point'] }}"
     state: directory
     mode: 0755
+  when: item['mount_point'] != "none"
   with_items:
     - "{{ data_disks.values() | list }}"
 
@@ -80,7 +81,26 @@
     path: "{{ item.0['mount_point'] }}"
     src: "/dev/{{ item.1 }}p1"
     fstype: ufs
-    state: mounted
+    state: "{%if item.0['mount_point'] != 'none' %}mounted{%else%}present{%endif%}"
+    opts: defaults,nofail
+  with_together:
+    - "{{ data_disks.values() | list }}"
+    - "{{ additional_disks.stdout_lines }}"
+
+- name: Retrieve swap disk list
+  shell: |
+    set -o pipefail;
+    swapctl -l | tail -n +2 | cut -d' ' -f1
+  changed_when: no
+  register: swap_disks
+
+# Swapon if we have declared any swap disk.
+- name: Swapon
+  command: |
+    swapon /dev/{{ item.1 }}p1
+  when:
+    - item.0['format'] == 'swap'
+    - ("/dev/" + item.1 + "p1") not in swap_disks.stdout_lines
   with_together:
     - "{{ data_disks.values() | list }}"
     - "{{ additional_disks.stdout_lines }}"

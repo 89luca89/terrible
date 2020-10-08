@@ -24,7 +24,8 @@ all:
       # if set to `local` the role will assume that terraform is on the same
       # node that is launching the ansible run.
       #
-      ansible_connection: ssh
+      # supported values: local, ssh, paramiko
+      ansible_connection: local # ssh
 
       #
       # ----
@@ -221,12 +222,20 @@ all:
                   size: 1
                   pool: default
                   format: ext4
+                  encryption: True
                   mount_point: /mnt/config
                 disk-1:
                   size: 1
                   pool: default
                   format: ext3
+                  encryption: False
                   mount_point: /mnt/config-1
+                disk-2:
+                  size: 5
+                  pool: default
+                  format: swap
+                  encryption: False
+                  mount_point: none
           vars:
               ## It is possible to specify per-GROUP disk source.
               ## This is useful for mixed environments with
@@ -272,6 +281,7 @@ all:
               ansible_host: 192.168.122.200
               network_interfaces:
                 iface_1:
+                  name: NAT
                   type: nat
                   ip: 192.168.122.200
                   gw: 192.168.122.1
@@ -287,6 +297,7 @@ all:
                   pool: default
                   format: ext4
                   mount_point: /mnt/data
+                  encryption: False
             host-vm-3:
               os_family: Suse
               disk_source: "~/VirtualMachines/opensuse15.2-terraform.qcow2"
@@ -294,6 +305,7 @@ all:
               hypervisor: hypervisor_1
               network_interfaces:
                 iface_1:
+                  name: NAT
                   type: nat
                   ip: 192.168.122.201
                   gw: 192.168.122.1
