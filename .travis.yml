@@ -22,10 +22,10 @@ install:
   # - Libvirt
 
   # Install Ansible 2.9
-  - pip install ansible==$ANSIBLE_VERSION
+  - pip install ansible=="$ANSIBLE_VERSION"
 
   # Install Terraform 0.12
-  - curl -sLo /tmp/terraform.zip https://releases.hashicorp.com/terraform/$TERRAFORM_VERSION/terraform_$TERRAFORM_VERSION_linux_amd64.zip
+  - curl -sLo /tmp/terraform.zip https://releases.hashicorp.com/terraform/"$TERRAFORM_VERSION"/terraform_"$TERRAFORM_VERSION"_linux_amd64.zip
   - unzip /tmp/terraform.zip -d /tmp
   - mv /tmp/terraform ~/bin
   - export PATH="~/bin:$PATH"
