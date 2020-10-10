@@ -61,4 +61,5 @@ install:
   # This stage deploy a basic infrastructure starting from
   # the inventory-example.yml file placed in the root directory
   # of this project.
+  - find / -name qemu-kvm
   - pushd packer-terraform-kvm/packer/centos8 && packer build centos8.json
