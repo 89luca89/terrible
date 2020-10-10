@@ -6,26 +6,26 @@ python:
 dist: bionic
 
 stages:
-  - before_install
+  - install
 
 env:
   global:
     - ANSIBLE_VERSION=2.9
+    - TERRAFORM_VERSION=0.12.0
 
-before_install:
+install:
   # This stage is used to setup the environment to deploy the infrastructure.
   # This will install:
   # - Ansible
   # - Terraform
   # - Terraform Provider for Libvirt
   # - Libvirt
-  # - Python dependencies
 
   # Install Ansible 2.9
   - pip install ansible==$ANSIBLE_VERSION
 
   # Install Terraform 0.12
-  - curl -sLo /tmp/terraform.zip https://releases.hashicorp.com/terraform/0.12.0-rc1/terraform_0.12.0-rc1_linux_amd64.zip
+  - curl -sLo /tmp/terraform.zip https://releases.hashicorp.com/terraform/$TERRAFORM_VERSION/terraform_$TERRAFORM_VERSION_linux_amd64.zip
   - unzip /tmp/terraform.zip -d /tmp
   - mv /tmp/terraform ~/bin
   - export PATH="~/bin:$PATH"
@@ -40,3 +40,5 @@ before_install:
   - travis_retry sudo -E apt-get -yq --no-install-suggests --no-install-recommends install bridge-utils libpulse0 libvirt-bin qemu-kvm virtinst ubuntu-vm-builder
   - sudo adduser $USER libvirt
   - sudo adduser $USER kvm
+
+
