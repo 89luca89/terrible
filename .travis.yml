@@ -6,6 +6,7 @@ python:
 dist: bionic
 
 stages:
+  - before_install
   - install
 
 env:
@@ -13,7 +14,7 @@ env:
     - ANSIBLE_VERSION=2.9
     - TERRAFORM_VERSION=0.12.0
 
-install:
+before_install:
   # This stage is used to setup the environment to deploy the infrastructure.
   # This will install:
   # - Ansible
@@ -41,4 +42,23 @@ install:
   - sudo adduser $USER libvirt
   - sudo adduser $USER kvm
 
+  # Install Packer 1.6.4 to create KVM images.
+  - curl -sLo /tmp/packer.zip https://releases.hashicorp.com/packer/1.6.4/packer_1.6.4_linux_amd64.zip
+  - unzip /tmp/packer.zip -d /tmp
+  - mv /tmp/packer ~/bin
+  - mkdir ~/VirtualMachines
 
+  # Create ssh keys
+  - ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
+
+  # Download Centos 8.2 image
+  - curl -sLo ~/VirtualMachines/centos8.iso http://linuxsoft.cern.ch/centos/8.2.2004/isos/x86_64/CentOS-8.2.2004-x86_64-boot.iso
+
+  - git clone https://github.com/89luca89/packer-terraform-kvm
+
+install:
+  # This stage deploy a basic infrastructure starting from
+  # the inventory-example.yml file placed in the root directory
+  # of this project.
+  - pushd packer-terraform-kvm/packer/centos8
+  - packer build centos8.json
