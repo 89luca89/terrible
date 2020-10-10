@@ -535,7 +535,7 @@ Hypervisor OS is agnostic, as long as requirements are met.
 
 ## Installation
 
-Before to use **Terrible**, the following system dependencies needs to be installed: [dependencies](#requirements).
+Before using **Terrible**, the following system dependencies needs to be installed: [dependencies](#requirements).
 
 Use the following command to satisfy the project dependencies:
 
