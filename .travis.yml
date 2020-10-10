@@ -31,7 +31,7 @@ before_install:
   - export PATH="~/bin:$PATH"
 
   # Install Terraform Provider for Libvirt 0.6.2
-  - mkdir -p .terrible.d/plugins
+  - mkdir -p .terraform.d/plugins
   - curl -sLo terraform-provider-libvirt.tar.gz https://github.com/dmacvicar/terraform-provider-libvirt/releases/download/v0.6.2/terraform-provider-libvirt-0.6.2+git.1585292411.8cbe9ad0.Ubuntu_18.04.amd64.tar.gz
   - tar zxvf terraform-provider-libvirt.tar.gz
   - mv terraform-provider-libvirt .terraform.d/plugins/
