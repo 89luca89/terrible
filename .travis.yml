@@ -4,3 +4,26 @@ python:
 
 # Bionic is required for nested virtualization.
 dist: bionic
+
+stages:
+  - before_install
+
+before_install:
+  # This stage is used to setup the environment to deploy the infrastructure.
+  # This will install:
+  # - Ansible
+  # - Terraform
+  # - Terraform Provider for Libvirt
+  # - Libvirt
+  # - Python dependencies
+
+  # Install Ansible 2.9
+  - sudo apt install software-properties-common
+  - sudo apt-add-repository ppa:ansible/ansible
+  - sudo apt update -y
+  - sudo apt install -y ansible=2.9
+
+  # Install KVM and enable hardware acceleration.
+#  - travis_retry sudo -E apt-get -yq --no-install-suggests --no-install-recommends install bridge-utils libpulse0 libvirt-bin qemu-kvm virtinst ubuntu-vm-builder
+#  - sudo adduser $USER libvirt
+#  - sudo adduser $USER kvm
