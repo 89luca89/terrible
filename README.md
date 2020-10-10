@@ -10,14 +10,32 @@
 
 
 
-This **Ansible** playbook allow you to initialize and then deploy virtual machines through **Terraform** on a **QEMU/KVM** server.
+This **Ansible** playbook allows you to initialize and then deploy an entire infrastructure through the aid of **Terraform**, on a **QEMU/KVM** environment.
 
 **Terr**aform + Ans**ible**
+
+## Table of Contents
+
+1. [Abstract](#abstract)
+   - [Why not just use a single tool?](#why-not-just-use-a-single-tool)
+   - [How it works](#how-it-works)
+2. [Requirements](#requirements)
+3. [Configuration](#configuration)
+   - [Variables](#variables)
+   - [Terraform node, Bastions & Jumphosts](#terraform-node-bastions--jumphosts)
+   - [Network](#network)
+   - [Storage](#storage)
+4. [Compatibility](#compatibility)
+5. [Installation](#installation)
+6. [Usage](#usage)
+   - [Outputs](#outputs)
+7. [Authors](#authors)
+8. [License](#license)
 
 ## Abstract
 
 The Infrastructure as Code had considerable growth in the cloud in the last years. 
-However, a separate discussion needs to be done regarding the private cloud. 
+However, a separate discussion has to be done regarding the private cloud. 
 For various reasons, companies may need to use an internal infrastructure instead of the cloud. 
 Unfortunately, there aren't as many solutions for the private cloud as for the cloud. 
 Our idea has been to implement a flexible and powerful solution to easily build an infrastructure from scratch. 
@@ -60,7 +78,7 @@ Once finished this task, the VMs, previously described into the inventory, are c
 | Ansible |  2.9+ | https://docs.ansible.com/ |
 | Terraform |    0.12+   | https://www.terraform.io/docs/index.html |
 | Terraform Provider Libvirt | 0.6+ | https://github.com/dmacvicar/terraform-provider-libvirt/ |
-| Libvirt | 1.2.14+ | https://libvirt.org/docs.html |
+| Libvirt (on the target) | 1.2.14+ | https://libvirt.org/docs.html |
 
 ## Configuration
 
@@ -232,7 +250,7 @@ These variable are optional, there are sensible defaults set up, most of them ca
 * **memory:** `optional`. Specify the memory ram for the VM. If not specified, the default value is taken. Default: `1024`
 * **set_new_password:** `optional`. Specify a new password to access the Vm. If not specified, the default value (**ssh_password**) is taken.
 
-#### Terraform Node, Bastions & Jumphosts
+### Terraform Node, Bastions & Jumphosts
 
 The following section will describe some different scenarios that may appear during a typical deployment day.
 
@@ -495,9 +513,9 @@ Let's take a look at how the *inventory* file is going to be fill.
                             	disk-swap:                          # Uniqe name to identify the disk unit.
                             		size: 1                         # Disk size = 1 GB
                             		pool: default                   # Store the disk image into the pool = default.
-                            		format: swap                    # Disk Filesystem = ext4
+                            		format: swap                    # Disk Filesystem = swap
                             		mount_point: none               # The path where the disk is mounted, none if using swap
-                            		encryption: False               # Enable disk encryption
+                            		encryption: False               # Does not enable disk encryption
 ```
 
 
@@ -517,7 +535,9 @@ Hypervisor OS is agnostic, as long as requirements are met.
 
 ## Installation
 
-Use the following command to satisfy the project's dependencies:
+Before using **Terrible**, the following system dependencies needs to be installed: [dependencies](#requirements).
+
+Use the following command to satisfy the project dependencies:
 
 ```bash
 pip3 install --user -r requirements.txt
@@ -525,6 +545,10 @@ pip3 install --user -r requirements.txt
 
 
 ## Usage
+
+To speed up your deployment process, we have made available our Packer template files.
+
+The other repository could be found here: [packer-terraform-kvm](https://github.com/89luca89/packer-terraform-kvm).
 
 Once composed the inventory file, it's time to run your playbook.
 
