@@ -12,7 +12,7 @@
         "iso_urls" : "/home/travis/VirtualMachines/CentOS-8.2.2004-x86_64-boot.iso",
         "name" : "template-centos8-x86_64",
         "net_device" : "virtio-net",
-        "output_directory" : "/home/travis/VirtualMachines",
+        "output_directory" : "/home/travis/VirtualMachines/templates",
         "qemuargs" : [
             [
               "-m",
