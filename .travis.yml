@@ -8,6 +8,7 @@ dist: bionic
 stages:
   - before_install
   - install
+  - script
 
 env:
   global:
@@ -55,7 +56,17 @@ before_install:
   - travis_wait 30 wget -q http://linuxsoft.cern.ch/centos/8.2.2004/isos/x86_64/CentOS-8.2.2004-x86_64-boot.iso -O ~/VirtualMachines/CentOS-8.2.2004-x86_64-boot.iso
 
 install:
+  # This stage prepare the Centos8 image template
+  # using Packer.
+
+  # Create qcow2 centos template using Packer
+  - pushd test/packer/centos8 && PACKER_LOG=1 sudo packer build centos8.json && popd
+
+script:
   # This stage deploy a basic infrastructure starting from
-  # the inventory-example.yml file placed in the root directory
+  # the inventory-test.yml file placed in the test/ directory
   # of this project.
-  - pushd test/packer/centos8 && PACKER_LOG=1 sudo packer build centos8.json
+
+  # Run ansible-playbook tests
+  - ansible-playbook -i test/inventory-test.yml -v -u root main.yml --tags validate
+  - ansible-playbook -i test/inventory-test.yml -v -u root main.yml
