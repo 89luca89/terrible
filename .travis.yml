@@ -52,8 +52,8 @@ before_install:
   - ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
 
   # Download Centos 8.2 image
-  - echo Downloading Centos image
-  - travis_wait curl -sLo ~/VirtualMachines/centos8.iso http://linuxsoft.cern.ch/centos/8.2.2004/isos/x86_64/CentOS-8.2.2004-x86_64-boot.iso
+  #- travis_wait curl -sLo ~/VirtualMachines/centos8.iso http://linuxsoft.cern.ch/centos/8.2.2004/isos/x86_64/CentOS-8.2.2004-x86_64-boot.iso
+  - travis_retry wget -q http://linuxsoft.cern.ch/centos/8.2.2004/isos/x86_64/CentOS-8.2.2004-x86_64-boot.iso -O ~/VirtualMachines/centos8.iso
 
   # Clone packer-terraform-kvm repo
   - git clone https://github.com/89luca89/packer-terraform-kvm
