@@ -36,6 +36,7 @@ before_install:
   - curl -sLo terraform-provider-libvirt.tar.gz https://github.com/dmacvicar/terraform-provider-libvirt/releases/download/v0.6.2/terraform-provider-libvirt-0.6.2+git.1585292411.8cbe9ad0.Ubuntu_18.04.amd64.tar.gz
   - tar zxvf terraform-provider-libvirt.tar.gz
   - mv terraform-provider-libvirt .terraform.d/plugins/linux_amd64/
+  - ~/.terraform.d/plugins/linux_amd64/terraform-provider-libvirt -version 
 
   # Install KVM and enable hardware acceleration.
   - travis_retry sudo -E apt-get -yq --no-install-suggests --no-install-recommends install bridge-utils libpulse0 libvirt-bin qemu-kvm qemu-utils virtinst ubuntu-vm-builder
@@ -73,7 +74,7 @@ script:
   # Run ansible-playbook tests
   - ansible-playbook -i test/inventory-test.yml -v -u root main.yml
 
-notifications:
-  email:
-    - luca.dimaio1@gmail.com
-    - greggialessio@gmail.com
+#notifications:
+#  email:
+#    - luca.dimaio1@gmail.com
+#    - greggialessio@gmail.com
