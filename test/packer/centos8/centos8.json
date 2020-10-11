@@ -1,0 +1,41 @@
+{
+  "builders" : [ {
+        "accelerator" : "kvm",
+        "boot_command" : [ "<tab> net.ifnames=0 biosdevname=0 text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos8-kickstart.cfg<enter><wait>" ],
+        "disk_cache" : "none",
+        "disk_interface" : "virtio",
+        "disk_size" : "50240",
+        "format" : "qcow2",
+        "headless" : "false",
+        "http_directory" : ".",
+        "iso_checksum" : "c67876a5602faa17f68b40ccf2628799b87454aa67700f0f57eec15c6ccdd98c",
+        "iso_urls" : "/home/travis/VirtualMachines/CentOS-8.2.2004-x86_64-boot.iso",
+        "name" : "/home/travis/VirtualMachines/template-centos8-x86_64",
+        "net_device" : "virtio-net",
+        "output_directory" : "artifacts/qemu",
+        "qemuargs" : [
+            [
+              "-m",
+              "2048M"
+            ],
+            [
+              "-smp",
+              "2"
+            ],
+            [
+              "-nographic"
+            ],
+            [
+              "-display",
+              "none"
+            ]
+          ],
+        "qemu_binary" : "/usr/bin/qemu-kvm",
+        "shutdown_command" : "sudo /usr/sbin/shutdown -h now",
+        "ssh_password" : "root",
+        "ssh_timeout" : "30m",
+        "ssh_username" : "root",
+        "type" : "qemu"
+      } ],
+  "provisioners" : [  ]
+}
