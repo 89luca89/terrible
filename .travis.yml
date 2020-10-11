@@ -75,5 +75,5 @@ script:
 
 notifications:
   email:
-    - luca.dimaio1.gmail.com
+    - luca.dimaio1@gmail.com
     - greggialessio@gmail.com
