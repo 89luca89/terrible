@@ -52,17 +52,11 @@ before_install:
   - ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
 
   # Download Centos 8.2 image
-  #- travis_wait curl -sLo ~/VirtualMachines/centos8.iso http://linuxsoft.cern.ch/centos/8.2.2004/isos/x86_64/CentOS-8.2.2004-x86_64-boot.iso
   - travis_wait 30 wget -q http://linuxsoft.cern.ch/centos/8.2.2004/isos/x86_64/CentOS-8.2.2004-x86_64-boot.iso -O ~/VirtualMachines/CentOS-8.2.2004-x86_64-boot.iso
-
-  # Clone packer-terraform-kvm repo
-  - git clone https://github.com/89luca89/packer-terraform-kvm
-  - sed -i 's/CentOS-8.1.1911-x86_64-dvd1.iso/\/home\/travis\/VirtualMachines\/CentOS-8.2.2004-x86_64-boot.iso/g' packer-terraform-kvm/packer/centos8/centos8.json
-  - sed -i 's/3ee3f4ea1538e026fff763e2b284a6f20b259d91d1ad5688f5783a67d279423b/c67876a5602faa17f68b40ccf2628799b87454aa67700f0f57eec15c6ccdd98c/g' packer-terraform-kvm/packer/centos8/centos8.json
 
 install:
   # This stage deploy a basic infrastructure starting from
   # the inventory-example.yml file placed in the root directory
   # of this project.
   - echo $PATH
-  - pushd packer-terraform-kvm/packer/centos8 && packer build centos8.json
+  - pushd test/packer/centos8 && packer build centos8.json
