@@ -72,3 +72,8 @@ script:
 
   # Run ansible-playbook tests
   - ansible-playbook -i test/inventory-test.yml -v -u root main.yml
+
+notifications:
+  email:
+    - luca.dimaio1.gmail.com
+    - greggialessio@gmail.com
