@@ -42,6 +42,9 @@ before_install:
   - sudo adduser $USER libvirt
   - sudo adduser $USER kvm
 
+  # Install python requirements
+  - pip install -r requirements.txt
+
   # Install Packer 1.6.4 to create KVM images.
   - curl -sLo /tmp/packer.zip https://releases.hashicorp.com/packer/1.6.4/packer_1.6.4_linux_amd64.zip
   - unzip /tmp/packer.zip -d /tmp
@@ -68,5 +71,4 @@ script:
   # of this project.
 
   # Run ansible-playbook tests
-  - ansible-playbook -i test/inventory-test.yml -v -u root main.yml --tags validate
   - ansible-playbook -i test/inventory-test.yml -v -u root main.yml
