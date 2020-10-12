@@ -81,6 +81,12 @@
     hcl_deploy_path: "{{ lookup('env','HOME') }}/.terrible/{{ ansible_inventory_sources[0].split('/')[-1] }}/{{ provider_uri.split('/')[-2] }}"
   delegate_to: terraform_node
 
+- name: Set HCL Deploy path
+  set_fact:
+    hcl_deploy_path: "{{ lookup('env','HOME') }}/.terrible/{{ ansible_inventory_sources[0].split('/')[-1] }}/localhost"
+  when: provider_uri.split('/')[-2] == ""
+  delegate_to: terraform_node
+
 # Create the directory tree for the temprorary files.
 - name: Ensures terraform dirs exists
   file:
