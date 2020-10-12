@@ -18,10 +18,15 @@ env:
 before_install:
   # This stage is used to setup the environment to deploy the infrastructure.
   # This will install:
+  # - Libvirt
   # - Ansible
   # - Terraform
   # - Terraform Provider for Libvirt
-  # - Libvirt
+
+  # Install KVM and enable hardware acceleration.
+  - travis_retry sudo -E apt-get -yq --no-install-suggests --no-install-recommends install bridge-utils libpulse0 libvirt-bin qemu-kvm qemu-utils virtinst ubuntu-vm-builder
+  - sudo adduser $USER libvirt
+  - sudo adduser $USER kvm
 
   # Install Ansible 2.9
   - pip install ansible=="$ANSIBLE_VERSION"
@@ -37,11 +42,6 @@ before_install:
   - tar zxvf terraform-provider-libvirt.tar.gz
   - mv terraform-provider-libvirt ~/.terraform.d/plugins/linux_amd64/
   - ~/.terraform.d/plugins/linux_amd64/terraform-provider-libvirt -version 
-
-  # Install KVM and enable hardware acceleration.
-  - travis_retry sudo -E apt-get -yq --no-install-suggests --no-install-recommends install bridge-utils libpulse0 libvirt-bin qemu-kvm qemu-utils virtinst ubuntu-vm-builder
-  - sudo adduser $USER libvirt
-  - sudo adduser $USER kvm
 
   # Install python requirements
   - pip install -r requirements.txt
