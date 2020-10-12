@@ -51,6 +51,13 @@ all:
                   default_route: True
                   dns:
                     - 172.16.0.1
+              data_disks:
+                disk-swap:
+                  size: 8
+                  pool: default
+                  format: swap
+                  mount_point: none
+                  encryption: False
             master-node-1:
               os_family: FreeBSD
               disk_source: "~/VirtualMachines/freebsd-terraform.qcow2"
@@ -75,6 +82,13 @@ all:
                   default_route: True
                   dns:
                     - 172.16.0.1
+              data_disks:
+                disk-swap:
+                  size: 8
+                  pool: default
+                  format: swap
+                  mount_point: none
+                  encryption: False
         worker_nodes:
           hosts:
             worker-node-0:
@@ -101,6 +115,13 @@ all:
                   default_route: True
                   dns:
                     - 172.16.0.1
+              data_disks:
+                disk-swap:
+                  size: 8
+                  pool: default
+                  format: swap
+                  mount_point: none
+                  encryption: False
             worker-node-1:
               os_family: Suse
               disk_source: "~/VirtualMachines/opensuse15.2-terraform.qcow2"
@@ -125,6 +146,13 @@ all:
                   default_route: True
                   dns:
                     - 172.16.0.1
+              data_disks:
+                disk-swap:
+                  size: 8
+                  pool: default
+                  format: swap
+                  mount_point: none
+                  encryption: False
             worker-node-2:
               os_family: RedHat
               cpu: 1
@@ -148,6 +176,13 @@ all:
                   default_route: True
                   dns:
                     - 172.16.0.1
+              data_disks:
+                disk-swap:
+                  size: 8
+                  pool: default
+                  format: swap
+                  mount_point: none
+                  encryption: False
             worker-node-3:
               os_family: Debian
               disk_source: "~/VirtualMachines/ubuntu20-terraform.qcow2"
@@ -172,6 +207,13 @@ all:
                   default_route: True
                   dns:
                     - 172.16.0.1
+              data_disks:
+                disk-swap:
+                  size: 8
+                  pool: default
+                  format: swap
+                  mount_point: none
+                  encryption: False
             worker-node-4:
               os_family: Debian
               disk_source: "~/VirtualMachines/debian10-terraform.qcow2"
@@ -196,6 +238,13 @@ all:
                   default_route: True
                   dns:
                     - 172.16.0.1
+              data_disks:
+                disk-swap:
+                  size: 8
+                  pool: default
+                  format: swap
+                  mount_point: none
+                  encryption: False
             worker-node-5:
               os_family: Suse
               disk_source: "~/VirtualMachines/opensuse15.2-terraform.qcow2"
@@ -220,6 +269,13 @@ all:
                   default_route: True
                   dns:
                     - 172.16.0.1
+              data_disks:
+                disk-swap:
+                  size: 8
+                  pool: default
+                  format: swap
+                  mount_point: none
+                  encryption: False
             worker-node-6:
               os_family: RedHat
               cpu: 1
@@ -243,3 +299,10 @@ all:
                   default_route: True
                   dns:
                     - 172.16.0.1
+              data_disks:
+                disk-swap:
+                  size: 8
+                  pool: default
+                  format: swap
+                  mount_point: none
+                  encryption: False

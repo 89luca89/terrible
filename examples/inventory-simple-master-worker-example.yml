@@ -1,7 +1,16 @@
 all:
   vars:
-  children:
+  hosts:
+    terraform_node:
+      ansible_host: 127.0.0.1
+      ansible_connection: local
     hypervisor_1:
+      ansible_host: 172.16.0.12
+      ansible_user: root
+      ansible_port: 22
+      ansible_ssh_pass: password
+  children:
+    deploy:
       vars:
         disk_source: "~/VirtualMachines/centos8-terraform.qcow2"
         pool_name: default
@@ -10,15 +19,6 @@ all:
         ssh_user: root
         ssh_public_key_file: '~/.ssh/id_rsa.pub'
         set_new_password: supersecretpassword!
-      hosts:
-        terraform_node:
-          ansible_host: 127.0.0.1
-          ansible_connection: local
-        hypervisor_1:
-          ansible_host: 172.16.0.12
-          ansible_user: root
-          ansible_port: 22
-          ansible_ssh_pass: password
       children:
         master_nodes:
           hosts:
@@ -46,7 +46,6 @@ all:
                   default_route: True
                   dns:
                     - 172.16.0.1
-
         worker_nodes:
           hosts:
             worker-node-0:
@@ -85,6 +84,7 @@ all:
               disk_source: "~/VirtualMachines/opensuse15.2-terraform.qcow2"
               cpu: 1
               memory: 512
+              hypervisor: hypervisor_1
               ansible_host: 192.168.122.202
               network_interfaces:
                 if-0:

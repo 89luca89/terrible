@@ -1,0 +1,38 @@
+name: Ansible Validate  # feel free to pick your own name
+
+on: [push, pull_request]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+
+    - uses: actions/checkout@v2
+
+    - name: Validate inventory-example.yml
+      uses: arillso/action.playbook@master
+      with:
+        playbook: main.yml
+        inventory: inventory-example.yml
+        tags: validate
+
+    - name: Validate inventory-large-data-storage-example.yml
+      uses: arillso/action.playbook@master
+      with:
+        playbook: main.yml
+        inventory: examples/inventory-large-data-storage-example.yml
+        tags: validate
+
+    - name: Validate inventory-large-data-storage-example.yml
+      uses: arillso/action.playbook@master
+      with:
+        playbook: main.yml
+        inventory: examples/inventory-multiple-hypervisor-example.yml
+        tags: validate
+
+    - name: Validate inventory-large-data-storage-example.yml
+      uses: arillso/action.playbook@master
+      with:
+        playbook: main.yml
+        inventory: examples/inventory-simple-master-worker-example.yml
+        tags: validate

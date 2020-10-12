@@ -47,12 +47,18 @@ all:
                   dns:
                     - 172.16.0.1
               data_disks:
+                disk-swap:
+                  size: 8
+                  pool: default
+                  format: swap
+                  mount_point: none
+                  encryption: False
                 disk-storage:
                   size: 5
                   pool: default
                   format: freebsd-ufs
                   mount_point: /mnt/data_configs
-                  encription: False
+                  encryption: False
         slave_nodes:
           hosts:
             slave-node-0:
@@ -87,15 +93,21 @@ all:
                   dns:
                     - 172.16.0.1
               data_disks:
+                disk-swap:
+                  size: 8
+                  pool: default
+                  format: swap
+                  mount_point: none
+                  encryption: False
                 disk-storage:
                   size: 500
                   pool: default
                   format: ext4
                   mount_point: /mnt/data_storage_1
-                  encription: True
+                  encryption: True
                 disk-config:
                   size: 500
                   pool: default
                   format: ext4
                   mount_point: /mnt/data_storage_2
-                  encription: False
+                  encryption: False
