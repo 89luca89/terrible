@@ -29,14 +29,14 @@
     # have that output
     - name: "Pivoting ansible_host: set to terraform temporary ip..."
       set_fact:
-        ansible_host: "{{ terraform_output[inventory_hostname]['value'][0]  }}"
+        ansible_host: "{{ terraform_output[inventory_hostname]['value'][0] }}"
       when:
         - terraform_output is defined
         - terraform_output.values() | length > 0
         - terraform_output[inventory_hostname]['value'][0] != '127.0.0.1'
 
     # Ansible: gather facts of the newly created hosts.
-    - name: gather facts
+    - name: Gather facts of the newly created hosts
       setup:
 
     # Configure network adressing each os_family separately
@@ -59,7 +59,7 @@
   tags: provision
 
 # Ansible: gather facts of the newly created hosts.
-- name: gather facts
+- name: Gather facts
   setup:
   tags: provision
 
@@ -79,7 +79,6 @@
   changed_when: no
   tags: provision
 
-
 # Perform post-deploy tasks, such as users, networks and so on...
 - name: Attempt Setup Disks
   block:
@@ -93,5 +92,8 @@
 - name: Update systems # noqa 305
   shell: "{{ update_command }}"
   become: yes
+  become_user: root
   changed_when: no
   tags: provision
+
+...

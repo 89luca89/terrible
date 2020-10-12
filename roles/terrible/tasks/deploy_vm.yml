@@ -35,7 +35,7 @@
 # Create an array containing the list of nodes in the form of node-name.j2,...
 - name: "Remove unmanaged nodes - generate list of managed files"
   set_fact:
-    managed_files: "{{ managed_files|default([]) + [hostvars[item]['hcl_deploy_path'] + '/' + item + '.tf' ] }}"
+    managed_files: "{{ managed_files | default([]) + [hostvars[item]['hcl_deploy_path'] + '/' + item + '.tf'] }}"
   tags: deploy, generate_hcl
   run_once: yes
   with_items:
@@ -133,8 +133,10 @@
 # lookup after.
 - name: "Merge hypervisors results"
   set_fact:
-    terraform_output: "{{ terraform_output|default({}) | combine(item.outputs) }}"
+    terraform_output: "{{ terraform_output | default({}) | combine(item.outputs) }}"
   with_items:
     - "{{ terraform_command.results }}"
   tags: deploy, apply
   delegate_to: terraform_node
+
+...

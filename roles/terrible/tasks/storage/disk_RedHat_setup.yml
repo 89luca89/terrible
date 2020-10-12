@@ -206,7 +206,7 @@
     set -o pipefail;
     swapon | tail -n +2 | cut -d' ' -f1
   args:
-      executable: /bin/bash
+    executable: /bin/bash
   changed_when: no
   register: swap_disks
 
@@ -220,3 +220,5 @@
   with_together:
     - "{{ data_disks.values() | list }}"
     - "{{ ansible_devices.keys() | select('match','vd[b-z]') | sort | list }}"
+
+...

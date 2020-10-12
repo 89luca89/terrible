@@ -11,10 +11,10 @@
   register: inventory_status
   delegate_to: terraform_node
 
-- name: Unpack saved state to "{{ hcl_deploy_path |dirname }}"
+- name: Unpack saved state to "{{ hcl_deploy_path | dirname }}"
   unarchive:
     src: "{{ ansible_inventory_sources[0] }}-state.tar.gz"
-    dest: "{{ hcl_deploy_path |dirname }}"
+    dest: "{{ hcl_deploy_path | dirname }}"
     creates: "{{ hcl_deploy_path }}/.terraform"
     remote_src: yes
     mode: 0755
@@ -23,3 +23,5 @@
   delegate_to: terraform_node
 #
 # -----------------------------------------------------------------------------
+
+...
