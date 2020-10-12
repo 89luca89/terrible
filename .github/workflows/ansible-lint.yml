@@ -14,3 +14,8 @@ jobs:
       with:
         targets: "main.yml"
         args: ""
+
+    - name: Run ansible-later
+      uses: patrickjahns/ansible-later-action@master
+      with:
+        path: tasks
