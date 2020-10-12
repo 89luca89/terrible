@@ -43,6 +43,9 @@ before_install:
   - mv terraform-provider-libvirt ~/.terraform.d/plugins/linux_amd64/
   - ~/.terraform.d/plugins/linux_amd64/terraform-provider-libvirt -version 
 
+  # Install other necessary packages
+  - sudo apt-get install sshpass
+
   # Install python requirements
   - pip install -r requirements.txt
 
