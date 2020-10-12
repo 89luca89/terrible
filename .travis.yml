@@ -24,7 +24,7 @@ before_install:
   # - Terraform Provider for Libvirt
 
   # Install KVM and enable hardware acceleration.
-  - travis_retry sudo -E apt-get -yq --no-install-suggests --no-install-recommends install bridge-utils libpulse0 libvirt-bin qemu-kvm qemu-utils virtinst ubuntu-vm-builder libvirt-daemon-driver-lxc 
+  - travis_retry sudo -E apt-get -yq --no-install-suggests --no-install-recommends install bridge-utils libpulse0 libvirt-bin qemu-kvm qemu-utils virtinst ubuntu-vm-builder libvirt-daemon
   - sudo adduser $USER libvirt
   - sudo adduser $USER kvm
 
