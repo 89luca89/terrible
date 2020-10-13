@@ -24,10 +24,21 @@ before_install:
   # - Terraform
   # - Terraform Provider for Libvirt
 
-  # Install KVM and enable hardware acceleration.
+  # Install KVM and enable hardware acceleration and setup default storage pool.
   - travis_retry sudo -E apt-get -yq --no-install-suggests --no-install-recommends install bridge-utils libpulse0 libvirt-bin qemu-kvm qemu-utils virtinst ubuntu-vm-builder libvirt-daemon
   - sudo adduser $USER libvirt
   - sudo adduser $USER kvm
+  - |
+    sudo virsh pool-define /dev/stdin <<EOF
+    <pool type='dir'>
+      <name>default</name>
+      <target>
+        <path>/var/lib/libvirt/images</path>
+      </target>
+    </pool>
+    EOF
+  - sudo virsh pool-start default
+  - sudo virsh pool-autostart default
 
   # Install Ansible 2.9
   - pip install ansible=="$ANSIBLE_VERSION"
