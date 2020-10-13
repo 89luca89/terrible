@@ -65,13 +65,6 @@ before_install:
   # Download Centos 8.2 image
   - travis_wait 30 wget -q http://linuxsoft.cern.ch/centos/8.2.2004/isos/x86_64/CentOS-8.2.2004-x86_64-boot.iso -O ~/VirtualMachines/CentOS-8.2.2004-x86_64-boot.iso
 
-  # Bad trick to avoid session restart when you add your user to the group libvirt 
-  - groups
-  - sudo echo "unix_sock_group = $USER" > /etc/libvirt/libvirtd.conf
-  - sudo echo "unix_sock_ro_perms = \"0777\"" >> /etc/libvirt/libvirtd.conf
-  - sudo echo "unix_sock_rw_perms = \"0770\"" >> /etc/libvirt/libvirtd.conf
-  - sudo systemctl restart libvirtd
-
 install:
   # This stage prepare the Centos8 image template
   # using Packer.
@@ -85,7 +78,9 @@ script:
   # of this project.
 
   # Run ansible-playbook tests
-  - ansible-playbook -i test/inventory-test.yml -v -u root main.yml
+  # using `sudo -E su $USER -c '...'` we avoid to restart session 
+  # after adding travis user to the libvirt group
+  - sudo -E su $USER -c "ansible-playbook -i test/inventory-test.yml -v -u root main.yml"
 
 #notifications:
 #  email:
