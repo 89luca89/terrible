@@ -32,7 +32,7 @@ before_install:
   # Install Ansible 2.9
   - pip install ansible=="$ANSIBLE_VERSION"
   - pip show ansible
-  - pip show ansible-playbook
+  - ls -la /home/travis/virtualenv/python3.6.10/lib/python3.6/site-packages/
 
 #  # Install Terraform 0.12
 #  - curl -sLo /tmp/terraform.zip https://releases.hashicorp.com/terraform/"$TERRAFORM_VERSION"/terraform_"$TERRAFORM_VERSION"_linux_amd64.zip
