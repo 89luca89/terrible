@@ -36,7 +36,6 @@ before_install:
         <path>/var/lib/libvirt/images</path>
       </target>
     </pool>
-    EOF
   - sudo virsh pool-start default
   - sudo virsh pool-autostart default
 
