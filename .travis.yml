@@ -14,6 +14,7 @@ env:
   global:
     - ANSIBLE_VERSION=2.9
     - TERRAFORM_VERSION=0.12.0
+    - PACKER_VERSION=1.6.4
 
 before_install:
   # This stage is used to setup the environment to deploy the infrastructure.
@@ -50,7 +51,7 @@ before_install:
   - pip install -r requirements.txt
 
   # Install Packer 1.6.4 to create KVM images.
-  - curl -sLo /tmp/packer.zip https://releases.hashicorp.com/packer/1.6.4/packer_1.6.4_linux_amd64.zip
+  - curl -sLo /tmp/packer.zip https://releases.hashicorp.com/packer/"$PACKER_VERSION"/packer_"$PACKER_VERSION"_linux_amd64.zip
   - unzip /tmp/packer.zip -d /tmp
   - sudo mv /tmp/packer /usr/local/bin
   - sudo ln -s /usr/bin/qemu-system-x86_64 /usr/bin/qemu-kvm
@@ -63,6 +64,13 @@ before_install:
 
   # Download Centos 8.2 image
   - travis_wait 30 wget -q http://linuxsoft.cern.ch/centos/8.2.2004/isos/x86_64/CentOS-8.2.2004-x86_64-boot.iso -O ~/VirtualMachines/CentOS-8.2.2004-x86_64-boot.iso
+
+  # Bad trick to avoid session restart when you add your user to the group libvirt 
+  - groups
+  - sudo echo "unix_sock_group = $USER" > /etc/libvirt/libvirtd.conf
+  - sudo echo "unix_sock_ro_perms = \"0777\"" >> /etc/libvirt/libvirtd.conf
+  - sudo echo "unix_sock_rw_perms = \"0770\"" >> /etc/libvirt/libvirtd.conf
+  - sudo systemctl restart libvirtd
 
 install:
   # This stage prepare the Centos8 image template
