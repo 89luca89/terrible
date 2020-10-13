@@ -56,9 +56,10 @@ before_install:
   - sudo ln -s /usr/bin/qemu-system-x86_64 /usr/bin/qemu-kvm
   - mkdir ~/VirtualMachines
 
-  # Create ssh keys
+  # Manage ssh keys to allow Ansible to access root user.
+  - echo "root:password" | sudo chpasswd
   - ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
-  - sudo ssh-copy-id root@127.0.0.1
+  - sshpass -p "password" ssh-copy-id -o StrictHostKeyChecking=no root@127.0.0.1
 
   # Download Centos 8.2 image
   - travis_wait 30 wget -q http://linuxsoft.cern.ch/centos/8.2.2004/isos/x86_64/CentOS-8.2.2004-x86_64-boot.iso -O ~/VirtualMachines/CentOS-8.2.2004-x86_64-boot.iso
