@@ -29,7 +29,7 @@ all:
               ansible_host: 192.168.122.2
               network_interfaces:
                 iface_1:
-                  name: nat
+                  name: default
                   type: nat
                   ip: 192.168.122.2
                   gw: 192.168.122.1
@@ -52,7 +52,7 @@ all:
                   encryption: False
                   mount_point: /mnt/config-1
                 disk-2:
-                  size: 5
+                  size: 1
                   pool: default
                   format: swap
                   encryption: False

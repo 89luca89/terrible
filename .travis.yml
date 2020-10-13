@@ -75,7 +75,7 @@ script:
   # of this project.
 
   # Run ansible-playbook tests
-  - ansible-playbook -i test/inventory-test.yml -v -u root main.yml
+  - sudo ansible-playbook -i test/inventory-test.yml -v -u root main.yml
 
 #notifications:
 #  email:
