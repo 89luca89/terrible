@@ -58,3 +58,5 @@ all:
                   encryption: False
                   mount_point: none
           vars:
+
+ansible_python_interpreter:/usr/bin/python3
