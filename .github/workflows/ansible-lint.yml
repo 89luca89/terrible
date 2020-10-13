@@ -3,7 +3,7 @@ name: Ansible Lint  # feel free to pick your own name
 on: [push, pull_request]
 
 jobs:
-  build:
+  ansible-lint:
     runs-on: ubuntu-latest
     steps:
 
@@ -15,7 +15,25 @@ jobs:
         targets: "main.yml"
         args: ""
 
-    - name: Run ansible-later
-      uses: patrickjahns/ansible-later-action@master
-      with:
-        path: tasks
+  ansible-later:
+    # Run the test inside a centos8 container
+    runs-on: ubuntu-latest
+    container: centos:centos8
+    steps:
+
+    - uses: actions/checkout@v2
+
+      # Make pip3 work
+    - name: Install Dependencies yum
+      run: |
+        yum install -y python3 python3-pip python3-setuptools
+
+      # Install requirements and latest ansible
+    - name: Install Dependencies pip
+      run: |
+        pip3 install ansible-later
+
+      # Validate all inventory files in the repo
+    - name: Ansible Later
+      run: |
+        ansible-later tasks
