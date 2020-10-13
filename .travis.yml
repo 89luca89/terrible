@@ -29,7 +29,7 @@ before_install:
   - sudo adduser $USER kvm
 
   # Install Ansible 2.9
-  - pip install ansible=="$ANSIBLE_VERSION"
+  - sudo pip install ansible=="$ANSIBLE_VERSION"
 
   # Install Terraform 0.12
   - curl -sLo /tmp/terraform.zip https://releases.hashicorp.com/terraform/"$TERRAFORM_VERSION"/terraform_"$TERRAFORM_VERSION"_linux_amd64.zip
@@ -47,7 +47,7 @@ before_install:
   - sudo apt-get install sshpass
 
   # Install python requirements
-  - pip install -r requirements.txt
+  - sudo pip install -r requirements.txt
 
   # Install Packer 1.6.4 to create KVM images.
   - curl -sLo /tmp/packer.zip https://releases.hashicorp.com/packer/1.6.4/packer_1.6.4_linux_amd64.zip
