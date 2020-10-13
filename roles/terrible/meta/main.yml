@@ -8,15 +8,15 @@ galaxy_info:
   min_ansible_version: 2.9
 
   platforms:
-  - name: RedHat
-    versions:
-    - all
-  - name: Suse
-    versions:
-    - all
-  - name: Debian
-    versions:
-    - all
+    - name: RedHat
+      versions:
+        - all
+    - name: Suse
+      versions:
+        - all
+    - name: Debian
+      versions:
+        - all
 
   galaxy_tags:
     - system

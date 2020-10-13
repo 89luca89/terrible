@@ -73,7 +73,7 @@
   delegate_to: terraform_node
 
 # Perform terraform destroy on specific resources, if state is changed, notify and save it
-- name: "Terraform shut down target VMs (preserve resources)" # noqa 503
+- name: "Terraform shut down target VMs (preserve resources)"  # noqa 503
   terraform:
     project_path: "{{ hcl_deploy_path }}/"
     force_init: yes
