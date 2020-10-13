@@ -6,7 +6,9 @@
 
 ### Workflows Status
 
-[![Actions Status](https://github.com/89luca89/terrible/workflows/Ansible%20Lint/badge.svg)](https://github.com/89luca89/terrible/actions)
+[![Ansible-Lint](https://github.com/89luca89/terrible/workflows/Ansible%20Lint/badge.svg)](https://github.com/89luca89/terrible/actions?query=workflow%3A%22Ansible+Lint%22)
+[![Terrible Validate](https://github.com/89luca89/terrible/workflows/Ansible%20Validate/badge.svg)](https://github.com/89luca89/terrible/actions?query=workflow%3A%22Ansible+Validate%22)
+
 
 
 
