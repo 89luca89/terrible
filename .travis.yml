@@ -80,7 +80,7 @@ script:
   # Run ansible-playbook tests
   # using `sudo -E su $USER -c '...'` we avoid to restart session 
   # after adding travis user to the libvirt group
-  - sudo -E su $USER -c "ansible-playbook -i test/inventory-test.yml -v -u root main.yml"
+  - sudo -E sudo -u $USER -E bash -c "ansible-playbook -i test/inventory-test.yml -v -u root main.yml"
 
 #notifications:
 #  email:
