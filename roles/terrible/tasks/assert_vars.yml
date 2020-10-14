@@ -1,3 +1,5 @@
+---
+
 # Ensure that the mandatory variables for the host are set.
 - name: Assert VMs Variables
   assert:
@@ -6,17 +8,17 @@
     fail_msg: >
       You must specify {{ item }}
   with_items:
-      - hostvars['terraform_node']
-      - hostvars['terraform_node']['ansible_host']
-      - hostvars['terraform_node']['ansible_connection']
-      - ansible_host
-      - disk_source
-      - pool_name
-      - ssh_password
-      - ssh_port
-      - ssh_public_key_file
-      - ssh_user
-      - network_interfaces
+    - hostvars['terraform_node']
+    - hostvars['terraform_node']['ansible_host']
+    - hostvars['terraform_node']['ansible_connection']
+    - ansible_host
+    - disk_source
+    - pool_name
+    - ssh_password
+    - ssh_port
+    - ssh_public_key_file
+    - ssh_user
+    - network_interfaces
 
 # Verifiy the correctness of the parameters.
 - name: Validate 'ssh_port' parameter
@@ -50,8 +52,8 @@
       You must specify the os_family for host {{ inventory_hostname }},
       supported values are: {{ os_family_support }}
   with_items:
-      - "os_family is defined"
-      - "os_family in os_family_support"
+    - "os_family is defined"
+    - "os_family in os_family_support"
 
 # Ensure that the hypervisor variable has been set for current host.
 - name: Assert hypervisor variable
@@ -62,8 +64,8 @@
     fail_msg: >
       You must specify the hyperisor value for host {{ inventory_hostname }}
   with_items:
-      - "hypervisor is defined"
-      - "hostvars[hypervisor]['ansible_host'] is defined"
+    - "hypervisor is defined"
+    - "hostvars[hypervisor]['ansible_host'] is defined"
 
 # Verifiy the correctness of the parameters.
 - name: Validate 'cpu' parameter
@@ -237,8 +239,8 @@
       You must specify a valid disk format for host {{ inventory_hostname }},
       supported values are: {{ supported_fs }}
   when:
-      - "supported_fs is defined"
-      - "data_disks is defined"
+    - "supported_fs is defined"
+    - "data_disks is defined"
   with_items:
     - "{{ data_disks.values() | list }}"
 
@@ -304,3 +306,5 @@
     - ssh_public_key_file is defined
     - ssh_public_key_file_stat.stat.exists
   delegate_to: terraform_node
+
+...

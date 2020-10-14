@@ -93,3 +93,5 @@
   when:
     - ansible_distribution == 'Ubuntu'
     - netplan_file.changed
+
+...

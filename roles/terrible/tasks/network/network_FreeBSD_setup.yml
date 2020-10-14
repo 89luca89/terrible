@@ -61,3 +61,5 @@
   async: 1
   poll: 0
   when: "connection_file.changed or resolv_file.changed or resolvconf_file.changed"
+
+...

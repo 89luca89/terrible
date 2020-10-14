@@ -1,9 +1,34 @@
 name: Ansible Lint  # feel free to pick your own name
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
-  build:
+  yaml-lint:
+    # Run the test inside a centos8 container
+    runs-on: ubuntu-latest
+    container: centos:centos8
+    steps:
+
+    - uses: actions/checkout@v2
+
+      # Make pip3 work
+    - name: Install Dependencies yum
+      run: |
+        yum install -y python3 python3-pip python3-setuptools
+
+      # Install requirements and latest ansible
+    - name: Install Dependencies pip
+      run: |
+        pip3 install yamllint
+
+      # Validate all inventory files in the repo
+      # disable line lenght
+      # disable truthy, it goes against ansible recommendations
+    - name: Yaml lint
+      run: |
+        yamllint -d "{extends: default, rules: {line-length: disable, truthy: disable}}" roles/
+
+  ansible-lint:
     runs-on: ubuntu-latest
     steps:
 
@@ -14,3 +39,26 @@ jobs:
       with:
         targets: "main.yml"
         args: ""
+
+  ansible-later:
+    # Run the test inside a centos8 container
+    runs-on: ubuntu-latest
+    container: centos:centos8
+    steps:
+
+    - uses: actions/checkout@v2
+
+      # Make pip3 work
+    - name: Install Dependencies yum
+      run: |
+        yum install -y python3 python3-pip python3-setuptools
+
+      # Install requirements and latest ansible
+    - name: Install Dependencies pip
+      run: |
+        pip3 install ansible-later
+
+      # Validate all inventory files in the repo
+    - name: Ansible Later
+      run: |
+        ansible-later tasks

@@ -104,3 +104,5 @@
   with_together:
     - "{{ data_disks.values() | list }}"
     - "{{ additional_disks.stdout_lines }}"
+
+...

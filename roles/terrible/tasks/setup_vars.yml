@@ -2,7 +2,7 @@
 
 # local ansible, terraform and kvm
 # just use qemu:///system
-- name: local ansible, local terraform, local kvm
+- name: Setup - local ansible, local terraform, local kvm
   set_fact:
     provider_uri: "qemu:///system"
     terraform_bastion_enabled: False
@@ -10,7 +10,6 @@
     - hostvars['terraform_node']['ansible_connection'] == 'local'
     - (hostvars[hypervisor]['ansible_host'] is not defined or (hostvars[hypervisor]['ansible_host'] is defined and hostvars[hypervisor]['ansible_host'] == hostvars['terraform_node']['ansible_host'] ))   # noqa 204
   delegate_to: terraform_node
-
 
 ######
 #  local ansible, local terraform, remote kvm
@@ -20,7 +19,7 @@
 #  use qemu+ssh://USER@HOST/system, with USER and HOST being declared as ansible_host_*
 #  also setup ansible_jump_hosts to the ansible_host.
 #####
-- name: local ansible, local terraform, remote kvm
+- name: Setup - local ansible, local terraform, remote kvm
   set_fact:
     provider_uri: "qemu+ssh://{{ hostvars[hypervisor]['ansible_user'] | default(ssh_user,boolean=True) }}@{{ hostvars[hypervisor]['ansible_host'] }}/system"
     ansible_jump_hosts: "{{ [ {'user':hostvars[hypervisor]['ansible_user'] | default(ssh_user,boolean=True), 'host':hostvars[hypervisor]['ansible_host'], 'port':hostvars[hypervisor]['ansible_port'] | default(ssh_port,boolean=True) } ] }}"   # noqa 204
@@ -42,7 +41,7 @@
 #  use qemu:///system as terraform will access KVM locally on the hypervisor being on the same machine.
 #  set ansible_jump_hosts to the ansible_host_* variables, if not defined, fallback to terraform_node variables from ansible.
 #####
-- name: local ansible, remote terraform + kvm
+- name: Setup - local ansible, remote terraform + kvm
   set_fact:
     provider_uri: "qemu:///system"
     ansible_jump_hosts: "{{ [ {'user':hostvars[hypervisor]['ansible_user'] | default(ansible_user,boolean=True), 'host':hostvars[hypervisor]['ansible_host'] | default(hostvars['terraform_node']['ansible_host'], boolean=True), 'port':hostvars[hypervisor]['ansible_port'] | default(22,boolean=True) } ] }}"   # noqa 204
@@ -62,10 +61,10 @@
 #     first the terraform_node (the one where terraform is installed)
 #     second the hypervisor (where KVM is installed)
 #####
-- name: local ansible, remote terraform, remote_2 kvm
+- name: Setup - local ansible, remote terraform, remote_2 kvm
   set_fact:
     provider_uri: "qemu+ssh://{{ hostvars[hypervisor]['ansible_user'] | default(ssh_user,boolean=True) }}@{{ hostvars[hypervisor]['ansible_host'] }}/system"
-    ansible_jump_hosts: "{{ [ {'user':hostvars['terraform_node']['ansible_user'] | default(ssh_user,boolean=True), 'host':hostvars[hypervisor]['ansible_host'], 'port':hostvars[hypervisor]['ansible_port'] | default(ssh_port,boolean=True)  } ] + [ {'user':ansible_user, 'host':hostvars['terraform_node']['ansible_host'], 'port':hostvars['terraform_node']['ansible_port'] | default(22,boolean=True)  } ]  }}"   # noqa 204
+    ansible_jump_hosts: "{{ [ {'user':hostvars['terraform_node']['ansible_user'] | default(ssh_user,boolean=True), 'host':hostvars[hypervisor]['ansible_host'], 'port':hostvars[hypervisor]['ansible_port'] | default(ssh_port,boolean=True)  } ] + [ {'user':ansible_user, 'host':hostvars['terraform_node']['ansible_host'], 'port':hostvars['terraform_node']['ansible_port'] | default(22,boolean=True) } ] }}"   # noqa 204
     terraform_bastion_enabled: True
     terraform_bastion_host: "{{ hostvars[hypervisor]['ansible_host'] }}"
     terraform_bastion_password: "{{ hostvars[hypervisor]['ansible_ssh_pass'] | default(ssh_password,boolean=True) }}"
@@ -81,7 +80,7 @@
     hcl_deploy_path: "{{ lookup('env','HOME') }}/.terrible/{{ ansible_inventory_sources[0].split('/')[-1] }}/{{ provider_uri.split('/')[-2] }}"
   delegate_to: terraform_node
 
-- name: Set HCL Deploy path
+- name: Set HCL Deploy path - (localhost workaround)
   set_fact:
     hcl_deploy_path: "{{ lookup('env','HOME') }}/.terrible/{{ ansible_inventory_sources[0].split('/')[-1] }}/localhost"
   when: provider_uri.split('/')[-2] | length == 0
@@ -94,3 +93,5 @@
     state: directory
     mode: 0755
   delegate_to: terraform_node
+
+...
