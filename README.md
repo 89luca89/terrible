@@ -1,6 +1,7 @@
 # Terrible: IaC for QEMU/KVM
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) ![Terraform Version](https://img.shields.io/badge/Terraform-v0.12-yellowgreen) ![Ansible Version](https://img.shields.io/badge/Ansible-v2.9%2B-yellowgreen) ![terraform_provider_libvirt](https://img.shields.io/badge/Terraform%20Provider%20Libvirt-v0.6-yellowgreen) ![Made_with_love](https://img.shields.io/badge/made%20with-%E2%9D%A4%EF%B8%8E-red)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2F89luca89%2Fterrible.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2F89luca89%2Fterrible?ref=badge_shield)
 
 ![logo](./pics/logo.png)
 
@@ -593,3 +594,6 @@ will be restored and saved on each run.
 ## License
 
 - GNU GPLv3, See LICENSE file.
+
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2F89luca89%2Fterrible.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2F89luca89%2Fterrible?ref=badge_large)
