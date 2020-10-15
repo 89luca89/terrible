@@ -1,0 +1,6 @@
+#cloud-config
+ssh_pwauth: True
+chpasswd:
+  list: |
+    {{ ssh_user }}:{{ ssh_password }}
+  expire: False
