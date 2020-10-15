@@ -14,6 +14,8 @@ env:
   global:
     - ANSIBLE_VERSION=2.9
     - TERRAFORM_VERSION=0.12.0
+    - TERRAFORM_PROVIDER_VERSION=0.6.2
+    - TERRAFORM_PROVIDER_RELEASE=0.6.2+git.1585292411.8cbe9ad0
     - PACKER_VERSION=1.6.4
 
 before_install:
@@ -50,7 +52,7 @@ before_install:
 
   # Install Terraform Provider for Libvirt 0.6.2
   - mkdir -p ~/.terraform.d/plugins/linux_amd64
-  - curl -sLo terraform-provider-libvirt.tar.gz https://github.com/dmacvicar/terraform-provider-libvirt/releases/download/v0.6.2/terraform-provider-libvirt-0.6.2+git.1585292411.8cbe9ad0.Ubuntu_18.04.amd64.tar.gz
+  - curl -sLo terraform-provider-libvirt.tar.gz https://github.com/dmacvicar/terraform-provider-libvirt/releases/download/v"$TERRAFORM_PROVIDER_VERSION"/terraform-provider-libvirt-"$TERRAFORM_PROVIDER_RELEASE".Ubuntu_18.04.amd64.tar.gz
   - tar zxvf terraform-provider-libvirt.tar.gz
   - mv terraform-provider-libvirt ~/.terraform.d/plugins/linux_amd64/
   - ~/.terraform.d/plugins/linux_amd64/terraform-provider-libvirt -version 
