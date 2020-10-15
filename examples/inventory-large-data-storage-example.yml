@@ -59,9 +59,9 @@ all:
                   format: freebsd-ufs
                   mount_point: /mnt/data_configs
                   encryption: False
-        slave_nodes:
+        worker_nodes:
           hosts:
-            slave-node-0:
+            worker-node-0:
               os_family: Debian
               disk_source: "~/VirtualMachines/debian10-terraform.qcow2"
               cpu: 1
