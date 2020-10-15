@@ -40,7 +40,8 @@ before_install:
   - sudo virsh pool-autostart default
 
   # Install Ansible 2.9
-  - pip install ansible=="$ANSIBLE_VERSION"
+  - sudo apt-get install python3-pip python3-setuptools
+  - pip3 install ansible=="$ANSIBLE_VERSION"
 
   # Install Terraform 0.12
   - curl -sLo /tmp/terraform.zip https://releases.hashicorp.com/terraform/"$TERRAFORM_VERSION"/terraform_"$TERRAFORM_VERSION"_linux_amd64.zip

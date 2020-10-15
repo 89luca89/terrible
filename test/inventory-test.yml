@@ -1,6 +1,5 @@
 all:
   vars:
-    ansible_python_interpreter:/usr/bin/python3
   hosts:
     terraform_node:
       ansible_host: localhost
@@ -38,6 +37,7 @@ all:
                     - 192.168.122.1
                   default_route: True
               terraform_custom_provisioners:
+                - ln -sf /usr/bin/python3 /usr/bin/python
                 - "echo {{ ansible_host }} > /tmp/test_provisioning_success.log"
               data_disks:
                 disk-0:
