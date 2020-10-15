@@ -91,7 +91,12 @@ script:
   # Run ansible-playbook tests
   - ansible-playbook -i test/inventory-test.yml -v -u root main.yml
 
-#notifications:
-#  email:
-#    - luca.dimaio1@gmail.com
-#    - greggialessio@gmail.com
+after_success:
+  # This stage verify if the infrastructure
+  # has been created.
+  - virsh list --all
+
+notifications:
+  email:
+    - luca.dimaio1@gmail.com
+    - greggialessio@gmail.com
