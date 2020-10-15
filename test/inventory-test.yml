@@ -6,7 +6,7 @@ all:
       ansible_host: localhost
       ansible_connection: local # ssh
     hypervisor_1:
-      ansible_host: localhost
+      ansible_host: 127.0.0.1
       ansible_user: root
       ansible_port: 22
       ansible_ssh_pass: password
