@@ -4,3 +4,8 @@ chpasswd:
   list: |
     {{ ssh_user }}:{{ ssh_password }}
   expire: False
+{% if ssh_user == 'root' %}
+runcmd:
+  - sed -i 's/^.*PermitRootLogin.*/PermitRootLogin yes/g' /etc/ssh/sshd_config
+  - systemctl restart sshd
+{% endif %}
