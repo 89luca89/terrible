@@ -109,16 +109,22 @@ resource "libvirt_domain" "domain_{{ inventory_hostname }}" {
 {% endif %}
 {% endfor %}
 
-  # IMPORTANT
-  # it will show no console otherwise
-  video {
-    type = "qxl"
-  }
-
   console {
     type        = "pty"
     target_port = "0"
     target_type = "serial"
+  }
+
+  console {
+    type        = "pty"
+    target_type = "virtio"
+    target_port = "1"
+  }
+
+  # IMPORTANT
+  # it will show no console otherwise
+  video {
+    type = "qxl"
   }
 
   graphics {
@@ -155,6 +161,16 @@ resource "libvirt_domain" "domain_{{ inventory_hostname }}" {
     }
 {% endif %}
 
+{% if terraform_custom_provisioners is defined %}
+    provisioner "remote-exec" {
+      inline = [
+{% for provisioner_command in terraform_custom_provisioners %}
+        "{{ provisioner_command }}"{% if not loop.last %},{% endif %}
+{% endfor %}
+      ]
+    }
+{% endif %}
+
 {% if ansible_dependencies is defined %}
     provisioner "remote-exec" {
       inline = [
@@ -163,16 +179,6 @@ resource "libvirt_domain" "domain_{{ inventory_hostname }}" {
         "{{ install_command }} {{ pkg }}"{% if not loop.last %},{% endif %}
     {% endif %}
 
-{% endfor %}
-      ]
-    }
-    {% endif %}
-
-    {% if terraform_custom_provisioners is defined %}
-    provisioner "remote-exec" {
-      inline = [
-{% for provisioner_command in terraform_custom_provisioners %}
-        "{{ provisioner_command }}"{% if not loop.last %},{% endif %}
 {% endfor %}
       ]
     }
