@@ -11,16 +11,16 @@ stages:
   - script
 
 env:
-  - FILE=1AC3bXMYSxTHECqY0iSwH4ZQWlw7jzs2J FILENAME=opensuse15-terraform.tar.gz
-  - FILE=1nJB0a8tc5OQgRC4JT4w-QJXA6K0uC0SS FILENAME=freebsd-terraform.tar.gz
-  - FILE=1ryj8RmucJc-04LQKHkj9fU69ojPLxeZW FILENAME=debian10-terraform.tar.gz
-  - FILE=1bhMrL7UfcgptrANnmk9yigCeVF8gBsQL FILENAME=centos8-terraform.tar.gz
   global:
     - ANSIBLE_VERSION=2.9
     - TERRAFORM_VERSION=0.12.0
     - TERRAFORM_PROVIDER_VERSION=0.6.2
     - TERRAFORM_PROVIDER_RELEASE=0.6.2+git.1585292411.8cbe9ad0
     - PACKER_VERSION=1.6.4
+    - FILE=1AC3bXMYSxTHECqY0iSwH4ZQWlw7jzs2J FILENAME=opensuse15-terraform.tar.gz
+    - FILE=1nJB0a8tc5OQgRC4JT4w-QJXA6K0uC0SS FILENAME=freebsd-terraform.tar.gz
+    - FILE=1ryj8RmucJc-04LQKHkj9fU69ojPLxeZW FILENAME=debian10-terraform.tar.gz
+    - FILE=1bhMrL7UfcgptrANnmk9yigCeVF8gBsQL FILENAME=centos8-terraform.tar.gz
 
 before_install:
   # This stage is used to setup the environment to deploy the infrastructure.
