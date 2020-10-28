@@ -58,7 +58,7 @@ before_install:
   - ~/.terraform.d/plugins/linux_amd64/terraform-provider-libvirt -version 
 
   # Install other necessary packages
-  - sudo apt-get install sshpass
+  - sudo apt-get install sshpass parallel
 
   # Install python requirements
   - pip install -r requirements.txt
@@ -73,20 +73,23 @@ install:
   - ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
   - sshpass -p "password" ssh-copy-id -o StrictHostKeyChecking=no root@127.0.0.1
   
+  - |
+    cat <<EOF > images.txt
+    --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1AC3bXMYSxTHECqY0iSwH4ZQWlw7jzs2J' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1AC3bXMYSxTHECqY0iSwH4ZQWlw7jzs2J" -O ~/VirtualMachines/opensuse15-terraform.tar.gz && rm -rf /tmp/cookies.txt
+    --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1nJB0a8tc5OQgRC4JT4w-QJXA6K0uC0SS' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1nJB0a8tc5OQgRC4JT4w-QJXA6K0uC0SS" -O ~/VirtualMachines/freebsd-terraform.tar.gz  && rm -rf /tmp/cookies.txt
+    --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1ryj8RmucJc-04LQKHkj9fU69ojPLxeZW' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1ryj8RmucJc-04LQKHkj9fU69ojPLxeZW" -O ~/VirtualMachines/debian10-terraform.tar.gz && rm -rf /tmp/cookies.txt
+    --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1bhMrL7UfcgptrANnmk9yigCeVF8gBsQL' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1bhMrL7UfcgptrANnmk9yigCeVF8gBsQL" -O ~/VirtualMachines/centos8-terraform.tar.gz  && rm -rf /tmp/cookies.txt
+    EOF
+
   
   # Download pre-built images from Drive
-  - travis_wait 30 wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=$FILE' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=$FILE" -O ~/VirtualMachines/"$FILENAME" && rm -rf /tmp/cookies.txt
+  - travis_wait 30 parallel -j 4 wget < images.txt
   
   # Untar qcow2 images.
-  - tar -zxvf ~/VirtualMachines/"$FILENAME" --directory ~/VirtualMachines/$(echo "$FILENAME" | sed 's/tar.gz/qcow2/g')
-
-env:
-  jobs:
-    - FILE=1AC3bXMYSxTHECqY0iSwH4ZQWlw7jzs2J FILENAME=opensuse15-terraform.tar.gz
-    - FILE=1nJB0a8tc5OQgRC4JT4w-QJXA6K0uC0SS FILENAME=freebsd-terraform.tar.gz
-    - FILE=1ryj8RmucJc-04LQKHkj9fU69ojPLxeZW FILENAME=debian10-terraform.tar.gz
-    - FILE=1bhMrL7UfcgptrANnmk9yigCeVF8gBsQL FILENAME=centos8-terraform.tar.gz
-
+  - tar -zxvf ~/VirtualMachines/opensuse15.tar.gz --directory ~/VirtualMachines/opensuse15.2-terraform.qcow2
+  - tar -zxvf ~/VirtualMachines/freebsd-terraform.tar.gz --directory ~/VirtualMachines/freebsd-terraform.qcow2
+  - tar -zxvf ~/VirtualMachines/debian10-terraform.tar.gz --directory ~/VirtualMachines/debian10-terraform.qcow2
+  - tar -zxvf ~/VirtualMachines/centos8-terraform.tar.gz --directory ~/VirtualMachines/centos8-terraform.qcow2
 
 script:
   # This stage deploy a basic infrastructure starting from
