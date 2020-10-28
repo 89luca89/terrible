@@ -17,10 +17,6 @@ env:
     - TERRAFORM_PROVIDER_VERSION=0.6.2
     - TERRAFORM_PROVIDER_RELEASE=0.6.2+git.1585292411.8cbe9ad0
     - PACKER_VERSION=1.6.4
-    - FILE=1AC3bXMYSxTHECqY0iSwH4ZQWlw7jzs2J FILENAME=opensuse15-terraform.tar.gz
-    - FILE=1nJB0a8tc5OQgRC4JT4w-QJXA6K0uC0SS FILENAME=freebsd-terraform.tar.gz
-    - FILE=1ryj8RmucJc-04LQKHkj9fU69ojPLxeZW FILENAME=debian10-terraform.tar.gz
-    - FILE=1bhMrL7UfcgptrANnmk9yigCeVF8gBsQL FILENAME=centos8-terraform.tar.gz
 
 before_install:
   # This stage is used to setup the environment to deploy the infrastructure.
@@ -70,30 +66,23 @@ before_install:
   # Download pre-built images from Drive
   - mkdir ~/VirtualMachines
   - travis_wait 30 wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=$FILE' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=$FILE" -O ~/VirtualMachines/"$FILENAME" && rm -rf /tmp/cookies.txt
+  
+  # Untar qcow2 images.
+  - tar -zxvf ~/VirtualMachines/"$FILENAME" --directory ~/VirtualMachines/$(echo "$FILENAME" | sed 's/tar.gz/qcow2/g')
 
-#  # Install Packer 1.6.4 to create KVM images.
-#  - curl -sLo /tmp/packer.zip https://releases.hashicorp.com/packer/"$PACKER_VERSION"/packer_"$PACKER_VERSION"_linux_amd64.zip
-#  - unzip /tmp/packer.zip -d /tmp
-#  - sudo mv /tmp/packer /usr/local/bin
-#  - sudo ln -s /usr/bin/qemu-system-x86_64 /usr/bin/qemu-kvm
-#  - mkdir ~/VirtualMachines
-
-#  # Download Centos 8.2 image
-#  - travis_wait 30 wget -q http://linuxsoft.cern.ch/centos/8.2.2004/isos/x86_64/CentOS-8.2.2004-x86_64-boot.iso -O ~/VirtualMachines/CentOS-8.2.2004-x86_64-boot.iso
+env:
+  jobs:
+    - FILE=1AC3bXMYSxTHECqY0iSwH4ZQWlw7jzs2J FILENAME=opensuse15-terraform.tar.gz
+    - FILE=1nJB0a8tc5OQgRC4JT4w-QJXA6K0uC0SS FILENAME=freebsd-terraform.tar.gz
+    - FILE=1ryj8RmucJc-04LQKHkj9fU69ojPLxeZW FILENAME=debian10-terraform.tar.gz
+    - FILE=1bhMrL7UfcgptrANnmk9yigCeVF8gBsQL FILENAME=centos8-terraform.tar.gz
 
 install:
-  # This stage prepare the ssh key.
 
   # Manage ssh keys to allow Ansible to access root user.
   - echo "root:password" | sudo chpasswd
   - ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
   - sshpass -p "password" ssh-copy-id -o StrictHostKeyChecking=no root@127.0.0.1
-
-#  # This stage prepare the Centos8 image template
-#  # using Packer.
-#
-#  # Create qcow2 centos template using Packer
-#  - pushd test/packer/centos8 && PACKER_LOG=1 sudo packer build centos8.json && popd
 
 script:
   # This stage deploy a basic infrastructure starting from

@@ -12,7 +12,7 @@ all:
   children:
     deploy:
       vars:
-        disk_source: "~/VirtualMachines/templates/packer-template-centos8-x86_64"
+        disk_source: "~/VirtualMachines/centos8-terraform.qcow2"
         pool_name: default
         ssh_password: root
         ssh_port: 22
