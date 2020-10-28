@@ -84,6 +84,7 @@ install:
   
   # Download pre-built images from Drive
   - travis_wait 30 parallel -j 4 wget < images.txt
+  - ls -la ~/VirtualMachines/
   
   # Untar qcow2 images.
   - tar -zxvf ~/VirtualMachines/opensuse15.tar.gz --directory ~/VirtualMachines/opensuse15.2-terraform.qcow2
