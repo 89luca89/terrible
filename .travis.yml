@@ -63,8 +63,18 @@ before_install:
   # Install python requirements
   - pip install -r requirements.txt
 
-  # Download pre-built images from Drive
+  # Create directory to store images
   - mkdir ~/VirtualMachines
+
+install:
+
+  # Manage ssh keys to allow Ansible to access root user.
+  - echo "root:password" | sudo chpasswd
+  - ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
+  - sshpass -p "password" ssh-copy-id -o StrictHostKeyChecking=no root@127.0.0.1
+  
+  
+  # Download pre-built images from Drive
   - travis_wait 30 wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=$FILE' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=$FILE" -O ~/VirtualMachines/"$FILENAME" && rm -rf /tmp/cookies.txt
   
   # Untar qcow2 images.
@@ -77,12 +87,6 @@ env:
     - FILE=1ryj8RmucJc-04LQKHkj9fU69ojPLxeZW FILENAME=debian10-terraform.tar.gz
     - FILE=1bhMrL7UfcgptrANnmk9yigCeVF8gBsQL FILENAME=centos8-terraform.tar.gz
 
-install:
-
-  # Manage ssh keys to allow Ansible to access root user.
-  - echo "root:password" | sudo chpasswd
-  - ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
-  - sshpass -p "password" ssh-copy-id -o StrictHostKeyChecking=no root@127.0.0.1
 
 script:
   # This stage deploy a basic infrastructure starting from
