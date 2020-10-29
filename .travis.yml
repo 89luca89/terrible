@@ -81,10 +81,10 @@ install:
   - ls -la ~/VirtualMachines/
   
   # Untar qcow2 images.
-  - tar -zxvf ~/VirtualMachines/opensuse15.tar.gz --directory ~/VirtualMachines/opensuse15.2-terraform.qcow2
-  - tar -zxvf ~/VirtualMachines/freebsd-terraform.tar.gz --directory ~/VirtualMachines/freebsd-terraform.qcow2
-  - tar -zxvf ~/VirtualMachines/debian10-terraform.tar.gz --directory ~/VirtualMachines/debian10-terraform.qcow2
-  - tar -zxvf ~/VirtualMachines/centos8-terraform.tar.gz --directory ~/VirtualMachines/centos8-terraform.qcow2
+  - pushd ~/VirtualMachines/; tar zxvf ~/VirtualMachines/opensuse15.tar.gz; popd
+  - pushd ~/VirtualMachines/; tar zxvf ~/VirtualMachines/freebsd-terraform.tar.gz; popd
+  - pushd ~/VirtualMachines/; ttar zxvf ~/VirtualMachines/debian10-terraform.tar.gz; popd
+  - pushd ~/VirtualMachines/; tar zxvf ~/VirtualMachines/centos8-terraform.tar.gz; popd
 
 script:
   # This stage deploy a basic infrastructure starting from
