@@ -135,7 +135,7 @@ all:
                   encryption: False
                   mount_point: none
             host-vm-4:
-              os_family: Debian
+              os_family: FreeBSD
               disk_source: "~/VirtualMachines/freebsd-terraform.qcow2"
               cpu: 2
               memory: 4096
