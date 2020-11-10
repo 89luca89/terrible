@@ -3,6 +3,17 @@
 #
 #
 #
+#
+
+- name: "Deploy terraform files - cloudinit"
+  template:
+    src: cloud_init.yml.j2
+    dest: "{{ hcl_deploy_path }}/cloud_init_{{ inventory_hostname }}.yml"
+    mode: 0644
+  when: cloud_init is defined and cloud_init
+  tags: deploy, generate_hcl
+  delegate_to: terraform_node
+
 # Deploy the terraform files for each host. Use jinja2 for templating.
 - name: "Deploy terraform files - variables"
   template:

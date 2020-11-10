@@ -1,0 +1,158 @@
+all:
+  vars:
+  hosts:
+    terraform_node:
+      ansible_host: localhost
+      ansible_connection: local
+    hypervisor_1:
+      ansible_host: 10.90.20.12
+      ansible_user: root
+      ansible_port: 22
+      ansible_ssh_pass: password
+  children:
+    deploy:
+      vars:
+        pool_name: default
+        ssh_password: root
+        ssh_port: 22
+        ssh_user: root
+        ssh_public_key_file: '~/.ssh/id_rsa.pub'
+        set_new_password: supersecretpassword!
+      children:
+        slave_nodes:
+          hosts:
+            cloud-init-node-0:
+              os_family: RedHat
+              #disk_source: "~/Desktop/cloudinit/CentOS-8-GenericCloud-8.1.1911-20200113.3.x86_64.qcow2"
+              disk_source: "https://cloud.centos.org/centos/8/x86_64/images/CentOS-8-GenericCloud-8.1.1911-20200113.3.x86_64.qcow2"
+              cpu: 1
+              memory: 512
+              hypervisor: hypervisor_1
+              ansible_host: 192.168.122.200
+              cloud_init: True
+              network_interfaces:
+                if-0:
+                  name: default
+                  ip: 192.168.122.200
+                  gw: 192.168.122.1
+                  type: nat
+                  default_route: True
+                  dns:
+                    - 192.168.122.1
+              data_disks:
+                disk-1:
+                  size: 5
+                  pool: default
+                  format: ext4
+                  mount_point: /mnt/data_1
+                  encryption: False
+                disk-swap:
+                  size: 5
+                  pool: default
+                  format: swap
+                  mount_point: none
+                  encryption: False
+            cloud-init-node-1:
+              os_family: Debian
+              # disk_source: "~/Desktop/cloudinit/focal-server-cloudimg-amd64-disk-kvm.img"
+              disk_source: "https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64-disk-kvm.img"
+              cpu: 1
+              memory: 512
+              hypervisor: hypervisor_1
+              ansible_host: 192.168.122.201
+              cloud_init: True
+              network_interfaces:
+                if-0:
+                  name: default
+                  ip: 192.168.122.201
+                  gw: 192.168.122.1
+                  type: nat
+                  default_route: True
+                  dns:
+                    - 192.168.122.1
+              data_disks:
+                disk-1:
+                  size: 5
+                  pool: default
+                  format: ext4
+                  mount_point: /mnt/data_1
+                  encryption: False
+                disk-swap:
+                  size: 5
+                  pool: default
+                  format: swap
+                  mount_point: none
+                  encryption: False
+            cloud-init-node-2:
+              os_family: Debian
+              # disk_source: "~/Desktop/cloudinit/debian-10.6.0-openstack-amd64.qcow2"
+              disk_source: "https://cdimage.debian.org/cdimage/openstack/current/debian-10.6.0-openstack-amd64.qcow2"
+              cpu: 1
+              memory: 512
+              hypervisor: hypervisor_1
+              ansible_host: 192.168.122.202
+              cloud_init: True
+              # Fix a problem in the debian cloud_init image
+              # having to do an update before we can install
+              # any software
+              # then fix the missing keyboard-configuration
+              terraform_custom_provisioners:
+                - apt-get update
+                - DEBIAN_FRONTEND=noninteractive apt-get install -y keyboard-configuration
+              network_interfaces:
+                if-0:
+                  name: default
+                  ip: 192.168.122.202
+                  gw: 192.168.122.1
+                  type: nat
+                  default_route: True
+                  dns:
+                    - 192.168.122.1
+              data_disks:
+                disk-1:
+                  size: 5
+                  pool: default
+                  format: ext4
+                  mount_point: /mnt/data_1
+                  encryption: False
+                disk-swap:
+                  size: 5
+                  pool: default
+                  format: swap
+                  mount_point: none
+                  encryption: False
+            cloud-init-node-3:
+              os_family: Suse
+              # disk_source: "~/Desktop/cloudinit/openSUSE-Leap-15.1-OpenStack.x86_64.qcow2"
+              disk_source: "https://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.1/images/openSUSE-Leap-15.1-OpenStack.x86_64.qcow2"
+              cpu: 1
+              memory: 512
+              hypervisor: hypervisor_1
+              ansible_host: 192.168.122.203
+              cloud_init: True
+              # Fix a problem in the Suse cloud_init image
+              # where OpenSUSE-Cloud reporitory does not work
+              terraform_custom_provisioners:
+                - zypper rr openSUSE-Leap-15.1-Cloud
+              network_interfaces:
+                if-0:
+                  name: default
+                  ip: 192.168.122.203
+                  gw: 192.168.122.1
+                  type: nat
+                  default_route: True
+                  dns:
+                    - 192.168.122.1
+              data_disks:
+                disk-1:
+                  size: 5
+                  pool: default
+                  format: ext4
+                  mount_point: /mnt/data_1
+                  encryption: False
+                disk-swap:
+                  size: 5
+                  pool: default
+                  format: swap
+                  mount_point: none
+                  encryption: False

@@ -266,13 +266,13 @@
     that:
       - not {{ item }}.encryption
     fail_msg: >
-      You are trying to use an unsupported encryption value. FreeBSD family doesn't support encryption.
+      You are trying to use an unsupported encryption value. FreeBSD family and CloudInit images doesn't support encryption.
   with_items:
     - "{{ data_disks.values() | list }}"
   when:
     - data_disks is defined
     - data_disks | length > 0
-    - os_family == 'FreeBSD'
+    - item.format == 'swap' or os_family == 'FreeBSD' or (cloud_init is defined and cloud_init)
 
 # Verifiy the correctness of the parameters.
 - name: Validate 'encryption' parameter
