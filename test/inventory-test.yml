@@ -23,7 +23,7 @@ all:
           hosts:
             host-vm-1:
               os_family: RedHat
-              cpu: 2
+              cpu: 1
               memory: 2048
               hypervisor: hypervisor_1
               ansible_host: 192.168.122.2
@@ -61,7 +61,7 @@ all:
             host-vm-2:
               os_family: Debian
               disk_source: "~/VirtualMachines/debian10-terraform.qcow2"
-              cpu: 2
+              cpu: 1
               memory: 2048
               hypervisor: hypervisor_1
               ansible_host: 192.168.122.3
@@ -99,7 +99,7 @@ all:
             host-vm-3:
               os_family: Suse
               disk_source: "~/VirtualMachines/opensuse15.2-terraform.qcow2"
-              cpu: 2
+              cpu: 1
               memory: 2048
               hypervisor: hypervisor_1
               ansible_host: 192.168.122.4
@@ -137,7 +137,7 @@ all:
             host-vm-4:
               os_family: FreeBSD
               disk_source: "~/VirtualMachines/freebsd-terraform.qcow2"
-              cpu: 2
+              cpu: 1
               memory: 2048
               hypervisor: hypervisor_1
               ansible_host: 192.168.122.5
