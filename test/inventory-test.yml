@@ -96,44 +96,44 @@ all:
                   format: swap
                   encryption: False
                   mount_point: none
-#            host-vm-3:
-#              os_family: Suse
-#              disk_source: "~/VirtualMachines/opensuse15.2-terraform.qcow2"
-#              cpu: 1
-#              memory: 2048
-#              hypervisor: hypervisor_1
-#              ansible_host: 192.168.122.4
-#              network_interfaces:
-#                iface_1:
-#                  name: default
-#                  type: nat
-#                  ip: 192.168.122.4
-#                  gw: 192.168.122.1
-#                  dns:
-#                    - 192.168.122.1
-#                  default_route: True
-#              terraform_custom_provisioners:
-#                - ln -sf /usr/bin/python3 /usr/bin/python
-#                - "echo {{ ansible_host }} > /tmp/test_provisioning_success.log"
-#              data_disks:
-#                disk-0:
-#                  size: 1
-#                  pool: default
-#                  format: ext4
-#                  encryption: True
-#                  mount_point: /mnt/config
-#                disk-1:
-#                  size: 1
-#                  pool: default
-#                  format: ext3
-#                  encryption: False
-#                  mount_point: /mnt/config-1
-#                disk-2:
-#                  size: 1
-#                  pool: default
-#                  format: swap
-#                  encryption: False
-#                  mount_point: none
+            host-vm-3:
+              os_family: Suse
+              disk_source: "~/VirtualMachines/opensuse15.2-terraform.qcow2"
+              cpu: 1
+              memory: 2048
+              hypervisor: hypervisor_1
+              ansible_host: 192.168.122.4
+              network_interfaces:
+                iface_1:
+                  name: default
+                  type: nat
+                  ip: 192.168.122.4
+                  gw: 192.168.122.1
+                  dns:
+                    - 192.168.122.1
+                  default_route: True
+              terraform_custom_provisioners:
+                - ln -sf /usr/bin/python3 /usr/bin/python
+                - "echo {{ ansible_host }} > /tmp/test_provisioning_success.log"
+              data_disks:
+                disk-0:
+                  size: 1
+                  pool: default
+                  format: ext4
+                  encryption: True
+                  mount_point: /mnt/config
+                disk-1:
+                  size: 1
+                  pool: default
+                  format: ext3
+                  encryption: False
+                  mount_point: /mnt/config-1
+                disk-2:
+                  size: 1
+                  pool: default
+                  format: swap
+                  encryption: False
+                  mount_point: none
 #            host-vm-4:
 #              os_family: FreeBSD
 #              disk_source: "~/VirtualMachines/freebsd-terraform.qcow2"
