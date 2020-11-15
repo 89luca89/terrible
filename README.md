@@ -36,19 +36,19 @@ This **Ansible** playbook allows you to initialize and then deploy an entire inf
 
 ## Abstract
 
-The Infrastructure as Code had considerable growth in the cloud in the last years. 
-However, a separate discussion has to be done regarding the private cloud. 
-For various reasons, companies may need to use an internal infrastructure instead of the cloud. 
-Unfortunately, there aren't as many solutions for the private cloud as for the cloud. 
-Our idea has been to implement a flexible and powerful solution to easily build an infrastructure from scratch. 
-It uses the flexibility of Ansible and the power of Terraform allowing you to abstract both the creation and the provisioning of the infrastructure, 
-describing the whole process in a single file. 
+The Infrastructure as Code had considerable growth in the cloud in the last years.
+However, a separate discussion has to be done regarding the private cloud.
+For various reasons, companies may need to use an internal infrastructure instead of the cloud.
+Unfortunately, there aren't as many solutions for the private cloud as for the cloud.
+Our idea has been to implement a flexible and powerful solution to easily build an infrastructure from scratch.
+It uses the flexibility of Ansible and the power of Terraform allowing you to abstract both the creation and the provisioning of the infrastructure,
+describing the whole process in a single file.
 
 ### Why not just use a single tool?
 
-On our side, the decision has been driven by the need to create a single 
-source of truth for both the creation and provisioning of the infrastructure. 
-It has been possible by leveraging Ansible and Jinja2 flexibility to easily generate highly 
+On our side, the decision has been driven by the need to create a single
+source of truth for both the creation and provisioning of the infrastructure.
+It has been possible by leveraging Ansible and Jinja2 flexibility to easily generate highly
 dynamical HCL files for Terraform and leverage its power and compatibility to build the infrastructure.
 
 ### How It Works
@@ -65,12 +65,12 @@ The figure below describe the process in an easy way.
 
 ![![kvm-deployment]()](./pics/kvm-deployment.jpg)
 
-As you can see, we start having the templated file (`terraform-vm.tf.j2`). 
+As you can see, we start having the templated file (`terraform-vm.tf.j2`).
 
-When Ansible run, it generates *n* `.tf` files, depending on the VM specified into the inventory. This is the result of the initialization phase. 
+When Ansible run, it generates *n* `.tf` files, depending on the VM specified into the inventory. This is the result of the initialization phase.
 Once finished this task, the files are completed and ready to be used by Terraform.
 
-At this time, Ansible takes these files and use Terraform for each instance of them. 
+At this time, Ansible takes these files and use Terraform for each instance of them.
 Once finished this task, the VMs, previously described into the inventory, are correctly deployed into the QEMU/KVM server(s).
 
 ## Requirements
@@ -84,9 +84,9 @@ Once finished this task, the VMs, previously described into the inventory, are c
 
 ## Configuration
 
-First of all you have to compose the inventory file in a right way. This means you have to describe the VMs you want to deploy into the server. 
+First of all you have to compose the inventory file in a right way. This means you have to describe the VMs you want to deploy into the server.
 
-As you are going to check, there are some interesting variables you are allowed to use to properly describe your infrastructure. 
+As you are going to check, there are some interesting variables you are allowed to use to properly describe your infrastructure.
 Some of them are `required` and some others are `optional`.
 
 Below you can check the basic structure for the inventory.
@@ -151,7 +151,7 @@ all:
         ...
 ```
 
-In this example we specified the *uri* of the QEMU/KVM server (which is going to be common for all the VMs in this hypervisor group), 
+In this example we specified the *uri* of the QEMU/KVM server (which is going to be common for all the VMs in this hypervisor group),
 the storage pool name of the QEMU/KVM server and the `terraform node` address, which specify where Terraform is installed and where is going to be ran.
 
 Now, for each VM we want to specify some property such as the number of the cpu(s), memory ram, mac_address, etc.
@@ -201,8 +201,8 @@ all:
 ```
 
 In this example, we specified 2 main groups (`group_1`, `group_2`) and linked the VMs to `hypervisor_1`.
-These groups are composed overall by 3 VMs (`host_1`, `host_2`, `host_3`). 
-As you can see, not all the properties are specified for each machine. This is due to the default values of the variables provided by this playbook. 
+These groups are composed overall by 3 VMs (`host_1`, `host_2`, `host_3`).
+As you can see, not all the properties are specified for each machine. This is due to the default values of the variables provided by this playbook.
 
 Thanks to the variabe hierarchy in Ansible, you can configure variables:
 
@@ -228,6 +228,7 @@ These variables are **required**:
 
 * **ansible_host:** `required`. Specify the ip address for the VM. If not specified, a random ip is assigned.
 * **ansible_jump_hosts:** `required` if **terraform_bastion_enabled** is `True`. Specify one or more jumphost/bastions for the ansible provisioning part.
+* **cloud_init**: `optional`. Specify if the VM uses a cloud-init image or not. `False` If not specified.
 * **disk_source:** `required`. Specify the (local) path to the virtual disk you want to use to deploy the VMs.
 * **data_disks:** `optional`. Specify additional disks to be added to the VM. Check disks section for internal required varibles: [HERE](#storage)
 * **network_interfaces**: `required`. Specify VM's network interfaces, check network section for internal required variables: [HERE](#network)
@@ -241,8 +242,8 @@ These variables are **required**:
 
 Ansible hosts required outside the `deploy` group:
 
-* **terraform_node:** `required`. Specify the the machine that performs the Terraform tasks. 
-* **hypvervisor_[0-9+]:** `required`. Specify at least one machine that is the QEMU/KVM hypervisor. 
+* **terraform_node:** `required`. Specify the the machine that performs the Terraform tasks.
+* **hypvervisor_[0-9+]:** `required`. Specify at least one machine that is the QEMU/KVM hypervisor.
 The default value of 127.0.0.1 indicates that the machine that perform the Terraform tasks is the same that runs the Ansible playbook. In case the Terraform machine is not the local machine, you can specify the ip/hostname of the Terraform node. More details could be found here: [HERE](#terraform-node-bastions--jumphosts)
 
 These variable are optional, there are sensible defaults set up, most of them can be declared from <ins>hypervisor scope</ins> to <ins>vm-group scope</ins> and <ins>per-vm scope</ins>:
@@ -284,7 +285,7 @@ This case will ask Terraform to connect to QEMU/KVM using the uri `qemu:///syste
 If you want to use a remote QEMU/KVM server instead, you can do this as follow:
 
 ```yaml
-all: 
+all:
     vars:
         ...
     hosts:
@@ -369,7 +370,7 @@ Declare each device you want to add inside the `network_interfaces` dictionary.
     with the VM <ins>before</ins> setting up all the userspace networks.
 - the `default_route` should be assigned to <ins>one</ins> interface to function properly. If not set it's equal to False.
 
-Supported interface types: 
+Supported interface types:
 
 * `nat`
 * `macvtap`
@@ -415,7 +416,7 @@ Structure:
                                   mac_address: "AA:BB:CC:11:24:68"   # optional
                                   # default_route: False
                                 iface_2:
-                                  name: ens1p0      # mandatory 
+                                  name: ens1p0      # mandatory
                                   type: macvtap     # mandatory
                                   ip: 172.16.0.155  # mandatory
                                   gw: 172.16.0.1    # mandatory
@@ -500,7 +501,7 @@ Let's take a look at how the *inventory* file is going to be fill.
                             cpu: 4
                             memory: 8192
                             hypervisor: hypervisor_1
-                            # Here we start to declare 
+                            # Here we start to declare
                             # the additional disk.
                             data_disks:
                                 # Here we declare the disk name
