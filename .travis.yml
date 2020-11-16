@@ -86,6 +86,7 @@ install:
   - pushd ~/VirtualMachines/; tar zxvf ~/VirtualMachines/debian10-terraform.tar.gz; popd
   - pushd ~/VirtualMachines/; tar zxvf ~/VirtualMachines/centos8-terraform.tar.gz; popd
 
+  # Show unarchived content
   - ls -lah ~/VirtualMachines/
 
 script:
