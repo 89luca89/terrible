@@ -86,6 +86,8 @@ install:
   - pushd ~/VirtualMachines/; tar zxvf ~/VirtualMachines/debian10-terraform.tar.gz; popd
   - pushd ~/VirtualMachines/; tar zxvf ~/VirtualMachines/centos8-terraform.tar.gz; popd
 
+  - ls -lah ~/VirtualMachines/
+
 script:
   # This stage deploy a basic infrastructure starting from
   # the inventory-test.yml file placed in the test/ directory
