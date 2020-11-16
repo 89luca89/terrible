@@ -89,6 +89,7 @@
     project_path: "{{ hcl_deploy_path }}/"
     force_init: yes
     state: absent
+    lock: no
     targets: "libvirt_domain.domain_{{ inventory_hostname }}"
   throttle: 1
   tags: deploy, apply, destroy
