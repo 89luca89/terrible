@@ -141,6 +141,7 @@ all:
               memory: 2048
               hypervisor: hypervisor_1
               ansible_host: 192.168.122.5
+              ansible_python_interpreter: /usr/bin/python3
               network_interfaces:
                 iface_1:
                   name: default
