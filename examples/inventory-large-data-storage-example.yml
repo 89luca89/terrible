@@ -56,7 +56,7 @@ all:
                 disk-storage:
                   size: 5
                   pool: default
-                  format: freebsd-ufs
+                  format: ufs
                   mount_point: /mnt/data_configs
                   encryption: False
         worker_nodes:

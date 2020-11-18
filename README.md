@@ -473,7 +473,7 @@ If `data_disks` is mentioned in your inventory, the following variables are requ
 | OS Family   |  Supported Disk Format      |  Encryption Supported  |
 |----------|:-------------|--------------|
 | Debian |  `ext2`, `ext3`, `ext4`, `swap` | yes |
-| FreeBSD |  `freebsd-ufs`, `swap`     |  no  |
+| FreeBSD |  `ufs`, `swap`     |  no  |
 | RedHat | `ext2`, `ext3`, `ext4`, `xfs`, `swap` | yes |
 | Suse | `ext2`, `ext3`, `ext4`, `xfs`, `swap` | yes |
 
