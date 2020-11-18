@@ -138,7 +138,7 @@ all:
               cpu: 1
               memory: 2048
               hypervisor: hypervisor_1
-              ansible_python_interpreter: /usr/local/bin/python3
+              ansible_python_interpreter: /usr/local/bin/python3.6
               ansible_host: 192.168.122.5
               network_interfaces:
                 iface_1:
