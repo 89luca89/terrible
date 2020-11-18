@@ -155,7 +155,7 @@ all:
                 disk-0:
                   size: 1
                   pool: default
-                  format: freebsd-ufs
+                  format: ufs
                   encryption: False
                   mount_point: /mnt/config
                 disk-1:
