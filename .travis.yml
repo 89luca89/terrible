@@ -100,7 +100,7 @@ script:
 after_success:
   # This stage verify if the infrastructure
   # has been created.
-  - virsh list --all
+  - sudo virsh list --all
 
 notifications:
   email:
