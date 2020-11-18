@@ -1,3 +1,5 @@
+---
+
 ansible_dependencies:
   - python3
   - unattended-upgrades
