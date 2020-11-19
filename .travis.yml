@@ -80,10 +80,10 @@ install:
   - ls -la ~/VirtualMachines/
   
   # Untar qcow2 images.
-  - pushd ~/VirtualMachines/; tar zxvf ~/VirtualMachines/opensuse15-terraform.tar.gz; popd
-  - pushd ~/VirtualMachines/; tar zxvf ~/VirtualMachines/freebsd-terraform.tar.gz; popd
-  - pushd ~/VirtualMachines/; tar zxvf ~/VirtualMachines/debian10-terraform.tar.gz; popd
-  - pushd ~/VirtualMachines/; tar zxvf ~/VirtualMachines/centos8-terraform.tar.gz; popd
+  - pushd ~/VirtualMachines/; travis_retry tar zxvf ~/VirtualMachines/opensuse15-terraform.tar.gz; popd
+  - pushd ~/VirtualMachines/; travis_retry tar zxvf ~/VirtualMachines/freebsd-terraform.tar.gz; popd
+  - pushd ~/VirtualMachines/; travis_retry tar zxvf ~/VirtualMachines/debian10-terraform.tar.gz; popd
+  - pushd ~/VirtualMachines/; travis_retry tar zxvf ~/VirtualMachines/centos8-terraform.tar.gz; popd
 
   # Show unarchived content
   - ls -lah ~/VirtualMachines/
