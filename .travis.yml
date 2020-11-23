@@ -67,6 +67,7 @@ before_install:
   - mkdir ~/VirtualMachines
 
 install:
+  # This stage set ssh access in localhost and download the prebuilt images.
 
   # Manage ssh keys to allow Ansible to access root user.
   - echo "root:password" | sudo chpasswd
