@@ -17,6 +17,11 @@ env:
     - TERRAFORM_VERSION=0.12.0
     - TERRAFORM_PROVIDER_VERSION=0.6.2
     - TERRAFORM_PROVIDER_RELEASE=0.6.2+git.1585292411.8cbe9ad0
+  jobs:
+    - IMAGE_ID=1AC3bXMYSxTHECqY0iSwH4ZQWlw7jzs2J IMAGE_NAME=opensuse15-terraform.tar.gz INVENTORY_NAME=opensuse15
+    - IMAGE_ID=1nJB0a8tc5OQgRC4JT4w-QJXA6K0uC0SS IMAGE_NAME=freebsd-terraform.tar.gz INVENTORY_NAME=freebsd
+    - IMAGE_ID=1ryj8RmucJc-04LQKHkj9fU69ojPLxeZW IMAGE_NAME=debian10-terraform.tar.gz INVENTORY_NAME=debian10
+    - IMAGE_ID=1bhMrL7UfcgptrANnmk9yigCeVF8gBsQL IMAGE_NAME=centos8-terraform.tar.gz INVENTORY_NAME=centos8
 
 before_install:
   # This stage is used to setup the environment to deploy the infrastructure.
@@ -75,17 +80,19 @@ install:
   - sshpass -p "password" ssh-copy-id -o StrictHostKeyChecking=no root@127.0.0.1
 
   # Untar images retrieved from internet.
-  - travis_wait 30 wget --quiet --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1AC3bXMYSxTHECqY0iSwH4ZQWlw7jzs2J' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1AC3bXMYSxTHECqY0iSwH4ZQWlw7jzs2J" -O ~/VirtualMachines/opensuse15-terraform.tar.gz && rm -rf /tmp/cookies.txt  2>/dev/null
-  - travis_wait 30 wget --quiet --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1nJB0a8tc5OQgRC4JT4w-QJXA6K0uC0SS' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1nJB0a8tc5OQgRC4JT4w-QJXA6K0uC0SS" -O ~/VirtualMachines/freebsd-terraform.tar.gz  && rm -rf /tmp/cookies.txt  2>/dev/null
-  - travis_wait 30 wget --quiet --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1ryj8RmucJc-04LQKHkj9fU69ojPLxeZW' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1ryj8RmucJc-04LQKHkj9fU69ojPLxeZW" -O ~/VirtualMachines/debian10-terraform.tar.gz && rm -rf /tmp/cookies.txt  2>/dev/null
-  - travis_wait 30 wget --quiet --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1bhMrL7UfcgptrANnmk9yigCeVF8gBsQL' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1bhMrL7UfcgptrANnmk9yigCeVF8gBsQL" -O ~/VirtualMachines/centos8-terraform.tar.gz  && rm -rf /tmp/cookies.txt  2>/dev/null
-  - ls -la ~/VirtualMachines/
+#  - travis_wait 30 wget --quiet --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1AC3bXMYSxTHECqY0iSwH4ZQWlw7jzs2J' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1AC3bXMYSxTHECqY0iSwH4ZQWlw7jzs2J" -O ~/VirtualMachines/opensuse15-terraform.tar.gz && rm -rf /tmp/cookies.txt  2>/dev/null
+#  - travis_wait 30 wget --quiet --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1nJB0a8tc5OQgRC4JT4w-QJXA6K0uC0SS' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1nJB0a8tc5OQgRC4JT4w-QJXA6K0uC0SS" -O ~/VirtualMachines/freebsd-terraform.tar.gz  && rm -rf /tmp/cookies.txt  2>/dev/null
+#  - travis_wait 30 wget --quiet --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1ryj8RmucJc-04LQKHkj9fU69ojPLxeZW' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1ryj8RmucJc-04LQKHkj9fU69ojPLxeZW" -O ~/VirtualMachines/debian10-terraform.tar.gz && rm -rf /tmp/cookies.txt  2>/dev/null
+#  - travis_wait 30 wget --quiet --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1bhMrL7UfcgptrANnmk9yigCeVF8gBsQL' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1bhMrL7UfcgptrANnmk9yigCeVF8gBsQL" -O ~/VirtualMachines/centos8-terraform.tar.gz  && rm -rf /tmp/cookies.txt  2>/dev/null
+  - travis_wait 30 wget --quiet --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=$IMAGE_ID' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=$IMAGE_ID" -O ~/VirtualMachines/"$IMAGE_NAME" && rm -rf /tmp/cookies.txt  2>/dev/null
+  - ls -lah ~/VirtualMachines/
   
   # Untar qcow2 images.
-  - pushd ~/VirtualMachines/; travis_retry tar zxvf ~/VirtualMachines/opensuse15-terraform.tar.gz; popd
-  - pushd ~/VirtualMachines/; travis_retry tar zxvf ~/VirtualMachines/freebsd-terraform.tar.gz; popd
-  - pushd ~/VirtualMachines/; travis_retry tar zxvf ~/VirtualMachines/debian10-terraform.tar.gz; popd
-  - pushd ~/VirtualMachines/; travis_retry tar zxvf ~/VirtualMachines/centos8-terraform.tar.gz; popd
+#  - pushd ~/VirtualMachines/; travis_retry tar zxvf ~/VirtualMachines/opensuse15-terraform.tar.gz; popd
+#  - pushd ~/VirtualMachines/; travis_retry tar zxvf ~/VirtualMachines/freebsd-terraform.tar.gz; popd
+#  - pushd ~/VirtualMachines/; travis_retry tar zxvf ~/VirtualMachines/debian10-terraform.tar.gz; popd
+#  - pushd ~/VirtualMachines/; travis_retry tar zxvf ~/VirtualMachines/centos8-terraform.tar.gz; popd
+  - pushd ~/VirtualMachines/; travis_retry tar zxvf ~/VirtualMachines/"$IMAGE_NAME"; popd
   - ls -lah ~/VirtualMachines/
 
 script:
@@ -94,7 +101,7 @@ script:
   # of this project.
 
   # Run ansible-playbook tests
-  - ansible-playbook -i test/inventory-test.yml -v -u root main.yml
+  - ansible-playbook -i test/inventory-test-"$INVENTORY_NAME".yml -v -u root main.yml
 
 after_success:
   # This stage verify if the infrastructure
@@ -102,7 +109,7 @@ after_success:
   - sudo virsh list --all
 
  # After the deploy, is a good practice to test also the infrastructure cleanup.
-  - ansible-playbook -i test/inventory-test.yml -v -u root main.yml --tags purge
+  - ansible-playbook -i test/inventory-test-"$INVENTORY_NAME".yml -v -u root main.yml --tags purge
 
 notifications:
   email:
