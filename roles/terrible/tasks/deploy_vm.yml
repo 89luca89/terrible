@@ -3,6 +3,17 @@
 #
 #
 #
+#
+
+- name: "Deploy terraform files - cloudinit"
+  template:
+    src: cloud_init.yml.j2
+    dest: "{{ hcl_deploy_path }}/cloud_init_{{ inventory_hostname }}.yml"
+    mode: 0644
+  when: cloud_init is defined and cloud_init
+  tags: deploy, generate_hcl
+  delegate_to: terraform_node
+
 # Deploy the terraform files for each host. Use jinja2 for templating.
 - name: "Deploy terraform files - variables"
   template:
@@ -35,7 +46,7 @@
 # Create an array containing the list of nodes in the form of node-name.j2,...
 - name: "Remove unmanaged nodes - generate list of managed files"
   set_fact:
-    managed_files: "{{ managed_files|default([]) + [hostvars[item]['hcl_deploy_path'] + '/' + item + '.tf' ] }}"
+    managed_files: "{{ managed_files | default([]) + [hostvars[item]['hcl_deploy_path'] + '/' + item + '.tf'] }}"
   tags: deploy, generate_hcl
   run_once: yes
   with_items:
@@ -73,11 +84,12 @@
   delegate_to: terraform_node
 
 # Perform terraform destroy on specific resources, if state is changed, notify and save it
-- name: "Terraform shut down target VMs (preserve resources)" # noqa 503
+- name: "Terraform shut down target VMs (preserve resources)"  # noqa 503
   terraform:
     project_path: "{{ hcl_deploy_path }}/"
     force_init: yes
     state: absent
+    lock: no
     targets: "libvirt_domain.domain_{{ inventory_hostname }}"
   throttle: 1
   tags: deploy, apply, destroy
@@ -133,8 +145,10 @@
 # lookup after.
 - name: "Merge hypervisors results"
   set_fact:
-    terraform_output: "{{ terraform_output|default({}) | combine(item.outputs) }}"
+    terraform_output: "{{ terraform_output | default({}) | combine(item.outputs) }}"
   with_items:
     - "{{ terraform_command.results }}"
   tags: deploy, apply
   delegate_to: terraform_node
+
+...

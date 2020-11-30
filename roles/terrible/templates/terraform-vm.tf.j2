@@ -7,6 +7,19 @@ resource "libvirt_volume" "os_image_{{ inventory_hostname }}" {
   format = "qcow2"
 }
 
+{% if cloud_init is defined and cloud_init %}
+
+data "template_file" "user_data_{{ inventory_hostname }}" {
+  template = file("{{ hcl_deploy_path }}/cloud_init_{{ inventory_hostname }}.yml")
+}
+
+resource "libvirt_cloudinit_disk" "commoninit_{{ inventory_hostname }}" {
+  name      = "commoninit_{{ inventory_hostname }}.iso"
+  user_data = data.template_file.user_data_{{ inventory_hostname }}.rendered
+}
+
+{% endif %}
+
 {% if data_disks is defined %}
 {% for disk in data_disks %}
 # Additional data disk n. {{ loop.index }}
@@ -29,6 +42,10 @@ resource "libvirt_domain" "domain_{{ inventory_hostname }}" {
     mode = "host-passthrough"
   }
 
+
+{% if cloud_init is defined and cloud_init %}
+  cloudinit = libvirt_cloudinit_disk.commoninit_{{ inventory_hostname }}.id
+{% endif %}
   # Disk aquisition
   disk { volume_id = libvirt_volume.os_image_{{ inventory_hostname }}.id }
 {% if data_disks is defined %}
@@ -92,6 +109,18 @@ resource "libvirt_domain" "domain_{{ inventory_hostname }}" {
 {% endif %}
 {% endfor %}
 
+  console {
+    type        = "pty"
+    target_port = "0"
+    target_type = "serial"
+  }
+
+  console {
+    type        = "pty"
+    target_type = "virtio"
+    target_port = "1"
+  }
+
   # IMPORTANT
   # it will show no console otherwise
   video {
@@ -132,6 +161,16 @@ resource "libvirt_domain" "domain_{{ inventory_hostname }}" {
     }
 {% endif %}
 
+{% if terraform_custom_provisioners is defined %}
+    provisioner "remote-exec" {
+      inline = [
+{% for provisioner_command in terraform_custom_provisioners %}
+        "{{ provisioner_command }}"{% if not loop.last %},{% endif %}
+{% endfor %}
+      ]
+    }
+{% endif %}
+
 {% if ansible_dependencies is defined %}
     provisioner "remote-exec" {
       inline = [
@@ -140,16 +179,6 @@ resource "libvirt_domain" "domain_{{ inventory_hostname }}" {
         "{{ install_command }} {{ pkg }}"{% if not loop.last %},{% endif %}
     {% endif %}
 
-{% endfor %}
-      ]
-    }
-    {% endif %}
-
-    {% if terraform_custom_provisioners is defined %}
-    provisioner "remote-exec" {
-      inline = [
-{% for provisioner_command in terraform_custom_provisioners %}
-        "{{ provisioner_command }}"{% if not loop.last %},{% endif %}
 {% endfor %}
       ]
     }

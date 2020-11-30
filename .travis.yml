@@ -1,0 +1,112 @@
+language: python
+python:
+  - "3.6"
+
+# Bionic is required for nested virtualization.
+dist: bionic
+
+stages:
+  - before_install
+  - install
+  - script
+  - after_success
+
+env:
+  global:
+    - ANSIBLE_VERSION=2.9
+    - TERRAFORM_VERSION=0.12.0
+    - TERRAFORM_PROVIDER_VERSION=0.6.2
+    - TERRAFORM_PROVIDER_RELEASE=0.6.2+git.1585292411.8cbe9ad0
+  jobs:
+    - IMAGE_ID=1AC3bXMYSxTHECqY0iSwH4ZQWlw7jzs2J IMAGE_NAME=opensuse15-terraform.tar.gz INVENTORY_NAME=opensuse15
+    - IMAGE_ID=1nJB0a8tc5OQgRC4JT4w-QJXA6K0uC0SS IMAGE_NAME=freebsd-terraform.tar.gz INVENTORY_NAME=freebsd
+    - IMAGE_ID=1ryj8RmucJc-04LQKHkj9fU69ojPLxeZW IMAGE_NAME=debian10-terraform.tar.gz INVENTORY_NAME=debian10
+    - IMAGE_ID=1bhMrL7UfcgptrANnmk9yigCeVF8gBsQL IMAGE_NAME=centos8-terraform.tar.gz INVENTORY_NAME=centos8
+
+before_install:
+  # This stage is used to setup the environment to deploy the infrastructure.
+  # This will install:
+  # - Libvirt
+  # - Ansible
+  # - Terraform
+  # - Terraform Provider for Libvirt
+
+  # Install KVM and enable hardware acceleration and setup default storage pool.
+  - travis_retry sudo -E apt-get -yq --no-install-suggests --no-install-recommends install bridge-utils libpulse0 libvirt-bin qemu-kvm qemu-utils virtinst ubuntu-vm-builder libvirt-daemon
+  - sudo adduser $USER libvirt
+  - sudo adduser $USER kvm
+  - |
+    sudo virsh pool-define /dev/stdin <<EOF
+    <pool type='dir'>
+      <name>default</name>
+      <target>
+        <path>/var/lib/libvirt/images</path>
+      </target>
+    </pool>
+  - sudo virsh pool-start default
+  - sudo virsh pool-autostart default
+
+  # Install Ansible 2.9
+  - sudo apt-get install python3-pip python3-setuptools
+  - pip3 install ansible=="$ANSIBLE_VERSION"
+
+  # Install Terraform 0.12
+  - curl -sLo /tmp/terraform.zip https://releases.hashicorp.com/terraform/"$TERRAFORM_VERSION"/terraform_"$TERRAFORM_VERSION"_linux_amd64.zip
+  - unzip /tmp/terraform.zip -d /tmp
+  - sudo mv /tmp/terraform /usr/local/bin
+
+  # Install Terraform Provider for Libvirt 0.6.2
+  - mkdir -p ~/.terraform.d/plugins/linux_amd64
+  - curl -sLo terraform-provider-libvirt.tar.gz https://github.com/dmacvicar/terraform-provider-libvirt/releases/download/v"$TERRAFORM_PROVIDER_VERSION"/terraform-provider-libvirt-"$TERRAFORM_PROVIDER_RELEASE".Ubuntu_18.04.amd64.tar.gz
+  - tar zxvf terraform-provider-libvirt.tar.gz
+  - mv terraform-provider-libvirt ~/.terraform.d/plugins/linux_amd64/
+  - ~/.terraform.d/plugins/linux_amd64/terraform-provider-libvirt -version 
+
+  # Install other necessary packages
+  - sudo apt-get install sshpass
+
+  # Install python requirements
+  - pip install -r requirements.txt
+
+  # Create directory to store images
+  - mkdir ~/VirtualMachines
+
+install:
+  # This stage set ssh access in localhost and download the prebuilt images.
+
+  # Manage ssh keys to allow Ansible to access root user.
+  - echo "root:password" | sudo chpasswd
+  - ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
+  - sshpass -p "password" ssh-copy-id -o StrictHostKeyChecking=no root@127.0.0.1
+
+  # Retrieve images from online data store.
+  - if [ $INVENTORY_NAME == "opensuse15" ]; then travis_retry wget --timeout=300 --quiet --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1AC3bXMYSxTHECqY0iSwH4ZQWlw7jzs2J' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1AC3bXMYSxTHECqY0iSwH4ZQWlw7jzs2J" -O ~/VirtualMachines/opensuse15-terraform.tar.gz && rm -rf /tmp/cookies.txt  2>/dev/null; fi
+  - if [ $INVENTORY_NAME == "freebsd" ]; then travis_retry wget --timeout=300 --quiet --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1nJB0a8tc5OQgRC4JT4w-QJXA6K0uC0SS' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1nJB0a8tc5OQgRC4JT4w-QJXA6K0uC0SS" -O ~/VirtualMachines/freebsd-terraform.tar.gz  && rm -rf /tmp/cookies.txt  2>/dev/null; fi
+  - if [ $INVENTORY_NAME == "debian10" ]; then travis_retry wget --timeout=300 --quiet --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1ryj8RmucJc-04LQKHkj9fU69ojPLxeZW' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1ryj8RmucJc-04LQKHkj9fU69ojPLxeZW" -O ~/VirtualMachines/debian10-terraform.tar.gz && rm -rf /tmp/cookies.txt  2>/dev/null; fi
+  - if [ $INVENTORY_NAME == "centos8" ]; then travis_retry wget --timeout=300 --quiet --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1bhMrL7UfcgptrANnmk9yigCeVF8gBsQL' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1bhMrL7UfcgptrANnmk9yigCeVF8gBsQL" -O ~/VirtualMachines/centos8-terraform.tar.gz  && rm -rf /tmp/cookies.txt  2>/dev/null; fi
+  - ls -lah ~/VirtualMachines/
+  
+  # Untar images.
+  - pushd ~/VirtualMachines/; travis_retry tar zxvf ~/VirtualMachines/"$IMAGE_NAME"; popd
+  - ls -lah ~/VirtualMachines/
+
+script:
+  # This stage deploy a basic infrastructure starting from
+  # the inventory-test.yml file placed in the test/ directory
+  # of this project.
+
+  # Run ansible-playbook tests
+  - ansible-playbook -i test/inventory-test-"$INVENTORY_NAME".yml -v -u root main.yml
+
+after_success:
+  # This stage verify if the infrastructure
+  # has been created.
+  - sudo virsh list --all
+
+ # After the deploy, is a good practice to test also the infrastructure cleanup.
+  - ansible-playbook -i test/inventory-test-"$INVENTORY_NAME".yml -v -u root main.yml --tags purge
+
+notifications:
+  email:
+    - luca.dimaio1@gmail.com
+    - ale_grey_91@hotmail.it

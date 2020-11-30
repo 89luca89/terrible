@@ -24,12 +24,13 @@
 # └─vdc1
 - name: Create disk partitions
   shell: |
-      /sbin/gpart create -s GPT {{ item }} && \
-      /sbin/gpart add -t freebsd-ufs -a 1M {{ item }};
+      /sbin/gpart create -s GPT {{ item.1 }} && \
+      /sbin/gpart add -t freebsd-{{ item.0['format'] }} -a 1M {{ item.1 }};
   args:
     executable: /bin/sh
-    creates: "/dev/{{ item }}p1"
-  with_items:
+    creates: "/dev/{{ item.1 }}p1"
+  with_together:
+    - "{{ data_disks.values() | list }}"
     - "{{ additional_disks.stdout_lines }}"
 
 # Check if file system is already created.
@@ -80,9 +81,9 @@
   mount:
     path: "{{ item.0['mount_point'] }}"
     src: "/dev/{{ item.1 }}p1"
-    fstype: ufs
+    fstype: "{{ item.0['format'] }}"
     state: "{%if item.0['mount_point'] != 'none' %}mounted{%else%}present{%endif%}"
-    opts: defaults,nofail
+    opts: "{%if item.0['format'] != 'swap' %}rw{%else%}sw{%endif%}"
   with_together:
     - "{{ data_disks.values() | list }}"
     - "{{ additional_disks.stdout_lines }}"
@@ -104,3 +105,5 @@
   with_together:
     - "{{ data_disks.values() | list }}"
     - "{{ additional_disks.stdout_lines }}"
+
+...

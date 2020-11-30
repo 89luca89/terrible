@@ -1,3 +1,5 @@
+---
+
 ansible_dependencies:
   - python36
 
@@ -5,5 +7,5 @@ update_command: pkg upgrade -y
 install_command: pkg install -y
 
 supported_fs:
-  - freebsd-ufs
+  - ufs
   - swap

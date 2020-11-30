@@ -1,3 +1,5 @@
+---
+
 ansible_dependencies:
   - python3
   # Decide if encryption is set to True at least one time

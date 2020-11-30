@@ -215,7 +215,7 @@ all:
               #
               ##     size: required. Specify the disk size expressed in GB. (es. size: 1 means 1GB)
               ##     pool: required. Specify the pool where you want to store the additional disks.
-              ##     format: require. Specify the filesystem format you want to apply to the disk. Supported formats are: ext4, ext3, ext2, xfs for Linux VMs and freebsd-ufs for FreeBSD VMs.
+              ##     format: require. Specify the filesystem format you want to apply to the disk. Supported formats are: ext4, ext3, ext2, xfs for Linux VMs and ufs for FreeBSD VMs.
               ##     mount_point: required. Specify the mount point of the disk.
               data_disks:
                 disk-0:
