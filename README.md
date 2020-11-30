@@ -8,7 +8,7 @@
 
 [![Ansible-Lint](https://github.com/89luca89/terrible/workflows/Ansible%20Lint/badge.svg)](https://github.com/89luca89/terrible/actions?query=workflow%3A%22Ansible+Lint%22)
 [![Terrible Validate](https://github.com/89luca89/terrible/workflows/Ansible%20Validate/badge.svg)](https://github.com/89luca89/terrible/actions?query=workflow%3A%22Ansible+Validate%22)
-[![Travis (.org) branch](https://img.shields.io/travis/89luca89/terrible/master?label=Travis-CI)](https://img.shields.io/travis/89luca89/terrible/master?label=Travis-CI)
+[![Travis (.org) branch](https://img.shields.io/travis/alegrey91/terrible/master?label=Travis-CI)](https://img.shields.io/travis/alegrey91/terrible/master?label=Travis-CI)
 
 
 This **Ansible** playbook allows you to initialize and then deploy an entire infrastructure through the aid of **Terraform**, on a **QEMU/KVM** environment.
