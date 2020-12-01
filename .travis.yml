@@ -79,11 +79,30 @@ install:
   - ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
   - sshpass -p "password" ssh-copy-id -o StrictHostKeyChecking=no root@127.0.0.1
 
+  # Download gdown to download images from drive.
+  - travis_retry pip install gdown
+
   # Retrieve images from online data store.
-  - if [ $INVENTORY_NAME == "opensuse15" ]; then travis_retry wget --timeout=300 --quiet --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1AC3bXMYSxTHECqY0iSwH4ZQWlw7jzs2J' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1AC3bXMYSxTHECqY0iSwH4ZQWlw7jzs2J" -O ~/VirtualMachines/opensuse15-terraform.tar.gz && rm -rf /tmp/cookies.txt  2>/dev/null; fi
-  - if [ $INVENTORY_NAME == "freebsd" ]; then travis_retry wget --timeout=300 --quiet --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1nJB0a8tc5OQgRC4JT4w-QJXA6K0uC0SS' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1nJB0a8tc5OQgRC4JT4w-QJXA6K0uC0SS" -O ~/VirtualMachines/freebsd-terraform.tar.gz  && rm -rf /tmp/cookies.txt  2>/dev/null; fi
-  - if [ $INVENTORY_NAME == "debian10" ]; then travis_retry wget --timeout=300 --quiet --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1ryj8RmucJc-04LQKHkj9fU69ojPLxeZW' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1ryj8RmucJc-04LQKHkj9fU69ojPLxeZW" -O ~/VirtualMachines/debian10-terraform.tar.gz && rm -rf /tmp/cookies.txt  2>/dev/null; fi
-  - if [ $INVENTORY_NAME == "centos8" ]; then travis_retry wget --timeout=300 --quiet --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1bhMrL7UfcgptrANnmk9yigCeVF8gBsQL' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1bhMrL7UfcgptrANnmk9yigCeVF8gBsQL" -O ~/VirtualMachines/centos8-terraform.tar.gz  && rm -rf /tmp/cookies.txt  2>/dev/null; fi
+  - |
+    if [ $INVENTORY_NAME == "opensuse15" ]; then 
+      travis_retry gdown 'https://drive.google.com/uc?export=download&id=1AC3bXMYSxTHECqY0iSwH4ZQWlw7jzs2J' \
+        -O ~/VirtualMachines/opensuse15-terraform.tar.gz 2>/dev/null
+    fi
+  - |
+    if [ $INVENTORY_NAME == "freebsd" ]; then 
+      travis_retry gdown 'https://drive.google.com/uc?export=download&id=1nJB0a8tc5OQgRC4JT4w-QJXA6K0uC0SS' \
+        -O ~/VirtualMachines/freebsd-terraform.tar.gz 2>/dev/null
+    fi
+  - |
+    if [ $INVENTORY_NAME == "debian10" ]; then 
+      travis_retry gdown 'https://drive.google.com/uc?export=download&id=1ryj8RmucJc-04LQKHkj9fU69ojPLxeZW' \
+        -O ~/VirtualMachines/debian10-terraform.tar.gz 2>/dev/null
+    fi
+  - |
+    if [ $INVENTORY_NAME == "centos8" ]; then 
+      travis_retry gdown 'https://drive.google.com/uc?export=download&id=1bhMrL7UfcgptrANnmk9yigCeVF8gBsQL' \
+        -O ~/VirtualMachines/centos8-terraform.tar.gz 2>/dev/null
+    fi
   - ls -lah ~/VirtualMachines/
   
   # Untar images.
