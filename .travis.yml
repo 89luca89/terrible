@@ -85,22 +85,22 @@ install:
   # Retrieve images from online data store.
   - |
     if [ $INVENTORY_NAME == "opensuse15" ]; then 
-      travis_retry gdown 'https://drive.google.com/uc?export=download&id=$IMAGE_ID' \
+      travis_retry gdown "https://drive.google.com/uc?export=download&id=$IMAGE_ID" \
         -O ~/VirtualMachines/"$IMAGE_NAME" 2>/dev/null
     fi
   - |
     if [ $INVENTORY_NAME == "freebsd" ]; then 
-      travis_retry gdown 'https://drive.google.com/uc?export=download&id=$IMAGE_ID' \
+      travis_retry gdown "https://drive.google.com/uc?export=download&id=$IMAGE_ID" \
         -O ~/VirtualMachines/"$IMAGE_NAME" 2>/dev/null
     fi
   - |
     if [ $INVENTORY_NAME == "debian10" ]; then 
-      travis_retry gdown 'https://drive.google.com/uc?export=download&id=$IMAGE_ID' \
+      travis_retry gdown "https://drive.google.com/uc?export=download&id=$IMAGE_ID" \
         -O ~/VirtualMachines/"$IMAGE_NAME" 2>/dev/null
     fi
   - |
     if [ $INVENTORY_NAME == "centos8" ]; then 
-      travis_retry gdown 'https://drive.google.com/uc?export=download&id=$IMAGE_ID' \
+      travis_retry gdown "https://drive.google.com/uc?export=download&id=$IMAGE_ID" \
         -O ~/VirtualMachines/"$IMAGE_NAME" 2>/dev/null
     fi
   - ls -lah ~/VirtualMachines/
