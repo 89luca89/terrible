@@ -5,12 +5,18 @@ python:
 # Bionic is required for nested virtualization.
 dist: bionic
 
+# Define when to run the pipeline.
+branches:
+  only: 
+    - master
+
 stages:
   - before_install
   - install
   - script
   - after_success
 
+# Pipeline variables.
 env:
   global:
     - ANSIBLE_VERSION=2.9
