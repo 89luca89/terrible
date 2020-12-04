@@ -7,7 +7,7 @@ dist: bionic
 
 # Define when to run the pipeline.
 branches:
-  only: 
+  only:
     - master
 
 stages:
@@ -66,7 +66,7 @@ before_install:
   - curl -sLo terraform-provider-libvirt.tar.gz https://github.com/dmacvicar/terraform-provider-libvirt/releases/download/v"$TERRAFORM_PROVIDER_VERSION"/terraform-provider-libvirt-"$TERRAFORM_PROVIDER_RELEASE".Ubuntu_18.04.amd64.tar.gz
   - tar zxvf terraform-provider-libvirt.tar.gz
   - mv terraform-provider-libvirt ~/.terraform.d/plugins/linux_amd64/
-  - ~/.terraform.d/plugins/linux_amd64/terraform-provider-libvirt -version 
+  - ~/.terraform.d/plugins/linux_amd64/terraform-provider-libvirt -version
 
   # Install other necessary packages
   - sudo apt-get install sshpass
@@ -90,38 +90,38 @@ install:
 
   # Retrieve images from online data store.
   - |
-    if [ $INVENTORY_NAME == "opensuse15" ]; then 
+    if [ $INVENTORY_NAME == "opensuse15" ]; then
       travis_retry gdown "https://drive.google.com/uc?export=download&id=$IMAGE_ID" \
         -O ~/VirtualMachines/"$IMAGE_NAME" 2>/dev/null
     fi
   - |
-    if [ $INVENTORY_NAME == "freebsd" ]; then 
+    if [ $INVENTORY_NAME == "freebsd" ]; then
       travis_retry gdown "https://drive.google.com/uc?export=download&id=$IMAGE_ID" \
         -O ~/VirtualMachines/"$IMAGE_NAME" 2>/dev/null
     fi
   - |
-    if [ $INVENTORY_NAME == "debian10" ]; then 
+    if [ $INVENTORY_NAME == "debian10" ]; then
       travis_retry gdown "https://drive.google.com/uc?export=download&id=$IMAGE_ID" \
         -O ~/VirtualMachines/"$IMAGE_NAME" 2>/dev/null
     fi
   - |
-    if [ $INVENTORY_NAME == "centos8" ]; then 
+    if [ $INVENTORY_NAME == "centos8" ]; then
       travis_retry gdown "https://drive.google.com/uc?export=download&id=$IMAGE_ID" \
         -O ~/VirtualMachines/"$IMAGE_NAME" 2>/dev/null
     fi
   - ls -lah ~/VirtualMachines/
-  
+
   # Untar images.
   - pushd ~/VirtualMachines/; travis_retry tar zxvf ~/VirtualMachines/"$IMAGE_NAME"; popd
   - ls -lah ~/VirtualMachines/
 
 script:
   # This stage deploy a basic infrastructure starting from
-  # the inventory-test.yml file placed in the test/ directory
+  # the inventory-test.yml file placed in the examples/ directory
   # of this project.
 
   # Run ansible-playbook tests
-  - ansible-playbook -i test/inventory-test-"$INVENTORY_NAME".yml -v -u root main.yml
+  - ansible-playbook -i examples/inventory-test-"$INVENTORY_NAME".yml -v -u root main.yml
 
 after_success:
   # This stage verify if the infrastructure
@@ -129,7 +129,7 @@ after_success:
   - sudo virsh list --all
 
  # After the deploy, is a good practice to test also the infrastructure cleanup.
-  - ansible-playbook -i test/inventory-test-"$INVENTORY_NAME".yml -v -u root main.yml --tags purge
+  - ansible-playbook -i examples/inventory-test-"$INVENTORY_NAME".yml -v -u root main.yml --tags purge
 
 notifications:
   email:
