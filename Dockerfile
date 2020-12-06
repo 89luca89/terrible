@@ -22,7 +22,8 @@ RUN apt-get update \
         ansible==${ANSIBLE_VERSION} \
     && rm -rf /var/lib/apt/lists/* \
     && rm -Rf /usr/share/doc && rm -Rf /usr/share/man \
-    && apt-get clean
+    && apt-get clean autoclean \
+    && apt-get autoremove -y
 
 # Installing Terraform
 RUN apt-get update \
@@ -38,7 +39,8 @@ RUN apt-get update \
     && apt-get purge -y \
         wget \
         unzip \
-    && apt-get clean
+    && apt-get clean autoclean \
+    && apt-get autoremove -y
 
 # Installing Terraform-provider-libvirt
 RUN mkdir -p ~/.terraform.d/plugins/linux_amd64
@@ -54,17 +56,17 @@ RUN apt-get update \
     && rm -Rf /usr/share/doc && rm -Rf /usr/share/man \
     && apt-get purge -y \
         wget \
-    && apt-get clean
+    && apt-get clean autoclean \
+    && apt-get autoremove -y
 
 # Installing Libvirt
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        qemu-system \
         libvirt-clients \
-        libvirt-daemon-system \
     && rm -rf /var/lib/apt/lists/* \
     && rm -Rf /usr/share/doc && rm -Rf /usr/share/man \
-    && apt-get clean
+    && apt-get clean autoclean \
+    && apt-get autoremove -y
 
 # Installing terrible
 RUN apt-get update \
@@ -81,5 +83,7 @@ RUN apt-get update \
     && apt-get purge -y \
         wget \
         unzip \
-    && apt-get clean
+    && apt-get clean autoclean \
+    && apt-get autoremove -y
+
 WORKDIR /root/terrible-${TERRIBLE_VERSION}
