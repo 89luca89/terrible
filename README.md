@@ -28,6 +28,7 @@ This **Ansible** playbook allows you to initialize and then deploy an entire inf
    - [Storage](#storage)
 4. [Compatibility](#compatibility)
 5. [Installation](#installation)
+   - [Container image](#container-image)
 6. [Usage](#usage)
    - [Outputs](#outputs)
 7. [Authors](#authors)
@@ -545,6 +546,47 @@ Use the following command to satisfy the project dependencies:
 pip3 install --user -r requirements.txt
 ```
 
+### Container Image
+
+To avoid boring dependencies installation to make Terrible works and speed up your infrastructure deployment, we provide a `Dockerfile` to allow you to build a minimal image with all you need inside.
+
+We use a `debian:buster-slim` image to have a compact system, combined with a full compatibility with required tools. The container image uses the latest Terrible tag's release.
+
+The minimum packages required to run the container image is **Docker (or Podman)** and **QEMU/KVM** installed on the system.
+
+#### Build
+
+To build the image you have to type the following command:
+
+```bash
+docker build -t terrible .
+```
+
+This will take some minutes.
+
+#### Run
+
+Once you built the image, you are ready to run it as in the example below:
+
+```bash
+docker run \
+    -it \
+    --rm \
+    -v /var/run/libvirt/libvirt-sock:/var/run/libvirt/libvirt-sock \
+    -v ./inventory-test.yml:/root/terrible-1.1.1/inventory-test.yml \
+    -v ~/VirtualMachines/:/opt/ \
+    -v ~/.ssh/:/root/.ssh/ \
+    terrible
+```
+
+**N.B.** If you are using RHEL, CentOS or Fedora you need to add the `--privileged` flag because otherwise SELinux does not allow it to access the libvirt socket.
+
+* The volume `/var/run/libvirt/libvirt-sock` allow you is mandatory to run Terrible.
+
+* The volume `./inventory-test.yml` allow you to push inside the container the inventory to deploy infrastructure.
+
+* The volume `~/VirtualMachines/` allow you to push the `qcow2` images inside the container to deploy them.
+* The volume `~/.ssh` allow you to push your ssh keys into the container and deploy them inside the infrastructure machines.
 
 ## Usage
 
