@@ -1,7 +1,7 @@
 FROM debian:buster-slim
 
-LABEL maintainer1="Luca Di Maio"
-LABEL maintainer2="Alessio Greggi"
+LABEL maintainer1="Luca Di Maio" \
+      maintainer2="Alessio Greggi"
 
 ARG ANSIBLE_VERSION=2.9
 ARG TERRAFORM_VERSION=0.12.0
@@ -22,8 +22,7 @@ RUN apt-get update \
         ansible==${ANSIBLE_VERSION} \
     && rm -rf /var/lib/apt/lists/* \
     && rm -Rf /usr/share/doc && rm -Rf /usr/share/man \
-    && apt-get clean autoclean \
-    && apt-get autoremove -y
+    && apt-get clean autoclean
 
 # Installing Terraform
 RUN apt-get update \
@@ -39,8 +38,7 @@ RUN apt-get update \
     && apt-get purge -y \
         wget \
         unzip \
-    && apt-get clean autoclean \
-    && apt-get autoremove -y
+    && apt-get clean autoclean
 
 # Installing Terraform-provider-libvirt
 RUN mkdir -p ~/.terraform.d/plugins/linux_amd64
@@ -56,17 +54,15 @@ RUN apt-get update \
     && rm -Rf /usr/share/doc && rm -Rf /usr/share/man \
     && apt-get purge -y \
         wget \
-    && apt-get clean autoclean \
-    && apt-get autoremove -y
+    && apt-get clean autoclean
 
 # Installing Libvirt
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        libvirt-clients \
+        libvirt0 \
     && rm -rf /var/lib/apt/lists/* \
     && rm -Rf /usr/share/doc && rm -Rf /usr/share/man \
-    && apt-get clean autoclean \
-    && apt-get autoremove -y
+    && apt-get clean autoclean
 
 # Installing terrible
 RUN apt-get update \
@@ -76,14 +72,15 @@ RUN apt-get update \
     && cd /root \
     && wget https://github.com/89luca89/terrible/archive/${TERRIBLE_VERSION}.zip \
     && unzip ${TERRIBLE_VERSION}.zip \
-    && pip3 install -r terrible-${TERRIBLE_VERSION}/requirements.txt \
+    && pip3 install --no-cache-dir -r terrible-${TERRIBLE_VERSION}/requirements.txt \
     && rm -rf ${TERRIBLE_VERSION}.zip \
     && rm -rf /var/lib/apt/lists/* \
     && rm -Rf /usr/share/doc && rm -Rf /usr/share/man \
     && apt-get purge -y \
         wget \
         unzip \
-    && apt-get clean autoclean \
-    && apt-get autoremove -y
+    && apt-get clean autoclean
 
 WORKDIR /root/terrible-${TERRIBLE_VERSION}
+
+CMD ["/bin/bash"]
