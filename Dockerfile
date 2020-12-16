@@ -87,5 +87,6 @@ RUN apt-get update \
     && apt-get clean autoclean
 
 WORKDIR /root/terrible-${TERRIBLE_VERSION}
+RUN echo 'export PS1="[\[\e[31m\]\u\[\e[m\]@\[\e[31m\]terrible\[\e[m\]🐧]:\W\\$ "' >> /root/.bashrc
 
-CMD ["/bin/bash"]
+ENTRYPOINT ["/bin/bash"]
