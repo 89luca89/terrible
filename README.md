@@ -548,15 +548,23 @@ pip3 install --user -r requirements.txt
 
 ### Container Image
 
-To avoid boring dependencies installation to make Terrible works and speed up your infrastructure deployment, we provide a `Dockerfile` to allow you to build a minimal image with all you need inside.
+To avoid boring dependencies installation to make Terrible works and speed up your infrastructure deployment, we provided a `Dockerfile` to build by yourself a minimal image with all you need inside.
 
 We use a `debian:buster-slim` image to have a compact system, combined with a full compatibility with required tools. The container image uses the latest Terrible tag's release.
 
 The minimum packages required to run the container image is **Docker (or Podman)** and **QEMU/KVM** installed on the system.
 
+#### Pull
+
+If you are a lazy person (just like us), you can directly pull the latest image release from DockerHub.
+
+```bash
+docker pull 89luca89/terrible:latest
+```
+
 #### Build
 
-To build the image you have to type the following command:
+To build the image, instead, type the following command:
 
 ```bash
 docker build -t terrible .
@@ -581,12 +589,12 @@ docker run \
 
 **N.B.** If you are using RHEL, CentOS or Fedora you need to add the `--privileged` flag because otherwise SELinux does not allow it to access the libvirt socket.
 
-* The volume `/var/run/libvirt/libvirt-sock` allow you is mandatory to run Terrible.
+* The volume `/var/run/libvirt/libvirt-sock` is mandatory to run Terrible.
 
-* The volume `./inventory-test.yml` allow you to push inside the container the inventory to deploy infrastructure.
+* The volume `./inventory-test.yml` is to include the inventory inside the container, to deploy the infrastructure.
 
-* The volume `~/VirtualMachines/` allow you to push the `qcow2` images inside the container to deploy them.
-* The volume `~/.ssh` allow you to push your ssh keys into the container and deploy them inside the infrastructure machines.
+* The volume `~/VirtualMachines/` is to include the `qcow2` images inside the container to deploy them.
+* The volume `~/.ssh` is to include your ssh keys into the container and deploy them inside the infrastructure machines.
 
 ## Usage
 
