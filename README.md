@@ -584,12 +584,16 @@ docker run \
     -v ./inventory-test.yml:/root/terrible-1.1.1/inventory-test.yml \
     -v ~/VirtualMachines/:/opt/ \
     -v ~/.ssh/:/root/.ssh/ \
-    terrible
+    89luca89/terrible
 ```
 
 **N.B.** If you are using RHEL, CentOS or Fedora you need to add the `--privileged` flag because otherwise SELinux does not allow it to access the libvirt socket.
 
-* The volume `/var/run/libvirt/libvirt-sock` is mandatory if you want to run Terrible locally (in a KVM server). In this way you interact with the QEMU/KVM api provided by the system.
+**N.B.** If you are using your local QEMU/KVM instance, remember to add `--net=host` to the command.
+
+**Notes:**
+
+* The volume `/var/run/libvirt/libvirt-sock` is mandatory if you want to run Terrible locally (a local QEMU/KVM instance). In this way you directly interact with the QEMU/KVM api, provided by the system.
 
 * The volume `./inventory-test.yml` is to include the inventory inside the container, to deploy the infrastructure.
 
