@@ -589,7 +589,7 @@ docker run \
 
 **N.B.** If you are using RHEL, CentOS or Fedora you need to add the `--privileged` flag because otherwise SELinux does not allow it to access the libvirt socket.
 
-* The volume `/var/run/libvirt/libvirt-sock` is mandatory to run Terrible.
+* The volume `/var/run/libvirt/libvirt-sock` is mandatory if you want to run Terrible locally (in a KVM server). In this way you interact with the QEMU/KVM api provided by the system.
 
 * The volume `./inventory-test.yml` is to include the inventory inside the container, to deploy the infrastructure.
 
@@ -645,6 +645,5 @@ will be restored and saved on each run.
 ## License
 
 - GNU GPLv3, See LICENSE file.
-
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2F89luca89%2Fterrible.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2F89luca89%2Fterrible?ref=badge_large)
