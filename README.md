@@ -28,6 +28,7 @@ This **Ansible** playbook allows you to initialize and then deploy an entire inf
    - [Storage](#storage)
 4. [Compatibility](#compatibility)
 5. [Installation](#installation)
+   - [Container image](#container-image)
 6. [Usage](#usage)
    - [Outputs](#outputs)
 7. [Authors](#authors)
@@ -545,6 +546,59 @@ Use the following command to satisfy the project dependencies:
 pip3 install --user -r requirements.txt
 ```
 
+### Container Image
+
+To avoid boring dependencies installation to make Terrible works and speed up your infrastructure deployment, we provided a `Dockerfile` to build by yourself a minimal image with all you need inside.
+
+We use a `debian:buster-slim` image to have a compact system, combined with a full compatibility with required tools. The container image uses the latest Terrible tag's release.
+
+The minimum packages required to run the container image is **Docker (or Podman)** and **QEMU/KVM** installed on the system.
+
+#### Pull
+
+If you are a lazy person (just like us), you can directly pull the latest image release from DockerHub.
+
+```bash
+docker pull 89luca89/terrible:latest
+```
+
+#### Build
+
+To build the image, instead, type the following command:
+
+```bash
+docker build -t terrible .
+```
+
+This will take some minutes.
+
+#### Run
+
+Once you built the image, you are ready to run it as in the example below:
+
+```bash
+docker run \
+    -it \
+    --rm \
+    -v /var/run/libvirt/libvirt-sock:/var/run/libvirt/libvirt-sock \
+    -v ./inventory-test.yml:/root/terrible-1.1.1/inventory-test.yml \
+    -v ~/VirtualMachines/:/opt/ \
+    -v ~/.ssh/:/root/.ssh/ \
+    89luca89/terrible
+```
+
+**N.B.** If you are using RHEL, CentOS or Fedora you need to add the `--privileged` flag because otherwise SELinux does not allow it to access the libvirt socket.
+
+**N.B.** If you are using your local QEMU/KVM instance, remember to add `--net=host` to the command.
+
+**Notes:**
+
+* The volume `/var/run/libvirt/libvirt-sock` is mandatory if you want to run Terrible locally (a local QEMU/KVM instance). In this way you directly interact with the QEMU/KVM api, provided by the system.
+
+* The volume `./inventory-test.yml` is to include the inventory inside the container, to deploy the infrastructure.
+
+* The volume `~/VirtualMachines/` is to include the `qcow2` images inside the container to deploy them.
+* The volume `~/.ssh` is to include your ssh keys into the container and deploy them inside the infrastructure machines.
 
 ## Usage
 
@@ -595,6 +649,5 @@ will be restored and saved on each run.
 ## License
 
 - GNU GPLv3, See LICENSE file.
-
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2F89luca89%2Fterrible.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2F89luca89%2Fterrible?ref=badge_large)
