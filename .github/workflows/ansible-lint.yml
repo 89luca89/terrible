@@ -56,7 +56,7 @@ jobs:
       # Install requirements and latest ansible
     - name: Install Dependencies pip
       run: |
-        pip3 install ansible-later
+        pip3 install ansible-later ansible ansible-base
 
       # Validate all inventory files in the repo
     - name: Ansible Later
