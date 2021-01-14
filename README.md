@@ -252,6 +252,7 @@ These variable are optional, there are sensible defaults set up, most of them ca
 * **cpu:** `optional`. Specify the cpu number for the VM. If not specified, the default value is taken. Default: `1`
 * **memory:** `optional`. Specify the memory ram for the VM. If not specified, the default value is taken. Default: `1024`
 * **set_new_password:** `optional`. Specify a new password to access the Vm. If not specified, the default value (**ssh_password**) is taken.
+* **vm_autoboot**: `optional`. Specify if the VM should be automatically started together with the hypervisor. Default: `false`
 
 ### Terraform Node, Bastions & Jumphosts
 
