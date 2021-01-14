@@ -6,7 +6,7 @@
 cpu: 1
 memory: 1024
 network_name: "default"
-autostart: False
+vm_autostart: False
 
 terraform_version: 0.12
 
