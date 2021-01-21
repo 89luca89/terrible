@@ -87,6 +87,10 @@ all:
               cpu: 4
               memory: 1024
 
+              # Whether to autostart the VM with the hypervisor or not.
+              #   Defaults to false
+              vm_autostart: True
+
               ## Hypervisor
               # this variable is required and decides on which hypervisor
               # the VM should be deployed, this value should be the inventory_hostname
@@ -278,6 +282,7 @@ all:
             host-vm-2:
               os_family: RedHat
               hypervisor: hypervisor_1
+              vm_autostart: False
               ansible_host: 192.168.122.200
               network_interfaces:
                 iface_1:
