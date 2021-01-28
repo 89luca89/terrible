@@ -232,7 +232,7 @@ These variables are **required**:
 * **disk_source:** `required`. Specify the (local) path to the virtual disk you want to use to deploy the VMs.
 * **data_disks:** `optional`. Specify additional disks to be added to the VM. Check disks section for internal required varibles: [HERE](#storage)
 * **network_interfaces**: `required`. Specify VM's network interfaces, check network section for internal required variables: [HERE](#network)
-* **os_family:** `required`. Specify the OS family for the installation. Possible values are: `RedHat`, `Debian`, `Suse`, `FreeBSD`.
+* **os_family:** `required`. Specify the OS family for the installation. Possible values are: `RedHat`, `Debian`, `Suse`, `Alpine`, `FreeBSD`.
 * **pool_name:** `required`. Specify the *storage pool* name where you want to deploy the VMs on the QEMU/KVM server.
 * **ssh_password:** `required`. Specify the password to access the deployed VMs.
 * **ssh_port:** `required`. Specify the port to access the deployed VMs.
@@ -474,6 +474,7 @@ If `data_disks` is mentioned in your inventory, the following variables are requ
 | OS Family   |  Supported Disk Format      |  Encryption Supported  |
 |----------|:-------------|--------------|
 | Debian |  `ext2`, `ext3`, `ext4`, `swap` | yes |
+| Alpine |  `ext2`, `ext3`, `ext4`, `swap` | yes |
 | FreeBSD |  `ufs`, `swap`     |  no  |
 | RedHat | `ext2`, `ext3`, `ext4`, `xfs`, `swap` | yes |
 | Suse | `ext2`, `ext3`, `ext4`, `xfs`, `swap` | yes |
@@ -530,6 +531,7 @@ Actually the playbook is supporting the most common 4 OS families for the Guests
 
 * RedHat (including Centos, Fedora and derivates)
 * Debian (Including Ubuntu and derivates)
+* Alpine
 * Suse (Thumbleweed and Leap)
 * FreeBSD
 
