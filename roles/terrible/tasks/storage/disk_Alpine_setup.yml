@@ -225,6 +225,7 @@
 
 - name: Retrieve swap disk list
   shell: |
+    set -o pipefail;
     swapon | tail -n +2 | cut -d' ' -f1
   args:
     executable: /bin/sh
