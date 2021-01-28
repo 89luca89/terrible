@@ -1,0 +1,52 @@
+---
+
+- name: "Setup machine hostname"
+  hostname:
+    name: "{{ inventory_hostname }}"
+
+# Gather up all interfaces
+- name: get available devices
+  find:
+    paths: /sys/class/net/
+    excludes: "lo"
+    file_type: any
+  register: interfaces
+
+- name: Remove unmanaged networks
+  replace:
+    path: "/etc/network/interfaces"
+    regexp: "^(.*){{ item.path.split('/')[-1] }}(.*)dhcp$"
+    replace: ''
+    backup: yes
+  with_items:
+    - "{{ interfaces.files | sort(attribute='path') }}"
+
+# Use traditional /etc/network/interfaces on Alpine
+- name: "Set connection setting files - Alpine"
+  blockinfile:
+    path: "/etc/network/interfaces"
+    mode: 0644
+    block: |
+          auto {{ item.0.path.split('/')[-1] }}
+          iface {{ item.0.path.split('/')[-1] }} inet static
+          address {{ item.1.ip }}/24
+          {% if item.1.get('default_route', False) %}
+          gateway {{ item.1.gw }}
+          {% endif %}
+          dns-nameservers {% for dns in item.1.dns %}{{ dns }}{% endfor %}
+
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.1.ip }} {{ item.0.path.split('/')[-1] }}"
+    create: yes
+  register: interfaces_file
+  with_together:
+    - "{{ interfaces.files | sort(attribute='path') }}"
+    - "{{ network_interfaces.values() | list }}"
+
+- name: "Restart networking - apply configs"  # noqa 503
+  command: "reboot"
+  async: 1
+  poll: 0
+  when:
+    - interfaces_file.changed
+
+...
