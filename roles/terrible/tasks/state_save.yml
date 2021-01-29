@@ -4,11 +4,12 @@
 # Output current state to file, do this only if we have changes in the terraform
 # commands, else preserve the already existing file.
 
-- name: Create archive
+- name: Create archive  # noqa 301
   shell: |
     cd {{ hcl_deploy_path | dirname }}
     mkdir -p $(dirname {{ ansible_inventory_sources[0] }})
     tar cfv {{ ansible_inventory_sources[0] }}-state.tar.gz ./
+  changed_when: no
   run_once: yes
   delegate_to: terraform_node
 

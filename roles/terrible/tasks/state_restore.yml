@@ -16,6 +16,7 @@
     path: "{{ ansible_inventory_sources[0] | dirname }}"
     state: directory
     recurse: yes
+    mode: 0755
   when:
     - hostvars['terraform_node']['ansible_connection'] != 'local'
     - inventory_status.stat.exists
