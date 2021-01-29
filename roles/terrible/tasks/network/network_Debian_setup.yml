@@ -12,6 +12,10 @@
     file_type: any
   register: interfaces
 
+- name: "Check if netplan is installed"
+  package_facts:
+    manager: "auto"
+
 - name: Remove unmanaged networks
   replace:
     path: "/etc/network/interfaces"
@@ -20,7 +24,7 @@
     backup: yes
   with_items:
     - "{{ interfaces.files | sort(attribute='path') }}"
-  when: ansible_distribution != 'Ubuntu'
+  when: "'netplan.io' not in ansible_facts.packages"
 
 # Remove networks we do not manage in order to have control
 - name: Remove unmanaged networks /2
@@ -29,17 +33,17 @@
     {% for item in interfaces.files | sort(attribute='path') | list %} \
     ! -iname "*{{ item.path.split('/')[-1] }}*" {% endfor %} -delete
   changed_when: no
-  when: ansible_distribution != 'Ubuntu'
+  when: "'netplan.io' not in ansible_facts.packages"
 
 - name: Remove unmanaged networks
   shell: |
     find /etc/netplan/ -type f \
     ! -iname "01-terrible-network.yaml"  -delete
   changed_when: no
-  when: ansible_distribution == 'Ubuntu'
+  when: "'netplan.io' in ansible_facts.packages"
 
 # Use traditional /etc/network/interfaces on Debian
-- name: "Set connection setting files - Debian"
+- name: "Set connection setting files - Debian Family"
   blockinfile:
     path: "/etc/network/interfaces.d/ifcfg-managed-{{ network_name }}-{{ item.0.path.split('/')[-1] }}"
     mode: 0644
@@ -58,7 +62,7 @@
   with_together:
     - "{{ interfaces.files | sort(attribute='path') }}"
     - "{{ network_interfaces.values() | list }}"
-  when: ansible_distribution != 'Ubuntu'
+  when: "'netplan.io' not in ansible_facts.packages"
 
 - name: "Restart networking - apply configs"
   systemd:
@@ -67,11 +71,11 @@
   async: 1
   poll: 0
   when:
-    - ansible_distribution != 'Ubuntu'
+    - "'netplan.io' not in ansible_facts.packages"
     - interfaces_file.changed
 
-# Use netplan on Ubuntu
-- name: "Set connection setting files - Ubuntu"
+# Use netplan if present
+- name: "Set connection setting files - Netplan"
   blockinfile:
     path: /etc/netplan/01-terrible-network.yaml
     mode: 0644
@@ -95,7 +99,7 @@
     - "{{ interfaces.files | sort(attribute='path') }}"
     - "{{ network_interfaces.values() | list }}"
   when:
-    - ansible_distribution == 'Ubuntu'
+    - "'netplan.io' in ansible_facts.packages"
     - item.1.ip is defined
 
 - name: "Restart networking - apply configs"
@@ -103,7 +107,7 @@
   async: 1
   poll: 0
   when:
-    - ansible_distribution == 'Ubuntu'
+    - "'netplan.io' in ansible_facts.packages"
     - netplan_file.changed
 
 ...
