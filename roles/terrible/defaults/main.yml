@@ -22,5 +22,6 @@ os_family_support:
   - Suse
   - Debian
   - FreeBSD
+  - Alpine
 
 ...
