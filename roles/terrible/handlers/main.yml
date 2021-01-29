@@ -1,0 +1,9 @@
+---
+
+# -----------------------------------------------------------------------------
+# Output current state to file, do this only if we have changes in the terraform
+# commands, else preserve the already existing file.
+
+- name: Save state file
+  include_tasks:
+    file: state_save.yml
