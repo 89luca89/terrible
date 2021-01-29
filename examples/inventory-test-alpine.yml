@@ -22,7 +22,7 @@ all:
         master_nodes:
           hosts:
             host-vm-1:
-              os_family: Debian
+              os_family: Alpine
               disk_source: "~/VirtualMachines/packer-template-alpine-x86_64.qcow2"
               cpu: 1
               memory: 2048
