@@ -28,6 +28,7 @@ env:
     - IMAGE_ID=1nJB0a8tc5OQgRC4JT4w-QJXA6K0uC0SS IMAGE_NAME=freebsd-terraform.tar.gz INVENTORY_NAME=freebsd
     - IMAGE_ID=1ryj8RmucJc-04LQKHkj9fU69ojPLxeZW IMAGE_NAME=debian10-terraform.tar.gz INVENTORY_NAME=debian10
     - IMAGE_ID=1bhMrL7UfcgptrANnmk9yigCeVF8gBsQL IMAGE_NAME=centos8-terraform.tar.gz INVENTORY_NAME=centos8
+    - IMAGE_ID=1xFJbxf9XVZDeYddEEtzVKBwmM_PsJSRm IMAGE_NAME=alpine-terraform.tar.gz INVENTORY_NAME=alpine
 
 before_install:
   # This stage is used to setup the environment to deploy the infrastructure.
@@ -106,6 +107,10 @@ install:
     fi
   - |
     if [ $INVENTORY_NAME == "centos8" ]; then
+      travis_retry gdown "https://drive.google.com/uc?export=download&id=$IMAGE_ID" \
+        -O ~/VirtualMachines/"$IMAGE_NAME" 2>/dev/null
+    fi
+    if [ $INVENTORY_NAME == "alpine" ]; then
       travis_retry gdown "https://drive.google.com/uc?export=download&id=$IMAGE_ID" \
         -O ~/VirtualMachines/"$IMAGE_NAME" 2>/dev/null
     fi
