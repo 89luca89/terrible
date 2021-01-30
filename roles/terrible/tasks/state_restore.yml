@@ -28,7 +28,7 @@
   copy:
     src: "{{ ansible_inventory_sources[0] }}-state.tar.gz"
     dest: "{{ ansible_inventory_sources[0] }}-state.tar.gz"
-    mode: 0755
+    mode: 0644
   run_once: yes
   when:
     - hostvars['terraform_node']['ansible_connection'] != 'local'
@@ -41,7 +41,7 @@
     dest: "{{ hcl_deploy_path | dirname }}"
     creates: "{{ hcl_deploy_path }}/.terraform"
     remote_src: yes
-    mode: 0755
+    mode: 0644
   run_once: yes
   when: inventory_status.stat.exists
   delegate_to: terraform_node

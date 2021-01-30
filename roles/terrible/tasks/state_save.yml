@@ -19,7 +19,7 @@
   fetch:
     src: "{{ ansible_inventory_sources[0] }}-state.tar.gz"
     dest: "{{ ansible_inventory_sources[0] | dirname }}/"
-    mode: 0755
+    mode: 0644
     flat: yes
     validate_checksum: yes
   run_once: yes
