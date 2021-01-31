@@ -83,7 +83,7 @@
   tags: never, destroy
   delegate_to: terraform_node
 
-# Perform terraform destroy on specific resources, if state is changed, notify and save it
+# Perform terraform destroy on specific resources, if state is changed save it
 - name: "Terraform shut down target VMs (preserve resources)"  # noqa 503
   terraform:
     project_path: "{{ hcl_deploy_path }}/"
@@ -93,12 +93,12 @@
     targets: "libvirt_domain.domain_{{ inventory_hostname }}"
   throttle: 1
   tags: deploy, apply, destroy
+  register: terraform_shutdown
   when:
     - (destroy is defined and destroy) or (terraform_variables is defined and terraform_variables.changed) or (terraform_vm is defined and terraform_vm.changed)
-  notify: Save state file
   delegate_to: terraform_node
 
-# Perform terraform destroy, if state is changed, notify and save it
+# Perform terraform destroy, if state is changed save it
 - name: "Terraform destroy VMs and all resources"
   terraform:
     project_path: "{{ item.path }}"
@@ -106,7 +106,7 @@
     state: absent
   tags: never, purge
   run_once: yes
-  notify: Save state file
+  register: terraform_destroy
   with_items:
     - "{{ hypervisors_tf.files | sort(attribute='path') }}"
   delegate_to: terraform_node
@@ -123,14 +123,13 @@
     - "{{ hypervisors_tf.files | sort(attribute='path') }}"
   delegate_to: terraform_node
 
-# Perform terraform apply, if state is changed, notify and save it
+# Perform terraform apply, if state is changed  save it
 - name: "Terraform apply VMs"
   terraform:
     project_path: "{{ item.path }}"
     state: present
   tags: deploy, apply
   run_once: yes
-  notify: Save state file
   with_items:
     - "{{ hypervisors_tf.files | sort(attribute='path') }}"
   register: terraform_command
