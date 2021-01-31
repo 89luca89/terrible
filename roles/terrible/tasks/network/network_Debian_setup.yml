@@ -12,18 +12,8 @@
     file_type: any
   register: interfaces
 
-- name: Remove unmanaged networks
-  replace:
-    path: "/etc/network/interfaces"
-    regexp: "^(.*){{ item.path.split('/')[-1] }}(.*)$"
-    replace: ''
-    backup: yes
-  with_items:
-    - "{{ interfaces.files | sort(attribute='path') }}"
-  when: ansible_distribution != 'Ubuntu'
-
 # Remove networks we do not manage in order to have control
-- name: Remove unmanaged networks /2
+- name: Remove unmanaged networks - Netplan
   shell: |
     find /etc/network/interfaces.d/ -type f -iname "ifcfg*" \
     {% for item in interfaces.files | sort(attribute='path') | list %} \
@@ -44,15 +34,15 @@
     path: "/etc/network/interfaces.d/ifcfg-managed-{{ network_name }}-{{ item.0.path.split('/')[-1] }}"
     mode: 0644
     block: |
-          auto {{ item.0.path.split('/')[-1] }}
-          iface {{ item.0.path.split('/')[-1] }} inet static
+      auto {{ item.0.path.split('/')[-1] }}:0
+      iface {{ item.0.path.split('/')[-1] }}:0 inet static
           address {{ item.1.ip }}/24
           {% if item.1.get('default_route', False) %}
           gateway {{ item.1.gw }}
           {% endif %}
           dns-nameservers {% for dns in item.1.dns %}{{ dns }}{% endfor %}
 
-    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.1.ip }} {{ item.0.path.split('/')[-1] }}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.0.path.split('/')[-1] }}"
     create: yes
   register: interfaces_file
   with_together:
@@ -81,14 +71,14 @@
         version: 2
         ethernets:
           {{ item.0.path.split('/')[-1] }}:
-            dhcp4: no
+            dhcp4: yes
             addresses: [{{ item.1.ip }}/24]
       {% if item.1.get('default_route', False) %}
             gateway4: {{ item.1.gw }}
       {% endif %}
             nameservers:
               addresses: [{% for dns in item.1.dns %}{{ dns }}{% if not loop.last %},{% endif %}{% endfor %}]
-    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.1.ip }} {{ item.0.path.split('/')[-1] }}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.0.path.split('/')[-1] }}"
     create: yes
   register: netplan_file
   with_together:
