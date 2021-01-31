@@ -30,7 +30,7 @@
       TYPE=Ethernet
       PROXY_METHOD=none
       BROWSER_ONLY=no
-      BOOTPROTO=none
+      BOOTPROTO=dhcp
       IPADDR="{{ item.1.ip }}"
       PREFIX=24
       DEFROUTE={% if item.1.get('default_route', False) %}yes

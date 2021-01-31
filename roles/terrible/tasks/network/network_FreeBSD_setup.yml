@@ -17,11 +17,11 @@
     path: "/etc/rc.conf"
     mode: 0644
     block: |
-      ifconfig_{{ item.0 }}="inet {{ item.1.ip }} netmask 255.255.255.0"
+      ifconfig_{{ item.0 }}_alias0="inet {{ item.1.ip }} netmask 255.255.255.0"
       {% if item.1.get('default_route', False) %}
       defaultrouter="{{ item.1.gw }}"
       {% endif %}
-    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.1.ip }}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.0 }}"
     create: yes
   register: connection_file
   with_together:
@@ -39,7 +39,7 @@
       {% for dns in item.1.dns %}
       nameserver {{ dns }}
       {% endfor %}
-    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.1.ip }}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.0 }}"
     create: yes
   register: resolv_file
   with_together:
