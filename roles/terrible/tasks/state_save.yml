@@ -1,0 +1,31 @@
+---
+
+# -----------------------------------------------------------------------------
+# Output current state to file, do this only if we have changes in the terraform
+# commands, else preserve the already existing file.
+
+- name: Create archive  # noqa 301
+  shell: |
+    cd {{ hcl_deploy_path | dirname }}
+    mkdir -p $(dirname {{ ansible_inventory_sources[0] }})
+    tar cfv {{ ansible_inventory_sources[0] }}-state.tar.gz ./
+  changed_when: no
+  run_once: yes
+  delegate_to: terraform_node
+
+# If the terraform node is not local, the state should be first copied to
+# local
+- name: Fetch status from terraform_node
+  fetch:
+    src: "{{ ansible_inventory_sources[0] }}-state.tar.gz"
+    dest: "{{ ansible_inventory_sources[0] | dirname }}/"
+    mode: 0644
+    flat: yes
+    validate_checksum: yes
+  run_once: yes
+  when:
+    - hostvars['terraform_node']['ansible_connection'] != 'local'
+  delegate_to: terraform_node
+# -----------------------------------------------------------------------------
+
+...

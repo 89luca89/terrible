@@ -9,6 +9,30 @@
   stat:
     path: "{{ ansible_inventory_sources[0] }}-state.tar.gz"
   register: inventory_status
+  delegate_to: localhost
+
+- name: Ensure destination folder exists
+  file:
+    path: "{{ ansible_inventory_sources[0] | dirname }}"
+    state: directory
+    recurse: yes
+    mode: 0755
+  when:
+    - hostvars['terraform_node']['ansible_connection'] != 'local'
+    - inventory_status.stat.exists
+  delegate_to: terraform_node
+
+# If the terraform node is not local, the state should be first copied to it
+# before unpacking it
+- name: Send status to terraform_node
+  copy:
+    src: "{{ ansible_inventory_sources[0] }}-state.tar.gz"
+    dest: "{{ ansible_inventory_sources[0] }}-state.tar.gz"
+    mode: 0644
+  run_once: yes
+  when:
+    - hostvars['terraform_node']['ansible_connection'] != 'local'
+    - inventory_status.stat.exists
   delegate_to: terraform_node
 
 - name: Unpack saved state to "{{ hcl_deploy_path | dirname }}"
@@ -17,7 +41,6 @@
     dest: "{{ hcl_deploy_path | dirname }}"
     creates: "{{ hcl_deploy_path }}/.terraform"
     remote_src: yes
-    mode: 0755
   run_once: yes
   when: inventory_status.stat.exists
   delegate_to: terraform_node

@@ -46,6 +46,22 @@
 # -----------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------------
+# Setup the state.
+# We do this only if terraform actually did something, so only if "changed"
+- include_tasks:
+    file: state_save.yml
+    apply:
+      tags:
+        - always
+        - save
+  tags: always, save
+  when: >
+    (terraform_shutdown is defined and terraform_shutdown.changed) or
+    (terraform_destroy is defined and terraform_destroy.changed) or
+    (terraform_command is defined and terraform_command.changed)
+# -----------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------
 # Perform post-deploy tasks, such as users, networks and so on...
 
 - include_tasks: post_deploy.yml
