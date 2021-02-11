@@ -2,6 +2,7 @@
 
 ansible_dependencies:
   - python3
+  - libselinux-python3
   # Decide if encryption is set to True at least one time
   # in the single machine inventory, and enable the download
   # of cryptsetup based on this.
