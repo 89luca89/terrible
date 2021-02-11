@@ -25,7 +25,7 @@ env:
     - TERRAFORM_PROVIDER_RELEASE=0.6.2+git.1585292411.8cbe9ad0
   jobs:
     - IMAGE_ID=1AC3bXMYSxTHECqY0iSwH4ZQWlw7jzs2J IMAGE_NAME=opensuse15-terraform.tar.gz INVENTORY_NAME=opensuse15
-    - IMAGE_ID=1nJB0a8tc5OQgRC4JT4w-QJXA6K0uC0SS IMAGE_NAME=freebsd-terraform.tar.gz INVENTORY_NAME=freebsd
+    - IMAGE_ID=1NKE0714fxeu4r7cyqxn7eHyZEs4XV3JZ IMAGE_NAME=freebsd-terraform.tar.gz INVENTORY_NAME=freebsd
     - IMAGE_ID=1ryj8RmucJc-04LQKHkj9fU69ojPLxeZW IMAGE_NAME=debian10-terraform.tar.gz INVENTORY_NAME=debian10
     - IMAGE_ID=1bhMrL7UfcgptrANnmk9yigCeVF8gBsQL IMAGE_NAME=centos8-terraform.tar.gz INVENTORY_NAME=centos8
     - IMAGE_ID=1xFJbxf9XVZDeYddEEtzVKBwmM_PsJSRm IMAGE_NAME=alpine-terraform.tar.gz INVENTORY_NAME=alpine
