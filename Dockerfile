@@ -4,6 +4,7 @@ LABEL maintainer1="Luca Di Maio" \
       maintainer2="Alessio Greggi"
 
 ARG ANSIBLE_VERSION=2.9
+ARG CRYPTOGRAPHY_VERSION=3.3.2
 ARG TERRAFORM_VERSION=0.12.0
 ARG TERRAFORM_PROVIDER_VERSION=0.6.2
 ARG TERRAFORM_PROVIDER_RELEASE=0.6.2+git.1585292411.8cbe9ad0
@@ -16,6 +17,8 @@ RUN apt-get update \
         openssh-client \
         python3-setuptools \
         python3-pip \
+    && pip3 install \
+        cryptography==${CRYPTOGRAPHY_VERSION} \
     && pip3 install \
         ansible==${ANSIBLE_VERSION} \
     && rm -rf /var/lib/apt/lists/* \
