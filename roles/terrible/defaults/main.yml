@@ -24,5 +24,6 @@ os_family_support:
   - Debian
   - FreeBSD
   - Alpine
+  - Windows
 
 ...
