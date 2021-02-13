@@ -136,11 +136,11 @@ resource "libvirt_domain" "domain_{{ inventory_hostname }}" {
   }
 
   connection {
-    type             = "ssh"
+    type             = "{% if os_family == "Windows" %}winrm{% else %}ssh{% endif %}"
     host             = self.network_interface[0].addresses[0]
-    user             = "{{ ssh_user }}"
-    password         = "{{ ssh_password }}"
-    port             = "{{ ssh_port }}"
+    user             = "{% if os_family == "Windows" %}{{ winrm_user }}{% else %}{{ ssh_user }}{% endif %}"
+    password         = "{% if os_family == "Windows" %}{{ winrm_password }}{% else %}{{ ssh_password }}{% endif %}"
+    port             = "{% if os_family == "Windows" %}{{ winrm_port }}{% else %}{{ ssh_port }}{% endif %}{ ssh_port }"
 
 {% if terraform_bastion_enabled %}
     bastion_host     = "{{ terraform_bastion_host }}"
@@ -154,6 +154,7 @@ resource "libvirt_domain" "domain_{{ inventory_hostname }}" {
   #   command = "virsh --connect {{ provider_uri }} attach-device {{ inventory_hostname }} --file passtrought-host.xml --live --persistent"
   # }
 
+# Only for Unix based OS
 {% if ssh_public_key is defined %}
   provisioner "remote-exec" {
     inline = [
