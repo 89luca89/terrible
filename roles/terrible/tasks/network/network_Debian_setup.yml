@@ -36,7 +36,7 @@
 - name: Remove unmanaged networks - Netplan
   shell: |
     find /etc/network/interfaces.d/ -type f -iname "ifcfg*" \
-    {% for item in interfaces.files | sort(attribute='path') | list %} \
+    {% for item in interfaces | list %} \
     ! -iname "*{{ item }}*" {% endfor %} -delete
   changed_when: no
   when: "'netplan.io' not in ansible_facts.packages"
@@ -66,7 +66,7 @@
     create: yes
   register: interfaces_file
   with_together:
-    - "{{ interfaces.files | sort(attribute='path') }}"
+    - "{{ interfaces }}"
     - "{{ network_interfaces.values() | list }}"
   when: "'netplan.io' not in ansible_facts.packages"
 
@@ -102,7 +102,7 @@
     create: yes
   register: netplan_file
   with_together:
-    - "{{ interfaces.files | sort(attribute='path') }}"
+    - "{{ interfaces }}"
     - "{{ network_interfaces.values() | list }}"
   when:
     - "'netplan.io' in ansible_facts.packages"

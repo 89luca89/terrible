@@ -16,7 +16,7 @@
   stat:
     path: "{{ item.path }}"
   register: interfaces_paths
-  with_items: "{{ interfaces_symlinks.files | sort(attribute='path') }}"
+  with_items: "{{ interfaces_symlinks }}"
 
 - name: Declare interface variable
   set_fact:
@@ -46,7 +46,7 @@
     create: yes
   register: interfaces_file
   with_together:
-    - "{{ interfaces.files | sort(attribute='path') }}"
+    - "{{ interfaces }}"
     - "{{ network_interfaces.values() | list }}"
 
 - name: "Restart networking - apply configs"  # noqa 503
