@@ -10,7 +10,21 @@
     paths: /sys/class/net/
     excludes: "lo"
     file_type: any
-  register: interfaces
+  register: interfaces_symlinks
+
+- name: get source path for available devices
+  stat:
+    path: "{{ item.path }}"
+  register: interfaces_paths
+  with_items: "{{ interfaces_symlinks.files | sort(attribute='path') }}"
+
+- set_fact:
+    interfaces: []
+
+- set_fact:
+    interfaces: "{{ interfaces + [ item.stat.lnk_source.split('/')[-1] ] }}"
+  when: "'virtual' not in item.stat.lnk_source"
+  with_items: "{{ interfaces_paths.results }}"
 
 - name: "Check if netplan is installed"
   package_facts:
@@ -21,7 +35,7 @@
   shell: |
     find /etc/network/interfaces.d/ -type f -iname "ifcfg*" \
     {% for item in interfaces.files | sort(attribute='path') | list %} \
-    ! -iname "*{{ item.path.split('/')[-1] }}*" {% endfor %} -delete
+    ! -iname "*{{ item }}*" {% endfor %} -delete
   changed_when: no
   when: "'netplan.io' not in ansible_facts.packages"
 
@@ -35,18 +49,18 @@
 # Use traditional /etc/network/interfaces on Debian
 - name: "Set connection setting files - Debian Family"
   blockinfile:
-    path: "/etc/network/interfaces.d/ifcfg-managed-{{ network_name }}-{{ item.0.path.split('/')[-1] }}"
+    path: "/etc/network/interfaces.d/ifcfg-managed-{{ network_name }}-{{ item.0 }}"
     mode: 0644
     block: |
-      auto {{ item.0.path.split('/')[-1] }}:0
-      iface {{ item.0.path.split('/')[-1] }}:0 inet static
+      auto {{ item.0 }}:0
+      iface {{ item.0 }}:0 inet static
           address {{ item.1.ip }}/24
           {% if item.1.get('default_route', False) %}
           gateway {{ item.1.gw }}
           {% endif %}
           dns-nameservers {% for dns in item.1.dns %}{{ dns }}{% endfor %}
 
-    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.0.path.split('/')[-1] }}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.0 }}"
     create: yes
   register: interfaces_file
   with_together:
@@ -74,7 +88,7 @@
       network:
         version: 2
         ethernets:
-          {{ item.0.path.split('/')[-1] }}:
+          {{ item.0 }}:
             dhcp4: yes
             addresses: [{{ item.1.ip }}/24]
       {% if item.1.get('default_route', False) %}
@@ -82,7 +96,7 @@
       {% endif %}
             nameservers:
               addresses: [{% for dns in item.1.dns %}{{ dns }}{% if not loop.last %},{% endif %}{% endfor %}]
-    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.0.path.split('/')[-1] }}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.0 }}"
     create: yes
   register: netplan_file
   with_together:

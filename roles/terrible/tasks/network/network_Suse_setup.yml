@@ -10,20 +10,34 @@
     paths: /sys/class/net/
     excludes: "lo"
     file_type: any
-  register: interfaces
+  register: interfaces_symlinks
+
+- name: get source path for available devices
+  stat:
+    path: "{{ item.path }}"
+  register: interfaces_paths
+  with_items: "{{ interfaces_symlinks.files | sort(attribute='path') }}"
+
+- set_fact:
+    interfaces: []
+
+- set_fact:
+    interfaces: "{{ interfaces + [ item.stat.lnk_source.split('/')[-1] ] }}"
+  when: "'virtual' not in item.stat.lnk_source"
+  with_items: "{{ interfaces_paths.results }}"
 
 # Remove networks we do not manage in order to have control
 - name: Remove unmanaged networks
   shell: |
     find /etc/sysconfig/network/ -type f -iname "ifcfg*" \
     {% for item in interfaces.files | sort(attribute='path') | list %} \
-    ! -iname "*{{ item.path.split('/')[-1] }}*" {% endfor %} -delete
+    ! -iname "*{{ item }}*" {% endfor %} -delete
   changed_when: no
 
 # Deploy multiple ifcfg-namaget-NET_POOL-ETHX files
 - name: "Set connection setting files"
   blockinfile:
-    path: "/etc/sysconfig/network/ifcfg-{{ item.0.path.split('/')[-1] }}"
+    path: "/etc/sysconfig/network/ifcfg-{{ item.0 }}"
     mode: 0644
     block: |
       TYPE=Ethernet
@@ -47,12 +61,12 @@
       {% endif %}
       IPV6_FAILURE_FATAL='no'
       IPV6_ADDR_GEN_MODE='stable-privacy'
-      NAME='managed-{{ network_name }}-{{ item.0.path.split('/')[-1] }}'
-      UUID='{{ item.0.path.split('/')[-1] | to_uuid }}'
-      DEVICE='{{ item.0.path.split('/')[-1] }}'
+      NAME='managed-{{ network_name }}-{{ item.0 }}'
+      UUID='{{ item.0 | to_uuid }}'
+      DEVICE='{{ item.0 }}'
       ONBOOT='yes'
       STARTMODE='auto'
-    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.1.ip }} {{ item.0.path.split('/')[-1] }}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.1.ip }} {{ item.0 }}"
     create: yes
   register: ifcfg_file
   with_together:
@@ -66,8 +80,8 @@
     mode: 0644
     block: |
       # Destination   Gateway                 Netmask                 Device
-      default         {{ item.1.gw }}            -                       {{ item.0.path.split('/')[-1] }}
-    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.1.ip }} {{ item.0.path.split('/')[-1] }}"
+      default         {{ item.1.gw }}            -                       {{ item.0 }}
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.1.ip }} {{ item.0 }}"
     create: yes
   register: route_file
   when: "item.1.get('default_route', False)"
