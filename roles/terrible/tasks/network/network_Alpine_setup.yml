@@ -16,7 +16,7 @@
   stat:
     path: "{{ item.path }}"
   register: interfaces_paths
-  with_items: "{{ interfaces_symlinks }}"
+  with_items: "{{ interfaces_symlinks.files | sort(attribute='path') }}"
 
 - name: Declare interface variable
   set_fact:
