@@ -18,10 +18,12 @@
   register: interfaces_paths
   with_items: "{{ interfaces_symlinks.files | sort(attribute='path') }}"
 
-- set_fact:
+- name: Declare interface variable
+  set_fact:
     interfaces: []
 
-- set_fact:
+- name: Populate interface variables with networks
+  set_fact:
     interfaces: "{{ interfaces + [ item.stat.lnk_source.split('/')[-1] ] }}"
   when: "'virtual' not in item.stat.lnk_source"
   with_items: "{{ interfaces_paths.results }}"
