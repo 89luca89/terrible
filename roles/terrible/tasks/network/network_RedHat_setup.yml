@@ -22,7 +22,7 @@
 
 # Deploy multiple ifcfg-namaget-NET_POOL-ETHX files, this is more easy to
 # keep track than using directly nmcli
-- name: "Set connection setting files"
+- name: "Set connection setting files - RedHat"
   blockinfile:
     path: "/etc/sysconfig/network-scripts/ifcfg-managed-{{ network_name }}-{{ item.0.path.split('/')[-1] }}"
     mode: 0644

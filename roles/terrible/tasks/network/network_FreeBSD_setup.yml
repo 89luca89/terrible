@@ -28,7 +28,7 @@
     - "{{ interfaces.stdout.split(' ') | sort | list }}"
     - "{{ network_interfaces.values() | list }}"
 
-- name: "Set connection setting files"
+    - name: "Set connection setting files - FreeBSD"
   blockinfile:
     path: "/etc/resolv.conf"
     mode: 0644
