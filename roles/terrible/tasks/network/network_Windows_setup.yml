@@ -1,0 +1,24 @@
+---
+
+- name: "Setup machine hostname"
+  win_hostname:
+    name: "{{ inventory_hostname }}"
+
+- name: "Set connection setting files - Windows"
+  win_shell: |
+    Get-NetIpAddress -InterfaceAlias '{{ item.0.connection_name }}' | New-NetIpAddress -IpAddress {{ item.1.ip }} -PrefixLength 24 -DefaultGateway {{ item.1.gw }}
+  async: 100
+  poll: 0
+  with_together:
+    - "{{ ansible_facts.interfaces | sort(attribute='connection_name') }}"
+    - "{{ network_interfaces.values() | list }}"
+
+- name: Change ansible's ip address for each host
+  set_fact:
+    ansible_host: "{{ ansible_host }}"
+
+- name: Wait for the hosts network interface
+  win_wait_for:
+    host: "{{ ansible_host }}"
+    port: 5985
+    delay: 10

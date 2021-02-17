@@ -1,0 +1,16 @@
+---
+# The following variables are temporarly not defined
+# to avoid the provisioning phase on Terraform.
+# This because Windows already have all the needded
+# dependencies installed.
+
+#ansible_dependencies:
+
+#update_command: 
+#install_command: 
+
+supported_fs:
+
+ansible_port: 5985
+ansible_connection: winrm
+ansible_winrm_server_cert_validation: ignore
