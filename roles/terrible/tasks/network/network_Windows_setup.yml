@@ -6,7 +6,7 @@
 
 - name: "Set connection setting files - Windows"
   win_shell: |
-    Get-NetIpAddress -InterfaceAlias '{{ item.0.connection_name }}' | New-NetIpAddress -IpAddress {{ item.1.ip }} -PrefixLength 24 -DefaultGateway {{ item.1.gw }}
+    New-NetIpAddress -InterfaceIndex {{ item.0.interface_index }} -IPAddress {{ item.1.ip }} -PrefixLength 24 {% if item.0.default_gateway is not defined %}-DefaultGateway {{ item.1.gw }}{% endif %}
   async: 100
   poll: 0
   with_together:
@@ -15,10 +15,22 @@
 
 - name: Change ansible's ip address for each host
   set_fact:
-    ansible_host: "{{ ansible_host }}"
+    ansible_host_old: ""
 
-- name: Wait for the hosts network interface
+- name: "Wait for the hosts network interface to come back up"
   win_wait_for:
     host: "{{ ansible_host }}"
     port: 5985
     delay: 10
+
+- name: Remove old ip address
+  win_shell: |
+    Remove-NetIpAddress -InterfaceIndex {{ item.0.interface_index }} -IPAddress {{ ansible_host_old }} -PrefixLength 24 -Confirm:$false
+  async: 100
+  poll: 0
+  with_together:
+    - "{{ ansible_facts.interfaces | sort(attribute='connection_name') }}"
+
+- name: Debug
+  debug:
+    msg: "{{ ansible_host }}"
