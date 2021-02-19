@@ -13,24 +13,18 @@
     - "{{ ansible_facts.interfaces | sort(attribute='connection_name') }}"
     - "{{ network_interfaces.values() | list }}"
 
-- name: Change ansible's ip address for each host
-  set_fact:
-    ansible_host_old: ""
-
 - name: "Wait for the hosts network interface to come back up"
   win_wait_for:
     host: "{{ ansible_host }}"
     port: 5985
     delay: 10
 
-- name: Remove old ip address
+- name: "Restart networking - apply configs" # noqa 503
   win_shell: |
-    Remove-NetIpAddress -InterfaceIndex {{ item.0.interface_index }} -IPAddress {{ ansible_host_old }} -PrefixLength 24 -Confirm:$false
+    Restart-NetAdapter -InterfaceAlias {{ item.0.connection_name }}
   async: 100
   poll: 0
   with_together:
     - "{{ ansible_facts.interfaces | sort(attribute='connection_name') }}"
 
-- name: Debug
-  debug:
-    msg: "{{ ansible_host }}"
+...
