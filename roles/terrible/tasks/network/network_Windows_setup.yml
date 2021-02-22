@@ -13,12 +13,6 @@
     - "{{ ansible_facts.interfaces | sort(attribute='connection_name') }}"
     - "{{ network_interfaces.values() | list }}"
 
-- name: "Wait for the hosts network interface to come back up"
-  win_wait_for:
-    host: "{{ ansible_host }}"
-    port: 5985
-    delay: 10
-
 - name: "Restart networking - apply configs" # noqa 503
   win_shell: |
     Restart-NetAdapter -InterfaceAlias {{ item.0.connection_name }}
