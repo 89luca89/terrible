@@ -453,6 +453,9 @@ This is important because it will make `ansible_host` independent from the inter
 needed for this network bootstrap tasks, making it easily compatible with any type of role that you
 want to perform after this.
 
+During this process, virtual networks (bridges, VLANs, etc...) **inside the vm** will be ignored, this will improve detection
+of the networks we want to manage, improving compatibility with docker, k8s, nested-virtualization, etc...
+
 ### Storage
 
 This section explain how you can add some additional disk to the VMs.
