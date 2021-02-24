@@ -10,21 +10,37 @@
     paths: /sys/class/net/
     excludes: "lo"
     file_type: any
-  register: interfaces
+  register: interfaces_symlinks
+
+- name: get source path for available devices
+  stat:
+    path: "{{ item.path }}"
+  register: interfaces_paths
+  with_items: "{{ interfaces_symlinks.files | sort(attribute='path') }}"
+
+- name: Declare interface variable
+  set_fact:
+    interfaces: []
+
+- name: Populate interface variables with networks
+  set_fact:
+    interfaces: "{{ interfaces + [ item.stat.lnk_source.split('/')[-1] ] }}"
+  when: "'virtual' not in item.stat.lnk_source"
+  with_items: "{{ interfaces_paths.results }}"
 
 # Remove networks we do not manage in order to have control
 - name: Remove unmanaged networks
   shell: |
     find /etc/sysconfig/network-scripts -type f -iname "ifcfg*" \
-    {% for item in interfaces.files | sort(attribute='path') | list %} \
-    ! -iname "ifcfg-managed-*-{{ item.path.split('/')[-1] }}" {% endfor %} -delete
+    {% for item in interfaces | list %} \
+    ! -iname "ifcfg-managed-*-{{ item }}" {% endfor %} -delete
   changed_when: no
 
 # Deploy multiple ifcfg-namaget-NET_POOL-ETHX files, this is more easy to
 # keep track than using directly nmcli
 - name: "Set connection setting files"
   blockinfile:
-    path: "/etc/sysconfig/network-scripts/ifcfg-managed-{{ network_name }}-{{ item.0.path.split('/')[-1] }}"
+    path: "/etc/sysconfig/network-scripts/ifcfg-managed-{{ network_name }}-{{ item.0 }}"
     mode: 0644
     block: |
       TYPE=Ethernet
@@ -48,15 +64,15 @@
       {% endif %}
       IPV6_FAILURE_FATAL=no
       IPV6_ADDR_GEN_MODE=stable-privacy
-      NAME=managed-default-{{ item.0.path.split('/')[-1] }}
-      UUID={{ item.0.path.split('/')[-1] | to_uuid }}
-      DEVICE="{{ item.0.path.split('/')[-1] }}"
+      NAME=managed-default-{{ item.0 }}
+      UUID={{ item.0 | to_uuid }}
+      DEVICE="{{ item.0 }}"
       ONBOOT=yes
-    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.1.ip }} {{ item.0.path.split('/')[-1] }}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.1.ip }} {{ item.0 }}"
     create: yes
   register: ifcfg_file
   with_together:
-    - "{{ interfaces.files | sort(attribute='path') }}"
+    - "{{ interfaces }}"
     - "{{ network_interfaces.values() | list }}"
 
 - name: "Restart networking - apply configs"  # noqa 503

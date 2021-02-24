@@ -10,7 +10,23 @@
     paths: /sys/class/net/
     excludes: "lo"
     file_type: any
-  register: interfaces
+  register: interfaces_symlinks
+
+- name: get source path for available devices
+  stat:
+    path: "{{ item.path }}"
+  register: interfaces_paths
+  with_items: "{{ interfaces_symlinks.files | sort(attribute='path') }}"
+
+- name: Declare interface variable
+  set_fact:
+    interfaces: []
+
+- name: Populate interface variables with networks
+  set_fact:
+    interfaces: "{{ interfaces + [ item.stat.lnk_source.split('/')[-1] ] }}"
+  when: "'virtual' not in item.stat.lnk_source"
+  with_items: "{{ interfaces_paths.results }}"
 
 # Use traditional /etc/network/interfaces on Alpine
 - name: "Set connection setting files - Alpine"
@@ -18,19 +34,19 @@
     path: "/etc/network/interfaces"
     mode: 0644
     block: |
-          auto {{ item.0.path.split('/')[-1] }}
-          iface {{ item.0.path.split('/')[-1] }} inet static
+          auto {{ item.0 }}
+          iface {{ item.0 }} inet static
           address {{ item.1.ip }}/24
           {% if item.1.get('default_route', False) %}
           gateway {{ item.1.gw }}
           {% endif %}
           dns-nameservers {% for dns in item.1.dns %}{{ dns }}{% endfor %}
 
-    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.0.path.split('/')[-1] }}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.0 }}"
     create: yes
   register: interfaces_file
   with_together:
-    - "{{ interfaces.files | sort(attribute='path') }}"
+    - "{{ interfaces }}"
     - "{{ network_interfaces.values() | list }}"
 
 - name: "Restart networking - apply configs"  # noqa 503
