@@ -1,0 +1,44 @@
+---
+
+# additional disks setup for terraform role
+#
+#         [ Start ]
+#             |
+# [ Create disk partitions ]
+#     ┌───────┴─────────┐
+#     |                 |
+#     |           [ Copy file to remote host ]
+#     |                 |
+#     |           [ Create LUKS container ]
+#     |                 |
+# [ Format diks]  [ Format encrypted disk ]
+#     |                 |
+#     └───────┬─────────┘
+# [ Create disk mountpoint ]
+#     ┌───────┴─────────┐
+#     |                 |
+# [ Mount disks ] [ Mount encrypted disks ]
+#     └───────┬─────────┘
+#          [ End ]
+
+# Filter the additional virtual disks and create 1 partition
+# for each disk.
+- name: Init disk
+  win_shell: |
+    Initialize-Disk -Number {{ ansible_facts.disks[item.0].number }} -PartitionStyle GPT
+  when:
+    - ansible_disks[item.0].guid is none
+    - item.0 != 0
+  with_indexed_items:
+    - {{ ansible_facts.disks | length }}
+
+- name: Disk Partition
+  win_partition:
+    drive_letter: auto
+    partition_size: -1
+    disk_number: "{{ ansible_facts.disks[item.0].number }}"
+  when:
+    - ansible_disks[item.0].guid is none
+    - item.0 != 0
+  with_indexed_items:
+    - {{ ansible_facts.disks | length }}
