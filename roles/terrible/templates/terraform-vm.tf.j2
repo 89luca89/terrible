@@ -186,6 +186,18 @@ resource "libvirt_domain" "domain_{{ inventory_hostname }}" {
     }
 {% endif %}
 
+{% if terraform_destroy_provisioners is defined %}
+    provisioner "remote-exec" {
+      inline = [
+        when    = destroy
+        {% for provisioner_command in terraform_destroy_provisioners %}
+      "{{ provisioner_command }}"{% if not loop.last %},{% endif %}
+      {% endfor %}
+      ]
+    }
+{% endif %}
+
+
 }
 
 # Return the NAT ip obtained by the DHCP lease, we do this because it may be
