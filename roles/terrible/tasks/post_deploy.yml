@@ -56,10 +56,10 @@
       set_fact:
         ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
       when:
-        - item.type != 'nat'
-        - item.ip == ansible_host
+        - "item.type != 'nat'"
+        - "item.ip == ansible_host"
       with_items:
-        - "{{ network_interfaces.values() }}"
+        - "{{ network_interfaces.values() | list }}"
   tags: provision
 
 - name: Wait for system to become reachable

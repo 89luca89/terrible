@@ -188,8 +188,8 @@ resource "libvirt_domain" "domain_{{ inventory_hostname }}" {
 
 {% if terraform_destroy_provisioners is defined %}
     provisioner "remote-exec" {
+      when    = destroy
       inline = [
-        when    = destroy
         {% for provisioner_command in terraform_destroy_provisioners %}
       "{{ provisioner_command }}"{% if not loop.last %},{% endif %}
       {% endfor %}
