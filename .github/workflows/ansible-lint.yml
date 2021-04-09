@@ -57,7 +57,7 @@ jobs:
     - name: Install Dependencies pip
       run: |
         pip3 install cryptography==3.3.2
-        pip3 install ansible-later ansible ansible-base
+        pip3 install ansible-later==0.4.0 ansible==3.2.0 ansible-base==2.10.7
 
       # Validate all inventory files in the repo
     - name: Ansible Later
