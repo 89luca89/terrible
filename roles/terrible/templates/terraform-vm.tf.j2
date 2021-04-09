@@ -143,10 +143,15 @@ resource "libvirt_domain" "domain_{{ inventory_hostname }}" {
     port             = "{{ ssh_port }}"
 
 {% if terraform_bastion_enabled %}
+{% if terraform_bastion_host != 'localhost' and terraform_bastion_host != '127.0.0.1' %}
     bastion_host     = "{{ terraform_bastion_host }}"
     bastion_port     = "{{ terraform_bastion_port }}"
     bastion_user     = "{{ terraform_bastion_user }}"
     bastion_password = "{{ terraform_bastion_password }}"
+{% if ansible_ssh_private_key_file is defined %}
+    bastion_private_key = "${file("{{ ansible_ssh_private_key_file }}")}"
+{% endif %}
+{% endif %}
 {% endif %}
   }
   # Hostdev passtrought
@@ -177,9 +182,9 @@ resource "libvirt_domain" "domain_{{ inventory_hostname }}" {
     provisioner "remote-exec" {
       inline = [
 {% for pkg in ansible_dependencies %}
-    {% if not 'None' in pkg %}
+{% if not 'None' in pkg %}
         "{{ install_command }} {{ pkg }}"{% if not loop.last %},{% endif %}
-    {% endif %}
+{% endif %}
 
 {% endfor %}
       ]
@@ -190,9 +195,9 @@ resource "libvirt_domain" "domain_{{ inventory_hostname }}" {
     provisioner "remote-exec" {
       when    = destroy
       inline = [
-        {% for provisioner_command in terraform_destroy_provisioners %}
+{% for provisioner_command in terraform_destroy_provisioners %}
       "{{ provisioner_command }}"{% if not loop.last %},{% endif %}
-      {% endfor %}
+{% endfor %}
       ]
     }
 {% endif %}
