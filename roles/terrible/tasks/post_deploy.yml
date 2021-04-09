@@ -50,6 +50,16 @@
     - name: "Pivoting ansible_host: restoring target ip..."
       set_fact:
         ansible_host: "{{ original_ansible_host }}"
+    # IF ansible_host is NOT the NAT ip, then we do not need all the
+    # ssh jumphost list, we can target it directly
+    - name: "Pivoting ansible_host: removing jump hosts..."
+      set_fact:
+        ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+      when:
+        - item.type != 'nat'
+        - item.ip == ansible_host
+      with_items:
+        - "{{ network_interfaces.values() }}"
   tags: provision
 
 - name: Wait for system to become reachable
