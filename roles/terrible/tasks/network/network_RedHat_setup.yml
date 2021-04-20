@@ -46,7 +46,7 @@
       TYPE=Ethernet
       PROXY_METHOD=none
       BROWSER_ONLY=no
-      BOOTPROTO=dhcp
+      BOOTPROTO='{% if item.1.type == 'nat' %}dhcp{% else %}none{% endif %}'
       IPADDR="{{ item.1.ip }}"
       PREFIX=24
       DEFROUTE={% if item.1.get('default_route', False) %}yes

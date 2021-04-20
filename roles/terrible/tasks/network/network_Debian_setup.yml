@@ -92,6 +92,7 @@
         ethernets:
           {{ item.0 }}:
             dhcp4: yes
+            dhcp4: '{% if item.1.type == 'nat' %}yes{% else %}no{% endif %}'
             addresses: [{{ item.1.ip }}/24]
       {% if item.1.get('default_route', False) %}
             gateway4: {{ item.1.gw }}
