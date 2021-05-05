@@ -1,3 +1,5 @@
+---
+
 name: Ansible Lint  # feel free to pick your own name
 
 on: [push]
@@ -9,36 +11,36 @@ jobs:
     container: centos:centos8
     steps:
 
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
       # Make pip3 work
-    - name: Install Dependencies yum
-      run: |
-        yum install -y python3 python3-pip python3-setuptools
+      - name: Install Dependencies yum
+        run: |
+          yum install -y python3 python3-pip python3-setuptools
 
       # Install requirements and latest ansible
-    - name: Install Dependencies pip
-      run: |
-        pip3 install yamllint
+      - name: Install Dependencies pip
+        run: |
+          pip3 install yamllint
 
       # Validate all inventory files in the repo
       # disable line lenght
       # disable truthy, it goes against ansible recommendations
-    - name: Yaml lint
-      run: |
-        yamllint -d "{extends: default, rules: {line-length: disable, truthy: disable}}" roles/
+      - name: Yaml lint
+        run: |
+          yamllint -d "{extends: default, rules: {line-length: disable, truthy: disable}}" roles/
 
   ansible-lint:
     runs-on: ubuntu-latest
     steps:
 
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Lint Ansible Playbook
-      uses: ansible/ansible-lint-action@master
-      with:
-        targets: "main.yml"
-        args: ""
+      - name: Lint Ansible Playbook
+        uses: ansible/ansible-lint-action@master
+        with:
+          targets: "main.yml"
+          args: ""
 
   ansible-later:
     # Run the test inside a centos8 container
@@ -46,20 +48,20 @@ jobs:
     container: centos:centos8
     steps:
 
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
       # Make pip3 work
-    - name: Install Dependencies yum
-      run: |
-        yum install -y python3 python3-pip python3-setuptools
+      - name: Install Dependencies yum
+        run: |
+          yum install -y python3 python3-pip python3-setuptools
 
       # Install requirements and latest ansible
-    - name: Install Dependencies pip
-      run: |
-        pip3 install cryptography==3.3.2
-        pip3 install ansible-later==0.4.0 ansible==3.2.0 ansible-base==2.10.7
+      - name: Install Dependencies pip
+        run: |
+          pip3 install cryptography==3.3.2
+          pip3 install ansible-later==0.4.0 ansible==3.2.0 ansible-base==2.10.7
 
       # Validate all inventory files in the repo
-    - name: Ansible Later
-      run: |
-        ansible-later tasks
+      - name: Ansible Later
+        run: |
+          ansible-later tasks

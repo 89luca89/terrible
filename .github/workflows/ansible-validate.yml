@@ -1,3 +1,5 @@
+---
+
 name: Ansible Validate
 
 on: [push]
@@ -10,28 +12,28 @@ jobs:
     container: centos:centos8
     steps:
 
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
       # Make pip3 work
-    - name: Install Dependencies yum
-      run: |
-        yum install -y python3 python3-pip python3-setuptools
+      - name: Install Dependencies yum
+        run: |
+          yum install -y python3 python3-pip python3-setuptools
 
       # Install requirements and latest ansible
-    - name: Install Dependencies pip
-      run: |
-        pip3 install cryptography==3.3.2
-        pip3 install wheel ansible
-        pip3 install -r requirements.txt
+      - name: Install Dependencies pip
+        run: |
+          pip3 install cryptography==3.3.2
+          pip3 install wheel ansible
+          pip3 install -r requirements.txt
 
       # Validate all inventory files in the repo
-    - name: Run Terrible validation
-      run: |
-        for inventory in $(find . -iname "inventory*.yml"); do
-          echo "VALIDATE $inventory ******************************************************************"
-          echo "ansible-playbook -i $inventory -u root main.yml --tags validate"
-          ansible-playbook -i $inventory -u root main.yml --tags validate
-        done
-      env:
+      - name: Run Terrible validation
+        run: |
+          for inventory in $(find . -iname "inventory*.yml"); do
+            echo "VALIDATE $inventory ******************************************************************"
+            echo "ansible-playbook -i $inventory -u root main.yml --tags validate"
+            ansible-playbook -i $inventory -u root main.yml --tags validate
+          done
+        env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'

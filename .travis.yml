@@ -1,3 +1,5 @@
+---
+
 language: python
 python:
   - "3.6"
@@ -133,7 +135,7 @@ after_success:
   # has been created.
   - sudo virsh list --all
 
- # After the deploy, is a good practice to test also the infrastructure cleanup.
+  # After the deploy, is a good practice to test also the infrastructure cleanup.
   - ansible-playbook -i examples/inventory-test-"$INVENTORY_NAME".yml -v -u root main.yml --tags purge
 
 notifications:

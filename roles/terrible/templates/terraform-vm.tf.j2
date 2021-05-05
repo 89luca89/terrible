@@ -164,7 +164,8 @@ resource "libvirt_domain" "domain_{{ inventory_hostname }}" {
     inline = [
       "mkdir -p -m 0700 ~/.ssh",
       "echo '{{ ssh_public_key }}' | tee -a ~/.ssh/authorized_keys",
-      "chmod 0600 ~/.ssh/authorized_keys"]
+      "chmod 0600 ~/.ssh/authorized_keys"
+      ]
     }
 {% endif %}
 
@@ -173,7 +174,9 @@ resource "libvirt_domain" "domain_{{ inventory_hostname }}" {
       inline = [
 {% for provisioner_command in terraform_custom_provisioners %}
         "{{ provisioner_command }}"{% if not loop.last %},{% endif %}
+
 {% endfor %}
+
       ]
     }
 {% endif %}
@@ -187,6 +190,7 @@ resource "libvirt_domain" "domain_{{ inventory_hostname }}" {
 {% endif %}
 
 {% endfor %}
+
       ]
     }
 {% endif %}
@@ -197,7 +201,9 @@ resource "libvirt_domain" "domain_{{ inventory_hostname }}" {
       inline = [
 {% for provisioner_command in terraform_destroy_provisioners %}
       "{{ provisioner_command }}"{% if not loop.last %},{% endif %}
+
 {% endfor %}
+
       ]
     }
 {% endif %}

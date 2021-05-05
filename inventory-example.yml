@@ -1,3 +1,5 @@
+---
+
 all:
   vars:
   hosts:
@@ -25,7 +27,7 @@ all:
       # node that is launching the ansible run.
       #
       # supported values: local, ssh, paramiko
-      ansible_connection: local # ssh
+      ansible_connection: local  # ssh
 
       #
       # ----
@@ -185,7 +187,7 @@ all:
               ## you can declare it here, to be host specific instead
               ## of global.
               #
-              #ssh_public_key_file: '~/.ssh/id_rsa.pub'
+              # ssh_public_key_file: '~/.ssh/id_rsa.pub'
               # ----
 
               # ----
@@ -251,42 +253,42 @@ all:
                   encryption: False
                   mount_point: none
           vars:
-              ## It is possible to specify per-GROUP disk source.
-              ## This is useful for mixed environments with
-              ## multiple distributions.
-              # disk_source: "~/VirtualMachines/centos8-terraform.qcow2"
+            ## It is possible to specify per-GROUP disk source.
+            ## This is useful for mixed environments with
+            ## multiple distributions.
+            # disk_source: "~/VirtualMachines/centos8-terraform.qcow2"
 
-              # ----
-              ## Default ssh public key location.
-              ## If you need a specific ssh key for a specific group of hosts
-              ## you can declare it here, to be GROUP-SPECIFIC instead
-              ## of global.
-              #
-              #ssh_public_key_file: '~/.ssh/id_rsa.pub'
-              # ---
+            # ----
+            ## Default ssh public key location.
+            ## If you need a specific ssh key for a specific group of hosts
+            ## you can declare it here, to be GROUP-SPECIFIC instead
+            ## of global.
+            #
+            # ssh_public_key_file: '~/.ssh/id_rsa.pub'
+            # ---
 
-              # ----
-              ## this parameter is optional. Specifying this parameter
-              ## will change the password during the initialization of the VM
-              ## GROUP-SPECIFIC.
-              ##
-              ## This will then be used in the provisioning section if no ssh-public-key
-              ## is found.
-              ##
-              ## It is advisable to use ansible-vault for this section.
-              #
-              # set_new_password: test_psk
-              # ----
+            # ----
+            ## this parameter is optional. Specifying this parameter
+            ## will change the password during the initialization of the VM
+            ## GROUP-SPECIFIC.
+            ##
+            ## This will then be used in the provisioning section if no ssh-public-key
+            ## is found.
+            ##
+            ## It is advisable to use ansible-vault for this section.
+            #
+            # set_new_password: test_psk
+            # ----
 
-              ## Here we can provide a GROUP-SPECIFIC default
-              ## for the resources (cpu, ram, network...)
-              ## so if all nodes in a group are the same size
-              ## it is possible to deduplicate a lot of settings.
-              # cpu: 1
-              # memory: 1024
-              # mount_points:
-              #   - {src: /tmp, dest: mnt }
-              #   - {src: /home, dest: home }
+            ## Here we can provide a GROUP-SPECIFIC default
+            ## for the resources (cpu, ram, network...)
+            ## so if all nodes in a group are the same size
+            ## it is possible to deduplicate a lot of settings.
+            # cpu: 1
+            # memory: 1024
+            # mount_points:
+            #   - {src: /tmp, dest: mnt }
+            #   - {src: /home, dest: home }
         slave_nodes:
           hosts:
             host-vm-2:
@@ -331,15 +333,12 @@ all:
               cpu: 2
               memory: 1024
           vars:
-            # ...
-            # hypervisor_2:
-            #   vars:
-            #   children:
-            #     master_nodes:
-            #     slave_nodes:
-    #
-    ## ----
-    #
+            #  ...
+            #  hypervisor_2:
+            #    vars:
+            #    children:
+            #      master_nodes:
+            #      slave_nodes:
     # hypervisor_2
     #   vars:
     #     ...

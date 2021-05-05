@@ -1,3 +1,5 @@
+---
+
 all:
   vars:
   hosts:
@@ -23,7 +25,7 @@ all:
           hosts:
             cloud-init-node-0:
               os_family: RedHat
-              #disk_source: "~/Desktop/cloudinit/CentOS-8-GenericCloud-8.1.1911-20200113.3.x86_64.qcow2"
+              # disk_source: "~/Desktop/cloudinit/CentOS-8-GenericCloud-8.1.1911-20200113.3.x86_64.qcow2"
               disk_source: "https://cloud.centos.org/centos/8/x86_64/images/CentOS-8-GenericCloud-8.1.1911-20200113.3.x86_64.qcow2"
               cpu: 1
               memory: 512

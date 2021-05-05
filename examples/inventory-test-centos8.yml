@@ -1,9 +1,11 @@
+---
+
 all:
   vars:
   hosts:
     terraform_node:
       ansible_host: localhost
-      ansible_connection: local # ssh
+      ansible_connection: local  # ssh
     hypervisor_1:
       ansible_host: 127.0.0.1
       ansible_user: root
@@ -59,4 +61,3 @@ all:
                   encryption: False
                   mount_point: none
           vars:
-
