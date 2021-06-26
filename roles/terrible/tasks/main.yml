@@ -70,7 +70,7 @@
 
 # -----------------------------------------------------------------------------
 # Perform custom terrible provisioners at the end of the post-deploy
-- name: Execute post-deploy provisioners
+- name: Execute post-deploy provisioners  # noqa 305
   shell: "{{ item }}"
   with_items: "{{ terrible_custom_provisioners }}"
   when: terrible_custom_provisioners is defined
