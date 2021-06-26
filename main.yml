@@ -12,7 +12,7 @@
   pre_tasks:
     - name: Check if we're running normally or limits are applied
       set_fact:
-        full_run: '{{play_hosts == groups.deploy}}'
+        full_run: '{{ play_hosts == groups.deploy }}'
 
   roles:
     - terrible
