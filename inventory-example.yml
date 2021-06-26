@@ -227,6 +227,20 @@ all:
               terraform_destroy_provisioners:
                 - "echo {{ ansible_host }} > /tmp/test_destroying_success.log"
 
+              # ----
+              ## It is possible to specify custom commands that should be executed
+              ## on a VM **AFTER** ansible provisioning has finished. This can be useful
+              ## for cases where specific-node post-deploy scripts or playbook are
+              ## presents like in an `ansible-pull`.
+              #
+              ## It supports using jinja2 syntax and variables.
+              #
+              terrible_custom_provisioners:
+                - "echo {{ ansible_host }} > /tmp/post_privisioning.log"
+                - >
+                  for i in /*; do
+                    echo $i >> /tmp/test_prov_multiline.log
+                  done
 
               # ----
               ## This section explain how you can add some additional disk to the VMs.
