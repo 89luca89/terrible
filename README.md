@@ -229,16 +229,16 @@ These variables are **required**:
 * **ansible_host:** `required`. Specify the ip address for the VM. If not specified, a random ip is assigned.
 * **ansible_jump_hosts:** `required` if **terraform_bastion_enabled** is `True`. Specify one or more jumphost/bastions for the ansible provisioning part.
 * **cloud_init**: `optional`. Specify if the VM uses a cloud-init image or not. `False` If not specified.
-* **disk_source:** `required`. Specify the (local) path to the virtual disk you want to use to deploy the VMs.
 * **data_disks:** `optional`. Specify additional disks to be added to the VM. Check disks section for internal required varibles: [HERE](#storage)
+* **disk_source:** `required`. Specify the (local) path to the virtual disk you want to use to deploy the VMs.
+* **hypervisor:** `required`. Specify on which hypervisor to deploy the Infrastructure.
 * **network_interfaces**: `required`. Specify VM's network interfaces, check network section for internal required variables: [HERE](#network)
 * **os_family:** `required`. Specify the OS family for the installation. Possible values are: `RedHat`, `Debian`, `Suse`, `Alpine`, `FreeBSD`.
 * **pool_name:** `required`. Specify the *storage pool* name where you want to deploy the VMs on the QEMU/KVM server.
 * **ssh_password:** `required`. Specify the password to access the deployed VMs.
 * **ssh_port:** `required`. Specify the port to access the deployed VMs.
-* **ssh_user:** `required`. Specify the user to access the deployed VMs.
 * **ssh_public_key_file:** `required`. Specify the ssh public key file to deploy on the VMs.
-* **hypervisor:** `required`. Specify on which hypervisor to deploy the Infrastructure.
+* **ssh_user:** `required`. Specify the user to access the deployed VMs.
 
 Ansible hosts required outside the `deploy` group:
 
@@ -252,6 +252,9 @@ These variable are optional, there are sensible defaults set up, most of them ca
 * **cpu:** `optional`. Specify the cpu number for the VM. If not specified, the default value is taken. Default: `1`
 * **memory:** `optional`. Specify the memory ram for the VM. If not specified, the default value is taken. Default: `1024`
 * **set_new_password:** `optional`. Specify a new password to access the Vm. If not specified, the default value (**ssh_password**) is taken.
+* **terraform_custom_provisioners**: `optional`. Specify custom shell commands to run on newly created instances BEFORE ansible starts setting them up. Default `""`
+* **terraform_destroy_provisioners**: `optional`. Specify custom shell commands to run BEFORE destroying instances (for example draining a node before destroying). Default `""`
+* **terrible_custom_provisioners**: `optional`.  Specify custom shell commands to run AFTER terrible run is completed (for example calling specific `ansible pull` for each node). Default `""`
 * **vm_autoboot**: `optional`. Specify if the VM should be automatically started at boot. Default: `False`
 
 ### Terraform Node, Bastions & Jumphosts
