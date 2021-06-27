@@ -7,10 +7,7 @@ all:
       ansible_host: localhost
       ansible_connection: local  # ssh
     hypervisor_1:
-      ansible_host: 127.0.0.1
-      ansible_user: root
-      ansible_port: 22
-      ansible_ssh_pass: password
+      ansible_host: localhost
   children:
     deploy:
       vars:
@@ -23,9 +20,9 @@ all:
       children:
         master_nodes:
           hosts:
-            host-vm-1:
+            host-vm-debian10:
               os_family: Debian
-              disk_source: "~/VirtualMachines/debian10-terraform.qcow2"
+              disk_source: "/mnt/iso/debian10-terraform.qcow2"
               cpu: 1
               memory: 2048
               hypervisor: hypervisor_1
