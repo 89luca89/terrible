@@ -1,5 +1,11 @@
 ---
 
+# Setup tf files folder
+- name: Setup - set terrible file path
+  set_fact:
+    terrible_path: "{{ base_deploy_path }}/.terrible/{{ ansible_inventory_sources[0].split('/')[-1] }}"
+  delegate_to: terraform_node
+
 # local ansible, terraform and kvm
 # just use qemu:///system
 - name: Setup - local ansible, local terraform, local kvm
@@ -77,12 +83,12 @@
 
 - name: Set HCL Deploy path
   set_fact:
-    hcl_deploy_path: "{{ lookup('env','HOME') }}/.terrible/{{ ansible_inventory_sources[0].split('/')[-1] }}/{{ provider_uri.split('/')[-2] }}"
+    hcl_deploy_path: "{{ terrible_path }}/{{ provider_uri.split('/')[-2] }}"
   delegate_to: terraform_node
 
 - name: Set HCL Deploy path - (localhost workaround)
   set_fact:
-    hcl_deploy_path: "{{ lookup('env','HOME') }}/.terrible/{{ ansible_inventory_sources[0].split('/')[-1] }}/localhost"
+    hcl_deploy_path: "{{ terrible_path }}/localhost"
   when: provider_uri.split('/')[-2] | length == 0
   delegate_to: terraform_node
 

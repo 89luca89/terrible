@@ -7,8 +7,8 @@
 - name: Create archive  # noqa 301
   shell: |
     cd {{ hcl_deploy_path | dirname }}
-    mkdir -p $(dirname {{ ansible_inventory_sources[0] }})
-    tar cfv {{ ansible_inventory_sources[0] }}-state.tar.gz ./
+    mkdir -p $(dirname {{ state_save_file }})
+    tar cfv {{ state_save_file }} ./
   changed_when: no
   run_once: yes
   delegate_to: terraform_node
@@ -17,8 +17,8 @@
 # local
 - name: Fetch status from terraform_node
   fetch:
-    src: "{{ ansible_inventory_sources[0] }}-state.tar.gz"
-    dest: "{{ ansible_inventory_sources[0] | dirname }}/"
+    src: "{{ state_save_file }}"
+    dest: "{{ state_save_file | dirname }}/"
     mode: 0644
     flat: yes
     validate_checksum: yes

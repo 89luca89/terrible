@@ -72,6 +72,11 @@ all:
         ##
         # Default ssh public key location.
         ssh_public_key_file: '~/.ssh/id_rsa.pub'
+        # ----
+        ##
+        # Default folders where to safe HCL files and the final state
+        base_deploy_path: "{{ lookup('env','HOME') }}"
+        state_save_file: "{{ ansible_inventory_sources[0] }}-state.tar.gz"
       children:
         master_nodes:
           hosts:

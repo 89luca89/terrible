@@ -8,5 +8,11 @@
 - hosts: deploy
   gather_facts: False
   max_fail_percentage: 0
+
+  pre_tasks:
+    - name: Check if we're running normally or limits are applied
+      set_fact:
+        full_run: '{{ play_hosts == groups.deploy }}'
+
   roles:
     - terrible

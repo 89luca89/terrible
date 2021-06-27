@@ -255,6 +255,9 @@ These variable are optional, there are sensible defaults set up, most of them ca
 * **terraform_destroy_provisioners**: `optional`. Specify custom shell commands to run BEFORE destroying instances (for example draining a node before destroying). Default `""`
 * **terrible_custom_provisioners**: `optional`.  Specify custom shell commands to run AFTER terrible run is completed (for example calling specific `ansible pull` for each node). Default `""`
 * **vm_autoboot**: `optional`. Specify if the VM should be automatically started at boot. Default: `False`
+* **base_deploy_path**: `optional`. Specify where the Terraform files and state will be deployed, the default value is `$HOME`
+* **state_save_file**: `optional`. Specify where the output terrible state is stored, the default value is `PATH_TO_THE_INVENTORY-state.tar.gz`
+
 
 ### Terraform Node, Bastions & Jumphosts
 
