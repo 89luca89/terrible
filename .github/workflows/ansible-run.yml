@@ -25,7 +25,7 @@ jobs:
           known_hosts: 'just-a-placeholder-so-we-dont-get-errors'
 
       - name: Adding Known Hosts
-        run: ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+        run: ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} 2>/dev/null >> ~/.ssh/known_hosts
 
       - name: Deploy folder
         run: |
@@ -57,7 +57,7 @@ jobs:
           known_hosts: 'just-a-placeholder-so-we-dont-get-errors'
 
       - name: Adding Known Hosts
-        run: ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+        run: ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} 2>/dev/null >> ~/.ssh/known_hosts
 
       # Run all inventory files in the repo
       - name: Run Terrible validation
@@ -109,7 +109,7 @@ jobs:
           known_hosts: 'just-a-placeholder-so-we-dont-get-errors'
 
       - name: Adding Known Hosts
-        run: ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+        run: ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} 2>/dev/null >> ~/.ssh/known_hosts
 
       - name: Cleanup Folder
         run: |
