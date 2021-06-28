@@ -1,28 +1,27 @@
 ---
-
 name: Ansible Run
 
-  #on: [push]
+# on: [push]
 
 on:
   pull_request:
     types: [opened, labeled, unlabeled, synchronize]
 
 jobs:
-
-  setup:
-    runs-on: ubuntu-18.04
+  run-all-distros:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
     outputs:
       inventories: ${{ steps.output-inventories.outputs.inventories }}
     steps:
-
       - uses: actions/checkout@v2
 
       - name: Install SSH Key
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.SSH_KEY }}
-          known_hosts: 'just-a-placeholder-so-we-dont-get-errors'
+          known_hosts: "just-a-placeholder-so-we-dont-get-errors"
 
       - name: Adding Known Hosts
         run: ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} 2>/dev/null >> ~/.ssh/known_hosts
@@ -32,89 +31,330 @@ jobs:
           ssh -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} "mkdir -p ~/${{ github.sha }}"
           rsync -aH -e "ssh -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }}" ./  ${{ secrets.SSH_HOST }}:~/${{ github.sha }}/
 
-      - name: output inventories
-        id: output-inventories
-        run: |
-          echo "::set-output name=inventories::$(find examples/inventory-test-* | sort -u | jq -R -s -c 'split("\n")[:-1]')"
-
-  run:
-
-    # Run the test inside a centos8 container
-    runs-on: ubuntu-18.04
-    needs: setup
-    strategy:
-      fail-fast: false
-      matrix:
-        inventory: ${{fromJSON(needs.setup.outputs.inventories)}}
-    steps:
-
-      - uses: actions/checkout@v2
-
-      - name: Install SSH Key
-        uses: shimataro/ssh-key-action@v2
-        with:
-          key: ${{ secrets.SSH_KEY }}
-          known_hosts: 'just-a-placeholder-so-we-dont-get-errors'
-
-      - name: Adding Known Hosts
-        run: ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} 2>/dev/null >> ~/.ssh/known_hosts
-
-      # Run all inventory files in the repo
-      - name: Run Terrible validation
+      - name: Alpine
         run: |
           ssh -t -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} <<EOF
-          set -e
-          export PY_COLORS=1
-          export ANSIBLE_FORCE_COLOR=1
-          rm -f ~/.ssh/known_hosts
-          cd ~/${{ github.sha }}
-          echo "VALIDATE $inventory ******************************************************************"
-          echo "ansible-playbook -i ${{ matrix.inventory }} -u root main.yml"
-          ansible-playbook -i ${{ matrix.inventory }} -u root main.yml
+
+            set -e
+
+            export PY_COLORS=1
+            export ANSIBLE_FORCE_COLOR=1
+
+            cd ~/${{ github.sha }}
+
+            echo "VALIDATE $DISTRO ******************************************************************"
+            echo "ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml"
+            ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml
+
+            echo "!!!SUCCESS!!!"
+
+            echo "Cleanup $DISTRO ******************************************************************"
+            echo "ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml --tags purge"
+            ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml --tags purge
+
           EOF
         env:
-          PY_COLORS: '1'
-          ANSIBLE_FORCE_COLOR: '1'
+          PY_COLORS: "1"
+          ANSIBLE_FORCE_COLOR: "1"
+          DISTRO: "alpine"
 
-      # Run all inventory files in the repo
-      - name: Run Terrible cleanup
-        if: ${{ always() }}
+      - name: Centos7
         run: |
           ssh -t -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} <<EOF
-          set -e
-          export PY_COLORS=1
-          export ANSIBLE_FORCE_COLOR=1
-          cd ~/${{ github.sha }}
-          echo "VALIDATE $inventory ******************************************************************"
-          echo "ansible-playbook -i ${{ matrix.inventory }} -u root main.yml --tags purge"
-          ansible-playbook -i ${{ matrix.inventory }} -u root main.yml --tags purge
+
+            set -e
+
+            export PY_COLORS=1
+            export ANSIBLE_FORCE_COLOR=1
+
+            cd ~/${{ github.sha }}
+
+            echo "VALIDATE $DISTRO ******************************************************************"
+            echo "ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml"
+            ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml
+
+            echo "!!!SUCCESS!!!"
+
+            echo "Cleanup $DISTRO ******************************************************************"
+            echo "ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml --tags purge"
+            ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml --tags purge
+
           EOF
         env:
-          PY_COLORS: '1'
-          ANSIBLE_FORCE_COLOR: '1'
+          PY_COLORS: "1"
+          ANSIBLE_FORCE_COLOR: "1"
+          DISTRO: "centos7"
 
-  cleanup:
+      - name: Centos8
+        run: |
+          ssh -t -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} <<EOF
 
-    # Run the test inside a centos8 container
-    runs-on: ubuntu-18.04
-    needs: run
-    if: always()
-    steps:
+            set -e
 
-      - uses: actions/checkout@v2
+            export PY_COLORS=1
+            export ANSIBLE_FORCE_COLOR=1
 
-      - name: Install SSH Key
-        uses: shimataro/ssh-key-action@v2
-        with:
-          key: ${{ secrets.SSH_KEY }}
-          known_hosts: 'just-a-placeholder-so-we-dont-get-errors'
+            cd ~/${{ github.sha }}
 
-      - name: Adding Known Hosts
-        run: ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} 2>/dev/null >> ~/.ssh/known_hosts
+            echo "VALIDATE $DISTRO ******************************************************************"
+            echo "ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml"
+            ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml
+
+            echo "!!!SUCCESS!!!"
+
+            echo "Cleanup $DISTRO ******************************************************************"
+            echo "ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml --tags purge"
+            ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml --tags purge
+
+          EOF
+        env:
+          PY_COLORS: "1"
+          ANSIBLE_FORCE_COLOR: "1"
+          DISTRO: "centos8"
+
+      - name: Debian9
+        run: |
+          ssh -t -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} <<EOF
+
+            set -e
+
+            export PY_COLORS=1
+            export ANSIBLE_FORCE_COLOR=1
+
+            cd ~/${{ github.sha }}
+
+            echo "VALIDATE $DISTRO ******************************************************************"
+            echo "ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml"
+            ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml
+
+            echo "!!!SUCCESS!!!"
+
+            echo "Cleanup $DISTRO ******************************************************************"
+            echo "ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml --tags purge"
+            ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml --tags purge
+
+          EOF
+        env:
+          PY_COLORS: "1"
+          ANSIBLE_FORCE_COLOR: "1"
+          DISTRO: "debian9"
+
+      - name: Debian10
+        run: |
+          ssh -t -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} <<EOF
+
+            set -e
+
+            export PY_COLORS=1
+            export ANSIBLE_FORCE_COLOR=1
+
+            cd ~/${{ github.sha }}
+
+            echo "VALIDATE $DISTRO ******************************************************************"
+            echo "ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml"
+            ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml
+
+            echo "!!!SUCCESS!!!"
+
+            echo "Cleanup $DISTRO ******************************************************************"
+            echo "ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml --tags purge"
+            ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml --tags purge
+
+          EOF
+        env:
+          PY_COLORS: "1"
+          ANSIBLE_FORCE_COLOR: "1"
+          DISTRO: "debian10"
+
+      - name: OpenSUSE
+        run: |
+          ssh -t -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} <<EOF
+
+            set -e
+
+            export PY_COLORS=1
+            export ANSIBLE_FORCE_COLOR=1
+
+            cd ~/${{ github.sha }}
+
+            echo "VALIDATE $DISTRO ******************************************************************"
+            echo "ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml"
+            ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml
+
+            echo "!!!SUCCESS!!!"
+
+            echo "Cleanup $DISTRO ******************************************************************"
+            echo "ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml --tags purge"
+            ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml --tags purge
+
+          EOF
+        env:
+          PY_COLORS: "1"
+          ANSIBLE_FORCE_COLOR: "1"
+          DISTRO: "opensuse15"
+
+      - name: Ubuntu18
+        run: |
+          ssh -t -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} <<EOF
+
+            set -e
+
+            export PY_COLORS=1
+            export ANSIBLE_FORCE_COLOR=1
+
+            cd ~/${{ github.sha }}
+
+            echo "VALIDATE $DISTRO ******************************************************************"
+            echo "ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml"
+            ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml
+
+            echo "!!!SUCCESS!!!"
+
+            echo "Cleanup $DISTRO ******************************************************************"
+            echo "ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml --tags purge"
+            ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml --tags purge
+
+          EOF
+        env:
+          PY_COLORS: "1"
+          ANSIBLE_FORCE_COLOR: "1"
+          DISTRO: "ubuntu18"
+
+      - name: Ubuntu18 (Netplan)
+        run: |
+          ssh -t -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} <<EOF
+
+            set -e
+
+            export PY_COLORS=1
+            export ANSIBLE_FORCE_COLOR=1
+
+            cd ~/${{ github.sha }}
+
+            echo "VALIDATE $DISTRO ******************************************************************"
+            echo "ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml"
+            ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml
+
+            echo "!!!SUCCESS!!!"
+
+            echo "Cleanup $DISTRO ******************************************************************"
+            echo "ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml --tags purge"
+            ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml --tags purge
+
+          EOF
+        env:
+          PY_COLORS: "1"
+          ANSIBLE_FORCE_COLOR: "1"
+          DISTRO: "ubuntu18-netplan"
+
+      - name: Ubuntu20
+        run: |
+          ssh -t -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} <<EOF
+
+            set -e
+
+            export PY_COLORS=1
+            export ANSIBLE_FORCE_COLOR=1
+
+            cd ~/${{ github.sha }}
+
+            echo "VALIDATE $DISTRO ******************************************************************"
+            echo "ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml"
+            ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml
+
+            echo "!!!SUCCESS!!!"
+
+            echo "Cleanup $DISTRO ******************************************************************"
+            echo "ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml --tags purge"
+            ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml --tags purge
+
+          EOF
+        env:
+          PY_COLORS: "1"
+          ANSIBLE_FORCE_COLOR: "1"
+          DISTRO: "ubuntu20"
+
+      - name: Ubuntu20 (Netplan)
+        run: |
+          ssh -t -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} <<EOF
+
+            set -e
+
+            export PY_COLORS=1
+            export ANSIBLE_FORCE_COLOR=1
+
+            cd ~/${{ github.sha }}
+
+            echo "VALIDATE $DISTRO ******************************************************************"
+            echo "ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml"
+            ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml
+
+            echo "!!!SUCCESS!!!"
+
+            echo "Cleanup $DISTRO ******************************************************************"
+            echo "ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml --tags purge"
+            ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml --tags purge
+
+          EOF
+        env:
+          PY_COLORS: "1"
+          ANSIBLE_FORCE_COLOR: "1"
+          DISTRO: "ubuntu20-netplan"
+
+      - name: FreeBSD-12
+        run: |
+          ssh -t -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} <<EOF
+
+            set -e
+
+            export PY_COLORS=1
+            export ANSIBLE_FORCE_COLOR=1
+
+            cd ~/${{ github.sha }}
+
+            echo "VALIDATE $DISTRO ******************************************************************"
+            echo "ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml"
+            ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml
+
+            echo "!!!SUCCESS!!!"
+
+            echo "Cleanup $DISTRO ******************************************************************"
+            echo "ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml --tags purge"
+            ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml --tags purge
+
+          EOF
+        env:
+          PY_COLORS: "1"
+          ANSIBLE_FORCE_COLOR: "1"
+          DISTRO: "freebsd12"
+
+      - name: FreeBSD-13
+        run: |
+          ssh -t -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} <<EOF
+
+            set -e
+
+            export PY_COLORS=1
+            export ANSIBLE_FORCE_COLOR=1
+
+            cd ~/${{ github.sha }}
+
+            echo "VALIDATE $DISTRO ******************************************************************"
+            echo "ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml"
+            ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml
+
+            echo "!!!SUCCESS!!!"
+
+            echo "Cleanup $DISTRO ******************************************************************"
+            echo "ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml --tags purge"
+            ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml --tags purge
+
+          EOF
+        env:
+          PY_COLORS: "1"
+          ANSIBLE_FORCE_COLOR: "1"
+          DISTRO: "freebsd13"
 
       - name: Cleanup Folder
         run: |
-          ssh -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} "rm -rf ~/${{ github.sha }}"
-        env:
-          PY_COLORS: '1'
-          ANSIBLE_FORCE_COLOR: '1'
+          ssh -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} "rm -rf ~/${{ github.sha }} ~/.ssh/known_hosts ~/.terrible"
