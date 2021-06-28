@@ -22,7 +22,7 @@ all:
           hosts:
             host-vm-opensuse15:
               os_family: Suse
-              disk_source: "/mnt/iso/opensuse15.2-terraform.qcow2"
+              disk_source: "/mnt/templates/opensuse15.2-x86_64.qcow2"
               cpu: 1
               memory: 2048
               hypervisor: hypervisor_1

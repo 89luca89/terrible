@@ -66,6 +66,7 @@ jobs:
           set -e
           export PY_COLORS=1
           export ANSIBLE_FORCE_COLOR=1
+          rm -f ~/.ssh/known_hosts
           cd ~/${{ github.sha }}
           echo "VALIDATE $inventory ******************************************************************"
           echo "ansible-playbook -i ${{ matrix.inventory }} -u root main.yml"

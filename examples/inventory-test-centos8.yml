@@ -22,16 +22,16 @@ all:
           hosts:
             host-vm-centos8:
               os_family: RedHat
-              disk_source: "/mnt/iso/centos8-terraform.qcow2"
+              disk_source: "/mnt/templates/centos8-x86_64.qcow2"
               cpu: 1
               memory: 2048
               hypervisor: hypervisor_1
-              ansible_host: 192.168.122.2
+              ansible_host: 192.168.122.21
               network_interfaces:
                 iface_1:
                   name: default
                   type: nat
-                  ip: 192.168.122.2
+                  ip: 192.168.122.21
                   gw: 192.168.122.1
                   dns:
                     - 192.168.122.1
