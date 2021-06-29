@@ -5,7 +5,7 @@ name: Ansible Run
 
 on:
   pull_request:
-    types: [opened, labeled, unlabeled, synchronize]
+    types: [opened, synchronize, ready_for_review, edited]
 
 jobs:
 
@@ -36,6 +36,19 @@ jobs:
         run: |
           echo "::set-output name=inventories::$(find examples/inventory-test-* | sort -u | jq -R -s -c 'split("\n")[:-1]')"
 
+      - name: Wait for other runs to stop
+        run: |
+          while true; do
+            VM=$(ssh -t -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} "ls -l /tmp/run-lock 2>/dev/null | wc -l")
+            if [ "$VM" -gt 0 ]; then
+              echo "Another job is running, waiting 60 seconds..."
+              sleep 60s
+            else
+              ssh -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} "touch /tmp/run-lock"
+              break
+            fi
+          done
+
   run:
 
     # Run the test inside a centos8 container
@@ -43,7 +56,7 @@ jobs:
     needs: setup
     strategy:
       fail-fast: false
-      max-parallel: 3
+      max-parallel: 4
       matrix:
         inventory: ${{fromJSON(needs.setup.outputs.inventories)}}
     steps:
@@ -109,7 +122,7 @@ jobs:
 
       - name: Cleanup Folder
         run: |
-          ssh -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} "rm -rf ~/${{ github.sha }} ~/.terrible ~/.ssh/known_hosts"
+          ssh -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} "rm -rf ~/${{ github.sha }} ~/.terrible ~/.ssh/known_hosts /tmp/run-lock"
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
