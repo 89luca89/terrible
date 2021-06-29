@@ -28,8 +28,8 @@ jobs:
 
       - name: Deploy folder
         run: |
-          ssh -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} "mkdir -p ~/${{ github.sha }}"
-          rsync -aH -e "ssh -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }}" ./  ${{ secrets.SSH_HOST }}:~/${{ github.sha }}/
+          ssh ${{ secrets.SSH_OPTIONS }} -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} "mkdir -p ~/${{ github.sha }}"
+          rsync -aH -e "ssh ${{ secrets.SSH_OPTIONS }} -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }}" ./  ${{ secrets.SSH_HOST }}:~/${{ github.sha }}/
 
       - name: output inventories
         id: output-inventories
@@ -44,7 +44,7 @@ jobs:
               echo "Another job is running, waiting 60 seconds..."
               sleep 60s
             else
-              ssh -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} "touch /tmp/run-lock"
+              ssh ${{ secrets.SSH_OPTIONS }} -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} "touch /tmp/run-lock"
               break
             fi
           done
@@ -122,7 +122,7 @@ jobs:
 
       - name: Cleanup Folder
         run: |
-          ssh -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} "rm -rf ~/${{ github.sha }} ~/.terrible ~/.ssh/known_hosts /tmp/run-lock"
+          ssh ${{ secrets.SSH_OPTIONS }} -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} "rm -rf ~/${{ github.sha }} ~/.terrible ~/.ssh/known_hosts /tmp/run-lock"
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
