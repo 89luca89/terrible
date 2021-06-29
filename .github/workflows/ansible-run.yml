@@ -1,17 +1,16 @@
 ---
-
 name: Ansible Run
 
-  #on: [push]
+# on: [push]
 
 on:
   pull_request:
-    types: [opened, labeled, unlabeled, synchronize]
+    types: [opened, synchronize, ready_for_review, edited]
 
 jobs:
 
   setup:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     outputs:
       inventories: ${{ steps.output-inventories.outputs.inventories }}
     steps:
@@ -25,30 +24,42 @@ jobs:
           known_hosts: 'just-a-placeholder-so-we-dont-get-errors'
 
       - name: Adding Known Hosts
-        run: ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} 2>/dev/null >> ~/.ssh/known_hosts
+        run: ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
       - name: Deploy folder
         run: |
-          ssh -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} "mkdir -p ~/${{ github.sha }}"
-          rsync -aH -e "ssh -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }}" ./  ${{ secrets.SSH_HOST }}:~/${{ github.sha }}/
+          ssh ${{ secrets.SSH_OPTIONS }} -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} "mkdir -p ~/${{ github.sha }}"
+          rsync -aH -e "ssh ${{ secrets.SSH_OPTIONS }} -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }}" ./  ${{ secrets.SSH_HOST }}:~/${{ github.sha }}/
 
       - name: output inventories
         id: output-inventories
         run: |
           echo "::set-output name=inventories::$(find examples/inventory-test-* | sort -u | jq -R -s -c 'split("\n")[:-1]')"
 
+      - name: Wait for other runs to stop
+        run: |
+          while true; do
+            VM=$(ssh -t -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} "ls -l /tmp/run-lock 2>/dev/null | wc -l")
+            if [ "$VM" -gt 0 ]; then
+              echo "Another job is running, waiting 60 seconds..."
+              sleep 60s
+            else
+              ssh ${{ secrets.SSH_OPTIONS }} -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} "touch /tmp/run-lock"
+              break
+            fi
+          done
+
   run:
 
     # Run the test inside a centos8 container
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     needs: setup
     strategy:
       fail-fast: false
+      max-parallel: 4
       matrix:
         inventory: ${{fromJSON(needs.setup.outputs.inventories)}}
     steps:
-
-      - uses: actions/checkout@v2
 
       - name: Install SSH Key
         uses: shimataro/ssh-key-action@v2
@@ -57,7 +68,7 @@ jobs:
           known_hosts: 'just-a-placeholder-so-we-dont-get-errors'
 
       - name: Adding Known Hosts
-        run: ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} 2>/dev/null >> ~/.ssh/known_hosts
+        run: ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
       # Run all inventory files in the repo
       - name: Run Terrible validation
@@ -95,12 +106,10 @@ jobs:
   cleanup:
 
     # Run the test inside a centos8 container
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     needs: run
     if: always()
     steps:
-
-      - uses: actions/checkout@v2
 
       - name: Install SSH Key
         uses: shimataro/ssh-key-action@v2
@@ -109,11 +118,11 @@ jobs:
           known_hosts: 'just-a-placeholder-so-we-dont-get-errors'
 
       - name: Adding Known Hosts
-        run: ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} 2>/dev/null >> ~/.ssh/known_hosts
+        run: ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
       - name: Cleanup Folder
         run: |
-          ssh -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} "rm -rf ~/${{ github.sha }}"
+          ssh ${{ secrets.SSH_OPTIONS }} -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} "rm -rf ~/${{ github.sha }} ~/.terrible ~/.ssh/known_hosts /tmp/run-lock"
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'

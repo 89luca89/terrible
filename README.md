@@ -537,11 +537,29 @@ Let's take a look at how the *inventory* file is going to be fill.
 
 Actually the playbook is supporting the most common 4 OS families for the Guests:
 
-* RedHat (including Centos, Fedora and derivates)
-* Debian (Including Ubuntu and derivates)
 * Alpine
-* Suse (Thumbleweed and Leap)
+* RedHat
+    * RedHat7
+    * RedHat8
+    * Centos7
+    * Centos8
+    * RockyLinux
+    * Almalinux
+    * Fedora and derivatives ( **untested** )
+* Debian
+    * Debian 9
+    * Debian 10
+    * Ubuntu 18
+    * Ubuntu 20
+    * Other derivatives ( **untested** )
+* Suse
+    * Leap
+    * Thumbleweed
+    * Other derivatives ( **untested** )
 * FreeBSD
+    * FreeBSD 12.x
+    * FreeBSD 13.x
+    * Other derivatives ( **untested** )
 
 This means you are able to generate the infrastructure using the OS listed above.
 
@@ -660,5 +678,3 @@ will be restored and saved on each run.
 ## License
 
 - GNU GPLv3, See LICENSE file.
-
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2F89luca89%2Fterrible.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2F89luca89%2Fterrible?ref=badge_large)

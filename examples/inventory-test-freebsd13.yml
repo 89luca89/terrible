@@ -20,19 +20,19 @@ all:
       children:
         master_nodes:
           hosts:
-            host-vm-freebsd:
+            host-vm-freebsd13:
               os_family: FreeBSD
-              disk_source: "/mnt/iso/freebsd-terraform.qcow2"
+              disk_source: "/mnt/templates/freebsd13-x86_64.qcow2"
               cpu: 1
               memory: 2048
               hypervisor: hypervisor_1
               ansible_python_interpreter: /usr/local/bin/python3.6
-              ansible_host: 192.168.122.5
+              ansible_host: 192.168.122.51
               network_interfaces:
                 iface_1:
                   name: default
                   type: nat
-                  ip: 192.168.122.5
+                  ip: 192.168.122.51
                   gw: 192.168.122.1
                   dns:
                     - 192.168.122.1

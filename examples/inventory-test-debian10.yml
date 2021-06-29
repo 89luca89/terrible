@@ -22,7 +22,7 @@ all:
           hosts:
             host-vm-debian10:
               os_family: Debian
-              disk_source: "/mnt/iso/debian10-terraform.qcow2"
+              disk_source: "/mnt/templates/debian10-x86_64.qcow2"
               cpu: 1
               memory: 2048
               hypervisor: hypervisor_1

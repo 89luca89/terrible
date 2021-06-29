@@ -20,18 +20,18 @@ all:
       children:
         master_nodes:
           hosts:
-            host-vm-alpine:
-              os_family: Alpine
-              disk_source: "/mnt/templates/alpine-x86_64.qcow2"
+            host-vm-rockylinux:
+              os_family: RedHat
+              disk_source: "/mnt/templates/rockylinux-x86_64.qcow2"
               cpu: 1
               memory: 2048
               hypervisor: hypervisor_1
-              ansible_host: 192.168.122.123
+              ansible_host: 192.168.122.23
               network_interfaces:
                 iface_1:
                   name: default
                   type: nat
-                  ip: 192.168.122.123
+                  ip: 192.168.122.23
                   gw: 192.168.122.1
                   dns:
                     - 192.168.122.1
