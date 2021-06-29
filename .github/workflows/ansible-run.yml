@@ -112,6 +112,60 @@ jobs:
           ANSIBLE_FORCE_COLOR: "1"
           DISTRO: "centos8"
 
+      - name: RockyLinux
+        run: |
+          ssh -t -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} <<EOF
+
+            set -e
+
+            export PY_COLORS=1
+            export ANSIBLE_FORCE_COLOR=1
+
+            cd ~/${{ github.sha }}
+
+            echo "VALIDATE $DISTRO ******************************************************************"
+            echo "ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml"
+            ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml
+
+            echo "!!!SUCCESS!!!"
+
+            echo "Cleanup $DISTRO ******************************************************************"
+            echo "ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml --tags purge"
+            ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml --tags purge
+
+          EOF
+        env:
+          PY_COLORS: "1"
+          ANSIBLE_FORCE_COLOR: "1"
+          DISTRO: "rockylinux"
+
+      - name: AlmaLinux
+        run: |
+          ssh -t -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} <<EOF
+
+            set -e
+
+            export PY_COLORS=1
+            export ANSIBLE_FORCE_COLOR=1
+
+            cd ~/${{ github.sha }}
+
+            echo "VALIDATE $DISTRO ******************************************************************"
+            echo "ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml"
+            ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml
+
+            echo "!!!SUCCESS!!!"
+
+            echo "Cleanup $DISTRO ******************************************************************"
+            echo "ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml --tags purge"
+            ansible-playbook -i examples/inventory-test-${DISTRO}.yml -u root main.yml --tags purge
+
+          EOF
+        env:
+          PY_COLORS: "1"
+          ANSIBLE_FORCE_COLOR: "1"
+          DISTRO: "almalinux"
+
       - name: Debian9
         run: |
           ssh -t -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} <<EOF
