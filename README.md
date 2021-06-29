@@ -660,5 +660,3 @@ will be restored and saved on each run.
 ## License
 
 - GNU GPLv3, See LICENSE file.
-
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2F89luca89%2Fterrible.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2F89luca89%2Fterrible?ref=badge_large)
