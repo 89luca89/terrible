@@ -122,7 +122,7 @@ jobs:
 
       - name: Cleanup Folder
         run: |
-          ssh ${{ secrets.SSH_OPTIONS }} -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} "rm -rf ~/${{ github.sha }} ~/.terrible ~/.ssh/known_hosts /tmp/run-lock"
+          ssh ${{ secrets.SSH_OPTIONS }} -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} "rm -rf ~/${{ github.sha }} ~/.terrible ~/.ssh/known_hosts /tmp/run-lock /tmp/*.tfplan"
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
