@@ -39,7 +39,7 @@ jobs:
       - name: Wait for other runs to stop
         run: |
           while true; do
-            VM=$(ssh -t -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} "ls -l /tmp/run-lock 2>/dev/null | wc -l")
+            VM=$(ssh ${{ secrets.SSH_OPTIONS }} -t -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} "ls -l /tmp/run-lock 2>/dev/null | wc -l")
             if [ "$VM" -gt 0 ]; then
               echo "Another job is running, waiting 60 seconds..."
               sleep 60s
@@ -73,7 +73,7 @@ jobs:
       # Run all inventory files in the repo
       - name: Run Terrible validation
         run: |
-          ssh -t -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} <<EOF
+          ssh ${{ secrets.SSH_OPTIONS }} -t -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} <<EOF
           set -e
           export PY_COLORS=1
           export ANSIBLE_FORCE_COLOR=1
@@ -90,7 +90,7 @@ jobs:
       - name: Run Terrible cleanup
         if: ${{ always() }}
         run: |
-          ssh -t -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} <<EOF
+          ssh ${{ secrets.SSH_OPTIONS }} -t -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} <<EOF
           set -e
           export PY_COLORS=1
           export ANSIBLE_FORCE_COLOR=1
