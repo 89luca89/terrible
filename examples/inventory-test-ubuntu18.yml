@@ -16,6 +16,8 @@ all:
         ssh_port: 22
         ssh_user: root
         ssh_public_key_file: "~/.ssh/id_rsa.pub"
+        base_deploy_path: "{{ lookup('env','HOME') }}"
+        state_save_file: "{{ ansible_inventory_sources[0] }}-state.tar.gz"
       children:
         master_nodes:
           hosts:
