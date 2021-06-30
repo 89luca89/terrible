@@ -1,11 +1,10 @@
 ---
-
 all:
   vars:
   hosts:
     terraform_node:
       ansible_host: localhost
-      ansible_connection: local  # ssh
+      ansible_connection: local # ssh
     hypervisor_1:
       ansible_host: localhost
   children:
@@ -16,16 +15,17 @@ all:
         ssh_password: root
         ssh_port: 22
         ssh_user: root
-        ssh_public_key_file: '~/.ssh/id_rsa.pub'
+        ssh_public_key_file: "~/.ssh/id_rsa.pub"
       children:
         master_nodes:
           hosts:
             host-vm-opensuse15:
-              os_family: Suse
+              cpu: 2
               disk_source: "/mnt/templates/opensuse15.2-x86_64.qcow2"
-              cpu: 1
-              memory: 2048
               hypervisor: hypervisor_1
+              memory: 2048
+              os_family: Suse
+              vm_autostart: False
               ansible_host: 192.168.122.4
               network_interfaces:
                 iface_1:
@@ -36,8 +36,24 @@ all:
                   dns:
                     - 192.168.122.1
                   default_route: True
+                iface_2:
+                  name: enp0s25
+                  type: macvtap
+                  ip: 192.168.100.4
+                  gw: 192.168.100.1
+                  dns:
+                    - 1.1.1.1
+                    - 8.8.8.8
               terraform_custom_provisioners:
-                - "echo {{ ansible_host }} > /tmp/test_provisioning_success.log"
+                - "echo {{ ansible_host }} > $HOME/test_provisioning_success.log"
+              terraform_destroy_provisioners:
+                - "echo {{ ansible_host }} > $HOME/test_destroying_success.log"
+              terrible_custom_provisioners:
+                - "ls -la $HOME/test_provisioning_success.log"
+                - >
+                  for i in /*; do
+                    echo $i >> $HOME/test_prov_multiline.log
+                  done
               data_disks:
                 disk-0:
                   size: 1
@@ -52,6 +68,18 @@ all:
                   encryption: False
                   mount_point: /mnt/config-1
                 disk-2:
+                  size: 1
+                  pool: default
+                  format: ext2
+                  encryption: False
+                  mount_point: /mnt/config-2
+                disk-3:
+                  size: 1
+                  pool: default
+                  format: xfs
+                  encryption: False
+                  mount_point: /mnt/config-3
+                disk-4:
                   size: 1
                   pool: default
                   format: swap
