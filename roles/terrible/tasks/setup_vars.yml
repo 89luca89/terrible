@@ -6,7 +6,6 @@
     terrible_path: "{{ base_deploy_path }}/.terrible/{{ ansible_inventory_sources[0].split('/')[-1] }}"
   delegate_to: terraform_node
 
-
 ### Infere node topology and set provider_uri, terraform_bastion and ansible_jump_hosts accordingly
 ##
 #

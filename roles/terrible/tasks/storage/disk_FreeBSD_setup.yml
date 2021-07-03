@@ -25,7 +25,6 @@
 # └─vdc1
 #
 
-
 # Check the additional disk that have been installed.
 - name: Retrieve additional disk list
   shell: |

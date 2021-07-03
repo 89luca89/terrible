@@ -38,7 +38,6 @@
 #      │ Apply latest security patches to the systems │
 #      └──────────────────────────────────────────────┘
 
-
 # Also set a default password for ansible to use.
 # if we have a set_new_password variable, set it to this value as
 # the new hosts will have the newly setup after the deploy.
@@ -66,7 +65,7 @@
     # Sometimes if we re-deploy a VM that does not change, terraform apply
     # would return 127.0.0.1 as the VM Ip erroneously, so ensure we do not
     # have that output
-    - name: Pivoting ansible_host: set to terraform temporary ip...
+    - name: Pivoting ansible_host - set to terraform temporary ip...
       set_fact:
         ansible_host: "{{ terraform_output[inventory_hostname]['value'][0] }}"
       when:
@@ -84,18 +83,20 @@
       include_tasks: "network/network_{{ os_family }}_setup.yml"
 
   always:
+
     # We ALWAYS want to return ansible_host to it's original value,
     # so this role can continue, but also other roles are not affected
-    - name: Pivoting ansible_host: restoring target ip...
+    - name: Pivoting ansible_host - restoring target ip...
       set_fact:
         ansible_host: "{{ original_ansible_host }}"
+
     # IF ansible_host is NOT the NAT ip, then we do not need all the
     # ssh jumphost list, we can target it directly
     #
     # Else we leave the jump hosts so the ansible runner can still
     # access the VMs in private networks using the hypervisor as
     # jump host
-    - name: Pivoting ansible_host: removing jump hosts...
+    - name: Pivoting ansible_host - removing jump hosts...
       set_fact:
         ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
       when:
@@ -103,6 +104,7 @@
         - "item.ip == ansible_host"
       with_items:
         - "{{ network_interfaces.values() | list }}"
+
   tags: provision
 
 - name: Wait for system to become reachable

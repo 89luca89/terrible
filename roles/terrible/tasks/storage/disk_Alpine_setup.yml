@@ -222,6 +222,7 @@
     - "{{ data_disks.keys() | list }}"
   when:
     - item.0['encryption']
+  no_log: yes
 
 - name: Retrieve swap disk list
   shell: |
