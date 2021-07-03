@@ -12,13 +12,16 @@
     - hostvars['terraform_node']['ansible_host']
     - hostvars['terraform_node']['ansible_connection']
     - ansible_host
+    - base_deploy_path
     - disk_source
+    - network_interfaces
     - pool_name
     - ssh_password
     - ssh_port
     - ssh_public_key_file
     - ssh_user
-    - network_interfaces
+    - state_save_file
+    - vm_autostart
 
 # Verifiy the correctness of the parameters.
 - name: Validate 'ssh_port' parameter
@@ -289,7 +292,7 @@
     - data_disks | length > 0
 
 # Check if we have a public ssh_key file
-- name: "Ensure public key ssh file exists"
+- name: Ensure public key ssh file exists
   stat:
     path: "{{ ssh_public_key_file }}"
   register: ssh_public_key_file_stat
@@ -299,7 +302,7 @@
 
 # If it exists, read it, it will be deployed in the authorized_keys of
 # the newly created hosts to perform the ansible tasks.
-- name: "Read public key for ssh"
+- name: Read public key for ssh
   set_fact:
     ssh_public_key: "{{ lookup('file', ssh_public_key_file) }}"
   when:

@@ -6,8 +6,39 @@
     terrible_path: "{{ base_deploy_path }}/.terrible/{{ ansible_inventory_sources[0].split('/')[-1] }}"
   delegate_to: terraform_node
 
+
+### Infere node topology and set provider_uri, terraform_bastion and ansible_jump_hosts accordingly
+##
+#
+#                                                            ┌────────────────────┐
+#                                                            │ Setup provider_uri │
+#                                                            └────────┬───────────┘
+#                                                                     │
+#                           ┌──────────────────────────┬──────────────┴────────────────────┬─────────────────────────┐
+#                           │                          │                                   │                         │
+#                           │                          │                                   │                         │
+#                  ┌────────┴────────┐        ┌────────┴────────┐              ┌───────────┴──────────┐        ┌─────┴────────────┐
+#                  │ Local Ansible   │        │ Local Ansible   │              │ Local Ansible        │        │  Local Ansible   │
+#                  │ Local Terraform │        │ Local Terraform │              │ Remote Terraform+KVM │        │  Remote Terraform│
+#                  │ Local KVM       │        │ Remote KVM      │              └───────────┬──────────┘        │  Remote KVM      │
+#                  └────────┬────────┘        └────────┬────────┘                          │                   └─────┬────────────┘
+#                           │                          │                                   │                         │
+#                           │                          │                                   │                         │
+#  ┌────────────────────────┴─┐        ┌───────────────┴───────────────────┐   ┌───────────┴─────────────┐      ┌────┴──────────────────────────────┐
+#  │ qemu:///system           │        │ qemu+ssh://user@hypervisor/system │   │ qemu:///system          │      │ qemu+ssh://user@hypervisor/system │
+#  │ ansible_jump_host: false │        │ ansible_jump_host: true           │   │ ansible_jump_host: true │      │ ansible_jump_host: true           │
+#  │ tf_jump_host: false      │        │ tf_jump_host: true                │   │ tf_jump_host: false     │      │ tf_jump_host: true                │
+#  └──────────────────────────┘        │ jump= hypervisor                  │   │ jump=hypervisor         │      │ jump_ansible=tf host + hypervisor │
+#                                      └───────────────────────────────────┘   └─────────────────────────┘      │ jump_tf=hypervisor                │
+#                                                                                                               └───────────────────────────────────┘
 # local ansible, terraform and kvm
 # just use qemu:///system
+#
+#  ┌─────────────┐
+#  │  ANSIBLE    │
+#  │  TERRAFORM  │
+#  │  KVM        │
+#  └─────────────┘
 - name: Setup - local ansible, local terraform, local kvm
   set_fact:
     provider_uri: "qemu:///system"
@@ -24,6 +55,11 @@
 #
 #  use qemu+ssh://USER@HOST/system, with USER and HOST being declared as ansible_host_*
 #  also setup ansible_jump_hosts to the ansible_host.
+#
+#  ┌─────────────┐
+#  │  ANSIBLE    │        ┌─────────────┐
+#  │  TERRAFORM  ├────────►   KVM       │
+#  └─────────────┘        └─────────────┘
 #####
 - name: Setup - local ansible, local terraform, remote kvm
   set_fact:
@@ -46,6 +82,11 @@
 #
 #  use qemu:///system as terraform will access KVM locally on the hypervisor being on the same machine.
 #  set ansible_jump_hosts to the ansible_host_* variables, if not defined, fallback to terraform_node variables from ansible.
+#
+#                         ┌─────────────┐
+#  ┌─────────────┐        |  TERRAFORM  |
+#  │  ANSIBLE    ├────────►   KVM       │
+#  └─────────────┘        └─────────────┘
 #####
 - name: Setup - local ansible, remote terraform + kvm
   set_fact:
@@ -66,6 +107,10 @@
 #  add 2 x ansible_jump_hosts
 #     first the terraform_node (the one where terraform is installed)
 #     second the hypervisor (where KVM is installed)
+#
+# ┌─────────────┐      ┌─────────────┐      ┌──────────┐
+# │  ANSIBLE    ├─────►│  TERRAFORM  ├─────►│  KVM     ├
+# └─────────────┘      └─────────────┘      └──────────┘
 #####
 - name: Setup - local ansible, remote terraform, remote_2 kvm
   set_fact:

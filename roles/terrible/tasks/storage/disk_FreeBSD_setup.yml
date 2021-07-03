@@ -2,7 +2,29 @@
 
 # additional disks setup for terraform role
 #
+#         [ Start ]
+#             |
+# [ Retrieve list of additional disks ]
+#             |
+# [ Create disk partitions ]
+#             |
+#     [ Format diks ]
+#             |
+# [ Create disk mountpoint ]
+#             |
+#      [ Mount disks ]
+#             |
+#          [ End ]
+
+# Filter the additional virtual disks and create 1 partition
+# for each disk.
+# Eg. For each disk you have:
+# vdb
+# └─vdb1
+# vdc
+# └─vdc1
 #
+
 
 # Check the additional disk that have been installed.
 - name: Retrieve additional disk list

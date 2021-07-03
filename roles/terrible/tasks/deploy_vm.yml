@@ -1,11 +1,41 @@
 ---
 # tasks file for terraform
 #
+#              ┌──────────────────────────┐
+#              │ Deploy terraform files   │
+#              │ templaes:                │
+#              │   - cloud_init (if true) │
+#              │   - variables.tf.j2      │
+#              │   - terraform-vm.tf.j2   │
+#              │   - hypervisors.tf.j2    │
+#              └────────────┬─────────────┘
+#                           │
+#          ┌────────────────┴─────────────────┐
+#          │ Find and remove unmanaged nodes  │
+#          │ if an existing state exists      │
+#          │ remove nodes present as tf files │
+#          │ but not defined in the inventory │
+#          └────────────────┬─────────────────┘
+#                           │
+#                           │
+#                           │
+#          ┌────────────────┴───────┬────────────────────────┐
+#          │                        │                        │
+#          │                        │                        │
 #
-#
+#   Terraform Apply       Terraform destroy         Terraform Destroy
+#                              instance
+#          │
+#          │
+#   ┌──────┴────────────────────┐
+#   │ Merge hypervisors outputs │
+#   │ to register the NAT IPs   │
+#   │ assigned temporary to the │
+#   │ VMs.                      │
+#   └───────────────────────────┘
 #
 
-- name: "Deploy terraform files - cloudinit"
+- name: Deploy terraform files - cloudinit
   template:
     src: cloud_init.yml.j2
     dest: "{{ hcl_deploy_path }}/cloud_init_{{ inventory_hostname }}.yml"
@@ -14,8 +44,8 @@
   tags: deploy, generate_hcl
   delegate_to: terraform_node
 
-# Deploy the terraform files for each host. Use jinja2 for templating.
-- name: "Deploy terraform files - variables"
+# Deploy the terraform variables file. Use jinja2 for templating.
+- name: Deploy terraform files - variables
   template:
     src: variables.tf.j2
     dest: "{{ hcl_deploy_path }}/variables.tf"
@@ -25,7 +55,7 @@
   delegate_to: terraform_node
 
 # Deploy the terraform files for each host. Use jinja2 for templating.
-- name: "Deploy terraform files - VM"
+- name: Deploy terraform files - VM
   template:
     src: terraform-vm.tf.j2
     dest: "{{ hcl_deploy_path }}/{{ inventory_hostname }}.tf"
@@ -34,7 +64,8 @@
   tags: deploy, generate_hcl
   delegate_to: terraform_node
 
-- name: "Find hypervisors file tree"
+# Deploy hypervisors terraform files. Use jinja2 for templating.
+- name: Find hypervisors file tree
   find:
     path: "{{ terrible_path }}"
     file_type: directory
@@ -44,7 +75,7 @@
   delegate_to: terraform_node
 
 # Create an array containing the list of nodes in the form of node-name.j2,...
-- name: "Remove unmanaged nodes - generate list of managed files"
+- name: Remove unmanaged nodes - generate list of managed files
   set_fact:
     managed_files: "{{ managed_files | default([]) + [hostvars[item]['hcl_deploy_path'] + '/' + item + '.tf'] }}"
   tags: deploy, generate_hcl
@@ -55,7 +86,7 @@
   delegate_to: terraform_node
 
 # Create an array containing the list of files representing the nodes in the folder.
-- name: "Remove unmanaged nodes - find all files"
+- name: Remove unmanaged nodes - find all files
   find:
     paths: "{{ hcl_deploy_path }}/"
     patterns: "*.tf"
@@ -67,7 +98,7 @@
 # Remove files that are orphan in the inventory.
 # This will make terraform remove the nodes that are undefined from
 # the inventory.
-- name: "Remove unmanaged nodes - delete unmanaged files"
+- name: Remove unmanaged nodes - delete unmanaged files
   file:
     path: "{{ item.path }}"
     state: absent
@@ -80,14 +111,14 @@
   tags: deploy, generate_hcl
   delegate_to: terraform_node
 
-- name: "Terraform renew target VMs"
+- name: Terraform renew target VMs
   set_fact:
     destroy: yes
   tags: never, destroy
   delegate_to: terraform_node
 
 # Perform terraform destroy on specific resources, if state is changed save it
-- name: "Terraform shut down target VMs (preserve resources)"  # noqa 503
+- name: Terraform shut down target VMs (preserve resources)  # noqa 503
   terraform:
     project_path: "{{ hcl_deploy_path }}/"
     force_init: yes
@@ -102,7 +133,7 @@
   delegate_to: terraform_node
 
 # Perform terraform destroy, if state is changed save it
-- name: "Terraform destroy VMs and all resources"
+- name: Terraform destroy VMs and all resources
   terraform:
     project_path: "{{ item.path }}"
     force_init: yes
@@ -114,7 +145,7 @@
     - "{{ hypervisors_tf.files | sort(attribute='path') }}"
   delegate_to: terraform_node
 
-- name: "Terraform init VMs and all resources"
+- name: Terraform init VMs and all resources
   terraform:
     project_path: "{{ item.path }}"
     force_init: yes
@@ -127,7 +158,7 @@
   delegate_to: terraform_node
 
 # Perform terraform apply, if state is changed  save it
-- name: "Terraform apply VMs"
+- name: Terraform apply VMs
   terraform:
     project_path: "{{ item.path }}"
     state: present
@@ -145,7 +176,7 @@
 #
 # We merge now the results of all hypervisors in a single dictionary to
 # lookup after.
-- name: "Merge hypervisors results"
+- name: Merge hypervisors results
   set_fact:
     terraform_output: "{{ terraform_output | default({}) | combine(item.outputs) }}"
   with_items:

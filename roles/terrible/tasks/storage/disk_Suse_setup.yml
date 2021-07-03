@@ -23,11 +23,13 @@
 
 # Filter the additional virtual disks and create 1 partition
 # for each disk.
-# Es. For each disk you have:
+# Eg. For each disk you have:
 # vdb
 # └─vdb1
 # vdc
 # └─vdc1
+#
+
 - name: Create disk partitions
   parted:
     device: "/dev/{{ item }}"

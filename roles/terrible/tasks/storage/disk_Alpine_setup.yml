@@ -23,7 +23,7 @@
 
 # Filter the additional virtual disks and create 1 partition
 # for each disk.
-# Es. For each disk you have:
+# Eg. For each disk you have:
 # vdb
 # └─vdb1
 # vdc
@@ -38,7 +38,7 @@
     - udev
     - udev-trigger
 
-- name: "Restart udev - apply configs"  # noqa 503
+- name: Restart udev - apply configs  # noqa 503
   command: "reboot"
   async: 1
   poll: 0

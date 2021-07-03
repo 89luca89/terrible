@@ -2,12 +2,48 @@
 
 # Post deploy for VMs deployed by terraform.
 #
+#
+#
+#                      ┌─────────┐
+#                      │  Start  │
+#                      └────┬────┘
+#                           │
+#                  ┌────────┴─────────┐
+#                  │ Setup Networking │
+#                  └────────┬─────────┘
+#                           │
+#    ┌──────────────────────┴──────────────────────────┐
+#    │ Switch target from ansible_host to the reported │
+#    │ ip returned from Terraform apply                │
+#    └──────────────────────┬──────────────────────────┘
+#                           │
+#         ┌─────────────────┴─────────────────────┐
+#         │ Execute distro-specific network setup │
+#         └─────────────────┬─────────────────────┘
+#                           │
+#     ┌─────────────────────┴──────────────────────────┐
+#     │ Switch back ansible_host to the desired ip set │
+#     │               in the inventory                 │
+#     └─────────────────────┬──────────────────────────┘
+#                           │
+#                 ┌─────────┴─────────┐
+#                 │ Set root password │
+#                 └─────────┬─────────┘
+#                           │
+#        ┌──────────────────┴──────────────────┐
+#        │ Execute distro-specific disks setup │
+#        └──────────────────┬──────────────────┘
+#                           │
+#      ┌────────────────────┴─────────────────────────┐
+#      │ Apply latest security patches to the systems │
+#      └──────────────────────────────────────────────┘
+
 
 # Also set a default password for ansible to use.
 # if we have a set_new_password variable, set it to this value as
 # the new hosts will have the newly setup after the deploy.
 # Else default to the ssh_password mantatory value.
-- name: "Set ansible_ssh_pass"
+- name: Set ansible_ssh_pass
   set_fact:
     ansible_ssh_pass: "{% if set_new_password is defined %}{{ set_new_password }}{% else %}{{ ssh_password }}{% endif %}"
 
@@ -15,7 +51,10 @@
 #
 # We Will do a switcheroo between the terraform returned IP (if present)
 # and setup the network as declared in the inventory for each VM
-- name: "Prepare for ansible_host pivoting, save target ip..."
+#
+# We do this so we can access the new VM to setup the network, then we can
+# switch back to the intended ip specified in the inventory to continue
+- name: Prepare for ansible_host pivoting, save target ip...
   set_fact:
     original_ansible_host: "{{ ansible_host }}"
   tags: provision
@@ -27,7 +66,7 @@
     # Sometimes if we re-deploy a VM that does not change, terraform apply
     # would return 127.0.0.1 as the VM Ip erroneously, so ensure we do not
     # have that output
-    - name: "Pivoting ansible_host: set to terraform temporary ip..."
+    - name: Pivoting ansible_host: set to terraform temporary ip...
       set_fact:
         ansible_host: "{{ terraform_output[inventory_hostname]['value'][0] }}"
       when:
@@ -47,12 +86,16 @@
   always:
     # We ALWAYS want to return ansible_host to it's original value,
     # so this role can continue, but also other roles are not affected
-    - name: "Pivoting ansible_host: restoring target ip..."
+    - name: Pivoting ansible_host: restoring target ip...
       set_fact:
         ansible_host: "{{ original_ansible_host }}"
     # IF ansible_host is NOT the NAT ip, then we do not need all the
     # ssh jumphost list, we can target it directly
-    - name: "Pivoting ansible_host: removing jump hosts..."
+    #
+    # Else we leave the jump hosts so the ansible runner can still
+    # access the VMs in private networks using the hypervisor as
+    # jump host
+    - name: Pivoting ansible_host: removing jump hosts...
       set_fact:
         ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
       when:
@@ -89,7 +132,8 @@
   changed_when: no
   tags: provision
 
-# Perform post-deploy tasks, such as users, networks and so on...
+# Configure disks adressing each os_family separately
+# as each system differs hugely
 - name: Attempt Setup Disks
   block:
     - include_tasks: "storage/disk_{{ os_family }}_setup.yml"
