@@ -71,17 +71,11 @@
   block:
 
     # Remove networks we do not manage in order to have control
-    - name: Remove unmanaged networks - Netplan
+    - name: Remove unmanaged networks
       shell: |
         find /etc/network/interfaces.d/ -type f -iname "ifcfg*" \
         {% for item in interfaces | list %} \
         ! -iname "*{{ item }}*" {% endfor %} -delete
-      changed_when: no
-
-    - name: Remove unmanaged networks
-      shell: |
-        find /etc/netplan/ -type f \
-        ! -iname "01-terrible-network.yaml"  -delete
       changed_when: no
 
     # Use traditional /etc/network/interfaces on Debian
@@ -119,6 +113,12 @@
 
 - name: Netplan installed
   block:
+
+    - name: Remove unmanaged networks - Netplan
+      shell: |
+        find /etc/netplan/ -type f \
+        ! -iname "01-terrible-network.yaml"  -delete
+      changed_when: no
 
     # Use netplan if present
     - name: Set connection setting files - Netplan
