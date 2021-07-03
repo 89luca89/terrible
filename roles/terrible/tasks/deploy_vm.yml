@@ -1,25 +1,25 @@
 ---
 # tasks file for terraform
 #
-#              ┌--------------------------┐
+#              ----------------------------
 #              | Deploy terraform files   |
 #              | templaes:                |
 #              |   - cloud_init (if true) |
 #              |   - variables.tf.j2      |
 #              |   - terraform-vm.tf.j2   |
 #              |   - hypervisors.tf.j2    |
-#              └------------┬-------------┘
+#              ----------------------------
 #                           |
-#          ┌----------------┴-----------------┐
+#          ------------------------------------
 #          | Find and remove unmanaged nodes  |
 #          | if an existing state exists      |
 #          | remove nodes present as tf files |
 #          | but not defined in the inventory |
-#          └----------------┬-----------------┘
+#          ------------------------------------
 #                           |
 #                           |
 #                           |
-#          ┌----------------┴-------┬------------------------┐
+#          ---------------------------------------------------
 #          |                        |                        |
 #          |                        |                        |
 #
@@ -27,12 +27,12 @@
 #                              instance
 #          |
 #          |
-#   ┌------┴--------------------┐
+#   -----------------------------
 #   | Merge hypervisors outputs |
 #   | to register the NAT IPs   |
 #   | assigned temporary to the |
 #   | VMs.                      |
-#   └---------------------------┘
+#   -----------------------------
 #
 
 - name: Deploy terraform files - cloudinit

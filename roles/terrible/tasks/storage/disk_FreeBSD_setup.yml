@@ -20,9 +20,9 @@
 # for each disk.
 # Eg. For each disk you have:
 # vdb
-# └-vdb1
+# --vdb1
 # vdc
-# └-vdc1
+# --vdc1
 #
 
 # Check the additional disk that have been installed.
@@ -40,9 +40,9 @@
 # for each disk.
 # Es. For each disk you have:
 # vdb
-# └-vdb1
+# --vdb1
 # vdc
-# └-vdc1
+# --vdc1
 - name: Create disk partitions
   shell: |
       /sbin/gpart create -s GPT {{ item.1 }} && \
