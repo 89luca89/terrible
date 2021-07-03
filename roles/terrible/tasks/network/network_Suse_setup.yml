@@ -2,40 +2,40 @@
 
 # additional network setup for terraform role
 #
-#                  ┌─────┐
-#                  │start│
-#                  └──┬──┘
-#          ┌──────────┴───────────┐
-#          │ Set machine hostname │
-#          └──────────┬───────────┘
-#           ┌─────────┴──────────┐
-#           │ Retrieve list of   │
-#           │ network interfaces │
-#           │ from               │
-#           │ /sys/class/net     │
-#           └─────────┬──────────┘
-#     ┌───────────────┴─────────────────┐
-#     │ Remove unmanaged networks       │
-#     │ from /etc/sysconfig/networks    │
-#     └───────────────┬─────────────────┘
-#  ┌──────────────────┴────────────────────┐
-#  │ Populate /etc/sysconfig/networks with │
-#  │  configured networks                  │
-#  └──────────────────┬────────────────────┘
-#  ┌──────────────────┴──────────────────────┐
-#  │  Populate /etc/sysconfig/network/routes │
-#  │  with configured routes                 │
-#  └──────────────────┬──────────────────────┘
-#  ┌──────────────────┴───────────────────────┐
-#  │  Populate /etc/sysconfig/network/config  │
-#  │  with configured DNS                     │
-#  └──────────────────┬───────────────────────┘
-#          ┌──────────┴────────────┐
-#          │ Reload network config │
-#          └──────────┬────────────┘
-#                  ┌──┴──┐
-#                  │ end │
-#                  └─────┘
+#                  ┌-----┐
+#                  |start|
+#                  └--┬--┘
+#          ┌----------┴-----------┐
+#          | Set machine hostname |
+#          └----------┬-----------┘
+#           ┌---------┴----------┐
+#           | Retrieve list of   |
+#           | network interfaces |
+#           | from               |
+#           | /sys/class/net     |
+#           └---------┬----------┘
+#     ┌---------------┴-----------------┐
+#     | Remove unmanaged networks       |
+#     | from /etc/sysconfig/networks    |
+#     └---------------┬-----------------┘
+#  ┌------------------┴--------------------┐
+#  | Populate /etc/sysconfig/networks with |
+#  |  configured networks                  |
+#  └------------------┬--------------------┘
+#  ┌------------------┴----------------------┐
+#  |  Populate /etc/sysconfig/network/routes |
+#  |  with configured routes                 |
+#  └------------------┬----------------------┘
+#  ┌------------------┴-----------------------┐
+#  |  Populate /etc/sysconfig/network/config  |
+#  |  with configured DNS                     |
+#  └------------------┬-----------------------┘
+#          ┌----------┴------------┐
+#          | Reload network config |
+#          └----------┬------------┘
+#                  ┌--┴--┐
+#                  | end |
+#                  └-----┘
 
 - name: Setup machine hostname
   hostname:

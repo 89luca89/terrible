@@ -5,7 +5,7 @@
 #         [ Start ]
 #             |
 # [ Create disk partitions ]
-#     ┌───────┴─────────┐
+#     ┌-------┴---------┐
 #     |                 |
 #     |           [ Copy file to remote host ]
 #     |                 |
@@ -13,21 +13,21 @@
 #     |                 |
 # [ Format diks]  [ Format encrypted disk ]
 #     |                 |
-#     └───────┬─────────┘
+#     └-------┬---------┘
 # [ Create disk mountpoint ]
-#     ┌───────┴─────────┐
+#     ┌-------┴---------┐
 #     |                 |
 # [ Mount disks ] [ Mount encrypted disks ]
-#     └───────┬─────────┘
+#     └-------┬---------┘
 #          [ End ]
 
 # Filter the additional virtual disks and create 1 partition
 # for each disk.
 # Eg. For each disk you have:
 # vdb
-# └─vdb1
+# └-vdb1
 # vdc
-# └─vdc1
+# └-vdc1
 #
 
 - name: Add udev udev-trigger

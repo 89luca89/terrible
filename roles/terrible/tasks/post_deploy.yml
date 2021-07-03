@@ -4,39 +4,39 @@
 #
 #
 #
-#                      ┌─────────┐
-#                      │  Start  │
-#                      └────┬────┘
-#                           │
-#                  ┌────────┴─────────┐
-#                  │ Setup Networking │
-#                  └────────┬─────────┘
-#                           │
-#    ┌──────────────────────┴──────────────────────────┐
-#    │ Switch target from ansible_host to the reported │
-#    │ ip returned from Terraform apply                │
-#    └──────────────────────┬──────────────────────────┘
-#                           │
-#         ┌─────────────────┴─────────────────────┐
-#         │ Execute distro-specific network setup │
-#         └─────────────────┬─────────────────────┘
-#                           │
-#     ┌─────────────────────┴──────────────────────────┐
-#     │ Switch back ansible_host to the desired ip set │
-#     │               in the inventory                 │
-#     └─────────────────────┬──────────────────────────┘
-#                           │
-#                 ┌─────────┴─────────┐
-#                 │ Set root password │
-#                 └─────────┬─────────┘
-#                           │
-#        ┌──────────────────┴──────────────────┐
-#        │ Execute distro-specific disks setup │
-#        └──────────────────┬──────────────────┘
-#                           │
-#      ┌────────────────────┴─────────────────────────┐
-#      │ Apply latest security patches to the systems │
-#      └──────────────────────────────────────────────┘
+#                      ┌---------┐
+#                      |  Start  |
+#                      └----┬----┘
+#                           |
+#                  ┌--------┴---------┐
+#                  | Setup Networking |
+#                  └--------┬---------┘
+#                           |
+#    ┌----------------------┴--------------------------┐
+#    | Switch target from ansible_host to the reported |
+#    | ip returned from Terraform apply                |
+#    └----------------------┬--------------------------┘
+#                           |
+#         ┌-----------------┴---------------------┐
+#         | Execute distro-specific network setup |
+#         └-----------------┬---------------------┘
+#                           |
+#     ┌---------------------┴--------------------------┐
+#     | Switch back ansible_host to the desired ip set |
+#     |               in the inventory                 |
+#     └---------------------┬--------------------------┘
+#                           |
+#                 ┌---------┴---------┐
+#                 | Set root password |
+#                 └---------┬---------┘
+#                           |
+#        ┌------------------┴------------------┐
+#        | Execute distro-specific disks setup |
+#        └------------------┬------------------┘
+#                           |
+#      ┌--------------------┴-------------------------┐
+#      | Apply latest security patches to the systems |
+#      └----------------------------------------------┘
 
 # Also set a default password for ansible to use.
 # if we have a set_new_password variable, set it to this value as
