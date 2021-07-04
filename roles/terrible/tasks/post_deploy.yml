@@ -148,6 +148,7 @@
   become: yes
   become_user: root
   changed_when: no
+  when: security_updates
   tags: provision
 
 ...

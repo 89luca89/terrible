@@ -25,4 +25,6 @@ os_family_support:
   - FreeBSD
   - Alpine
 
+security_updates: False
+
 ...
