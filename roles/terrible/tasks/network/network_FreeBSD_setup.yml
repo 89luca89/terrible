@@ -1,6 +1,47 @@
 ---
 
-- name: "Setup machine hostname"
+# additional network setup for terraform role
+#
+#              -------
+#              |start|
+#              -------
+#                 |
+#      ------------------------
+#      | Set machine hostname |
+#      ------------------------
+#                 |
+#       ----------------------
+#       | Retrieve list of   |
+#       | network interfaces |
+#       | from               |
+#       | ifconfig           |
+#       ----------------------
+#                 |
+#  -----------------------------------
+#  | Remove unmanaged networks from  |
+#  |      /etc/rc.conf               |
+#  -----------------------------------
+#                 |
+#    --------------------------------
+#    | Populate /etc/rc.con with    |
+#    |  configured networks, routes |
+#    --------------------------------
+#                 |
+#    ------------------------------
+#    |  Populate /etc/resolv.conf |
+#    |  with configured DNS       |
+#    ------------------------------
+#                 |
+#      -------------------------
+#      | Reload network config |
+#      -------------------------
+#                 |
+#              -------
+#              | end |
+#              -------
+#
+
+- name: Setup machine hostname
   hostname:
     name: "{{ inventory_hostname }}"
 
@@ -12,7 +53,7 @@
   changed_when: no
   register: interfaces
 
-- name: "Set connection setting files"
+- name: Set connection setting files
   blockinfile:
     path: "/etc/rc.conf"
     mode: 0644
@@ -28,7 +69,7 @@
     - "{{ interfaces.stdout.split(' ') | sort | list }}"
     - "{{ network_interfaces.values() | list }}"
 
-- name: "Set connection setting files"
+- name: Set connection setting files - DNS
   blockinfile:
     path: "/etc/resolv.conf"
     mode: 0644
@@ -46,7 +87,7 @@
     - "{{ interfaces.stdout.split(' ') | sort | list }}"
     - "{{ network_interfaces.values() | list }}"
 
-- name: "Set connection setting files"
+- name: Set connection setting files - resolvconf
   blockinfile:
     path: "/etc/resolvconf.conf"
     mode: 0644
@@ -56,7 +97,7 @@
     create: yes
   register: resolvconf_file
 
-- name: "Restart networking - apply configs"  # noqa 503
+- name: Restart networking - apply configs  # noqa 503
   command: "/etc/netstart"
   async: 1
   poll: 0

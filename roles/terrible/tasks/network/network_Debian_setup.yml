@@ -1,6 +1,44 @@
 ---
 
-- name: "Setup machine hostname"
+# additional network setup for terraform role
+#
+#                                   -------
+#                                   |start|
+#                                   -------
+#                                      |
+#                           ------------------------
+#                           | Set machine hostname |
+#                           ------------------------
+#                                      |
+#                            ----------------------
+#                            | Retrieve list of   |
+#                            | network interfaces |
+#                            | from               |
+#                            | /sys/class/net     |
+#                            ----------------------
+#                                      |
+#                               -----------------
+#                 -----no-------┤ if netplan ?  ├----yes--------
+#                 |             -----------------              |
+# -----------------------------------          ------------------------------
+# | Remove unmanaged networks       |          | Remove unmanaged networks  |
+# | from /etc/networks/interfaces.d |          | from /etc/netplan/*        |
+# -----------------------------------          ------------------------------
+#                 |                                            |
+# ------------------------------------         -----------------------------------------------------
+# | Populate /etc/network/interfaces |         | Create file /etc/netplan/01-terrible-network.yaml |
+# | with the configured networks     |         | with configured network, routes, dns              |
+# | routes, dns                      |         -----------------------------------------------------
+# ------------------------------------                         |
+#                 |           -------------------------        |
+#                 ------------| Reload network config |---------
+#                             -------------------------
+#                                        |
+#                                     -------
+#                                     | end |
+#                                     -------
+
+- name: Setup machine hostname
   hostname:
     name: "{{ inventory_hostname }}"
 
@@ -22,99 +60,107 @@
   set_fact:
     interfaces: []
 
+# Important here, we exclude virtual networks so it does not interfere with
+# eventual installed software like Docker, Kubernetes or others.
 - name: Populate interface variables with networks
   set_fact:
     interfaces: "{{ interfaces + [ item.stat.lnk_source.split('/')[-1] ] }}"
   when: "'virtual' not in item.stat.lnk_source"
   with_items: "{{ interfaces_paths.results }}"
 
-- name: "Check if netplan is installed"
+- name: Check if netplan is installed
   package_facts:
     manager: "auto"
 
-# Remove networks we do not manage in order to have control
-- name: Remove unmanaged networks - Netplan
-  shell: |
-    find /etc/network/interfaces.d/ -type f -iname "ifcfg*" \
-    {% for item in interfaces | list %} \
-    ! -iname "*{{ item }}*" {% endfor %} -delete
-  changed_when: no
-  when: "'netplan.io' not in ansible_facts.packages"
+- name: No netplan installed
+  block:
 
-- name: Remove unmanaged networks
-  shell: |
-    find /etc/netplan/ -type f \
-    ! -iname "01-terrible-network.yaml"  -delete
-  changed_when: no
-  when: "'netplan.io' in ansible_facts.packages"
+    # Remove networks we do not manage in order to have control
+    - name: Remove unmanaged networks
+      shell: |
+        find /etc/network/interfaces.d/ -type f -iname "ifcfg*" \
+        {% for item in interfaces | list %} \
+        ! -iname "*{{ item }}*" {% endfor %} -delete
+      changed_when: no
 
-# Use traditional /etc/network/interfaces on Debian
-- name: "Set connection setting files - Debian Family"
-  blockinfile:
-    path: "/etc/network/interfaces.d/ifcfg-managed-{{ network_name }}-{{ item.0 }}"
-    mode: 0644
-    block: |
-      auto {{ item.0 }}:0
-      iface {{ item.0 }}:0 inet static
-          address {{ item.1.ip }}/24
-          {% if item.1.get('default_route', False) %}
-          gateway {{ item.1.gw }}
-          {% endif %}
-          dns-nameservers {% for dns in item.1.dns %}{{ dns }}{% endfor %}
+    # Use traditional /etc/network/interfaces on Debian
+    - name: Set connection setting files - Ifupdown
+      blockinfile:
+        path: "/etc/network/interfaces.d/ifcfg-managed-{{ network_name }}-{{ item.0 }}"
+        mode: 0644
+        block: |
+          auto {{ item.0 }}:0
+          iface {{ item.0 }}:0 inet static
+              address {{ item.1.ip }}/24
+              {% if item.1.get('default_route', False) %}
+              gateway {{ item.1.gw }}
+              {% endif %}
+              dns-nameservers {% for dns in item.1.dns %}{{ dns }}{% endfor %}
 
-    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.0 }}"
-    create: yes
-  register: interfaces_file
-  with_together:
-    - "{{ interfaces }}"
-    - "{{ network_interfaces.values() | list }}"
-  when: "'netplan.io' not in ansible_facts.packages"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.0 }}"
+        create: yes
+      register: interfaces_file
+      with_together:
+        - "{{ interfaces }}"
+        - "{{ network_interfaces.values() | list }}"
 
-- name: "Restart networking - apply configs"
-  systemd:
-    name: networking
-    state: restarted
-  async: 1
-  poll: 0
+    - name: Restart networking - apply configs
+      systemd:
+        name: networking
+        state: restarted
+      async: 1
+      poll: 0
+      when:
+        - interfaces_file.changed
+
   when:
     - "'netplan.io' not in ansible_facts.packages"
-    - interfaces_file.changed
 
-# Use netplan if present
-- name: "Set connection setting files - Netplan"
-  blockinfile:
-    path: /etc/netplan/01-terrible-network.yaml
-    mode: 0644
-    block: |
-      #
-      network:
-        version: 2
-        ethernets:
-          {{ item.0 }}:
-            dhcp4: yes
-            dhcp4: '{% if item.1.type == 'nat' %}yes{% else %}no{% endif %}'
-            addresses: [{{ item.1.ip }}/24]
-      {% if item.1.get('default_route', False) %}
-            gateway4: {{ item.1.gw }}
-      {% endif %}
-            nameservers:
-              addresses: [{% for dns in item.1.dns %}{{ dns }}{% if not loop.last %},{% endif %}{% endfor %}]
-    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.0 }}"
-    create: yes
-  register: netplan_file
-  with_together:
-    - "{{ interfaces }}"
-    - "{{ network_interfaces.values() | list }}"
+- name: Netplan installed
+  block:
+
+    - name: Remove unmanaged networks - Netplan
+      shell: |
+        find /etc/netplan/ -type f \
+        ! -iname "01-terrible-network.yaml"  -delete
+      changed_when: no
+
+    # Use netplan if present
+    - name: Set connection setting files - Netplan
+      blockinfile:
+        path: /etc/netplan/01-terrible-network.yaml
+        mode: 0644
+        block: |
+          #
+          network:
+            version: 2
+            ethernets:
+              {{ item.0 }}:
+                dhcp4: yes
+                dhcp4: '{% if item.1.type == 'nat' %}yes{% else %}no{% endif %}'
+                addresses: [{{ item.1.ip }}/24]
+          {% if item.1.get('default_route', False) %}
+                gateway4: {{ item.1.gw }}
+          {% endif %}
+                nameservers:
+                  addresses: [{% for dns in item.1.dns %}{{ dns }}{% if not loop.last %},{% endif %}{% endfor %}]
+        marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.0 }}"
+        create: yes
+      register: netplan_file
+      with_together:
+        - "{{ interfaces }}"
+        - "{{ network_interfaces.values() | list }}"
+      when:
+        - item.1.ip is defined
+
+    - name: Restart networking - apply configs
+      command: "netplan apply -f"
+      async: 1
+      poll: 0
+      when:
+        - netplan_file.changed
+
   when:
     - "'netplan.io' in ansible_facts.packages"
-    - item.1.ip is defined
-
-- name: "Restart networking - apply configs"
-  command: "netplan apply -f"
-  async: 1
-  poll: 0
-  when:
-    - "'netplan.io' in ansible_facts.packages"
-    - netplan_file.changed
 
 ...

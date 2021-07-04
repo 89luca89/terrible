@@ -1,6 +1,36 @@
 ---
 
-- name: "Setup machine hostname"
+# additional network setup for terraform role
+#
+#               -------
+#               |start|
+#               -------
+#                  |
+#       ------------------------
+#       | Set machine hostname |
+#       ------------------------
+#                  |
+#        ----------------------
+#        | Retrieve list of   |
+#        | network interfaces |
+#        | from               |
+#        | /sys/class/net     |
+#        ----------------------
+#                  |
+#  ------------------------------------
+#  | Populate /etc/network/interfaces |
+#  | with the configured networks     |
+#  ------------------------------------
+#                  |
+#       -------------------------
+#       | Reload network config |
+#       -------------------------
+#                  |
+#               -------
+#               | end |
+#               -------
+
+- name: Setup machine hostname
   hostname:
     name: "{{ inventory_hostname }}"
 
@@ -22,6 +52,8 @@
   set_fact:
     interfaces: []
 
+# Important here, we exclude virtual networks so it does not interfere with
+# eventual installed software like Docker, Kubernetes or others.
 - name: Populate interface variables with networks
   set_fact:
     interfaces: "{{ interfaces + [ item.stat.lnk_source.split('/')[-1] ] }}"
@@ -29,7 +61,7 @@
   with_items: "{{ interfaces_paths.results }}"
 
 # Use traditional /etc/network/interfaces on Alpine
-- name: "Set connection setting files - Alpine"
+- name: Set connection setting files
   blockinfile:
     path: "/etc/network/interfaces"
     mode: 0644
@@ -49,7 +81,7 @@
     - "{{ interfaces }}"
     - "{{ network_interfaces.values() | list }}"
 
-- name: "Restart networking - apply configs"  # noqa 503
+- name: Restart networking - apply configs  # noqa 503
   command: "reboot"
   async: 1
   poll: 0

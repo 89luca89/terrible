@@ -1,5 +1,46 @@
 ---
 
+# additional disks setup for terraform role
+#
+#         [ Start ]
+#             |
+#     [ assert variables ]
+#             |
+#     -------------------
+#     |  setup infere   |
+#     |   variables     |
+#     -------------------
+#             |
+#     -------------------
+#     |  restore state  |
+#     -------------------
+#             |
+#     -------------------
+#     |  setup infere   |
+#     |   variables     |
+#     -------------------
+#             |
+#     -----------------------
+#     |  generate TF files  |
+#     |   deploy VMs        |
+#     -----------------------
+#             |
+#     -------------------
+#     | save new state  |
+#     -------------------
+#             |
+#     ------------------------------
+#     | execute post-deploy tasks: |
+#     |    - Setup network         |
+#     |    - Setup storage         |
+#     |    - Update systems        |
+#     ------------------------------
+#             |
+#     ---------------------------------
+#     | Execute terrible-provisioners |
+#     ---------------------------------
+#             |
+#          [ End ]
 # main task for terraform role
 #
 #

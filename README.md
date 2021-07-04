@@ -492,7 +492,6 @@ Let's take a look at how the *inventory* file is going to be fill.
 ```yaml
         all:
             vars:
-                provider_uri: "qemu:///system"
                 pool_name: default
                 disk_source: "~/VirtualMachines/centos8-terraform.qcow2"
             hosts:
