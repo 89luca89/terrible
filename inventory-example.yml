@@ -217,16 +217,6 @@ all:
               terraform_custom_provisioners:
                 - "echo {{ ansible_host }} > /tmp/test_provisioning_success.log"
 
-              ## It is possible to specify custom commands that should be executed
-              ## on a VM **BEFORE DESTRYOING IT**. This can be useful
-              ## for cases where the node is part of a cluster and need to prune/drain
-              ## it before destroiyng
-              #
-              ## It supports using jinja2 syntax and variables.
-              #
-              terraform_destroy_provisioners:
-                - "echo {{ ansible_host }} > /tmp/test_destroying_success.log"
-
               # ----
               ## It is possible to specify custom commands that should be executed
               ## on a VM **AFTER** ansible provisioning has finished. This can be useful

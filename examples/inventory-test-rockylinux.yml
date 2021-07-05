@@ -48,8 +48,6 @@ all:
                     - 8.8.8.8
               terraform_custom_provisioners:
                 - "echo {{ ansible_host }} > $HOME/test_provisioning_success.log"
-              terraform_destroy_provisioners:
-                - "echo {{ ansible_host }} > $HOME/test_destroying_success.log"
               terrible_custom_provisioners:
                 - "ls -la $HOME/test_provisioning_success.log"
                 - >

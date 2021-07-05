@@ -252,7 +252,6 @@ These variable are optional, there are sensible defaults set up, most of them ca
 * **memory:** `optional`. Specify the memory ram for the VM. If not specified, the default value is taken. Default: `1024`
 * **set_new_password:** `optional`. Specify a new password to access the Vm. If not specified, the default value (**ssh_password**) is taken.
 * **terraform_custom_provisioners**: `optional`. Specify custom shell commands to run on newly created instances BEFORE ansible starts setting them up. Default `""`
-* **terraform_destroy_provisioners**: `optional`. Specify custom shell commands to run BEFORE destroying instances (for example draining a node before destroying). Default `""`
 * **terrible_custom_provisioners**: `optional`.  Specify custom shell commands to run AFTER terrible run is completed (for example calling specific `ansible pull` for each node). Default `""`
 * **vm_autoboot**: `optional`. Specify if the VM should be automatically started at boot. Default: `False`
 * **base_deploy_path**: `optional`. Specify where the Terraform files and state will be deployed, the default value is `$HOME`
