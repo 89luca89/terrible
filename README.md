@@ -608,8 +608,8 @@ docker run \
     -it \
     --rm \
     -v /var/run/libvirt/libvirt-sock:/var/run/libvirt/libvirt-sock \
-    -v ./inventory-test.yml:/root/terrible-1.1.1/inventory-test.yml \
-    -v ~/VirtualMachines/:/opt/ \
+    -v ./inventory-test.yml:/terrible/inventory-test.yml \
+    -v /path/to/vm/images/:/opt/ \
     -v ~/.ssh/:/root/.ssh/ \
     89luca89/terrible
 ```
@@ -620,12 +620,12 @@ docker run \
 
 **Notes:**
 
-* The volume `/var/run/libvirt/libvirt-sock` is mandatory if you want to run Terrible locally (a local QEMU/KVM instance). In this way you directly interact with the QEMU/KVM api, provided by the system.
+* The volume `/var/run/libvirt/libvirt-sock` is mandatory if you want to run Terrible locally (a local QEMU/KVM instance). In this way you directly interact with the QEMU/KVM api, provided by the system (required).
 
-* The volume `./inventory-test.yml` is to include the inventory inside the container, to deploy the infrastructure.
+* The volume `./inventory-test.yml` is to include the inventory inside the container, to deploy the infrastructure (optional).
 
-* The volume `~/VirtualMachines/` is to include the `qcow2` images inside the container to deploy them.
-* The volume `~/.ssh` is to include your ssh keys into the container and deploy them inside the infrastructure machines.
+* The volume `~/path/to/vm/images/` is to include the `qcow2` images (previously generated with Packer) inside the container to deploy them (required).
+* The volume `~/.ssh` is to include your ssh keys into the container and deploy them inside the infrastructure machines (optional).
 
 ## Usage
 
