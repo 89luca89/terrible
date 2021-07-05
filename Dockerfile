@@ -8,7 +8,7 @@ ARG CRYPTOGRAPHY_VERSION=3.3.2
 ARG TERRAFORM_VERSION=0.12.0
 ARG TERRAFORM_PROVIDER_VERSION=0.6.2
 ARG TERRAFORM_PROVIDER_RELEASE=0.6.2+git.1585292411.8cbe9ad0
-ARG TERRIBLE_VERSION=1.1.1
+#ARG TERRIBLE_VERSION=1.1.1
 
 # Installing Ansible
 RUN apt-get update \
@@ -69,27 +69,23 @@ RUN apt-get update \
     && apt autoremove -y \
     && apt-get clean autoclean
 
+# Create the working environment
+COPY . /terrible
+
 # Installing terrible
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        wget \
-        unzip \
         python3-pip \
-    && cd /root \
-    && wget https://github.com/89luca89/terrible/archive/${TERRIBLE_VERSION}.zip \
-    && unzip ${TERRIBLE_VERSION}.zip \
-    && pip3 install --no-cache-dir -r terrible-${TERRIBLE_VERSION}/requirements.txt \
-    && rm -rf ${TERRIBLE_VERSION}.zip \
+    && cd /terrible \
+    && pip3 install --no-cache-dir -r requirements.txt \
     && rm -rf /var/lib/apt/lists/* \
     && rm -Rf /usr/share/doc && rm -Rf /usr/share/man \
     && apt-get purge -y \
-        wget \
-        unzip \
         python3-pip \
     && apt autoremove -y \
     && apt-get clean autoclean
 
-WORKDIR /root/terrible-${TERRIBLE_VERSION}
+WORKDIR /terrible
 RUN echo 'export PS1="[\[\e[31m\]\u\[\e[m\]@\[\e[31m\]terrible\[\e[m\]🐧]:\W\\$ "' >> /root/.bashrc
 
 ENTRYPOINT ["/bin/bash"]
