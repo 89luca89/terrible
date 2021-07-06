@@ -15,7 +15,6 @@ jobs:
       inventories: ${{ steps.output-inventories.outputs.inventories }}
     steps:
 
-      - uses: actions/checkout@v2
 
       - name: Install SSH Key
         uses: shimataro/ssh-key-action@v2
@@ -25,16 +24,6 @@ jobs:
 
       - name: Adding Known Hosts
         run: ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Deploy folder
-        run: |
-          ssh ${{ secrets.SSH_OPTIONS }} -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} "mkdir -p ~/${{ github.sha }}"
-          rsync -aH -e "ssh ${{ secrets.SSH_OPTIONS }} -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }}" ./  ${{ secrets.SSH_HOST }}:~/${{ github.sha }}/
-
-      - name: output inventories
-        id: output-inventories
-        run: |
-          echo "::set-output name=inventories::$(find examples/inventory-test-* | sort -u | jq -R -s -c 'split("\n")[:-1]')"
 
       - name: Wait for other runs to stop
         run: |
@@ -48,6 +37,18 @@ jobs:
               break
             fi
           done
+
+      - uses: actions/checkout@v2
+
+      - name: Deploy folder
+        run: |
+          ssh ${{ secrets.SSH_OPTIONS }} -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} "mkdir -p ~/${{ github.sha }}"
+          rsync -aH -e "ssh ${{ secrets.SSH_OPTIONS }} -p ${{ secrets.SSH_PORT }} -l ${{ secrets.SSH_USER }}" ./  ${{ secrets.SSH_HOST }}:~/${{ github.sha }}/
+
+      - name: output inventories
+        id: output-inventories
+        run: |
+          echo "::set-output name=inventories::$(find examples/inventory-test-* | sort -u | jq -R -s -c 'split("\n")[:-1]')"
 
   run:
 
