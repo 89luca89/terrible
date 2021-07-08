@@ -243,7 +243,7 @@ Ansible hosts required outside the `deploy` group:
 * **hypvervisor_[0-9+]:** `required`. Specifies the machine/machines that works as QEMU/KVM hypervisor (at least one machine needed).
 The default value of 127.0.0.1 indicates that the machine that perform the Terraform tasks is the same that runs the Ansible playbook. In case the Terraform machine is not the localhost, you can specify the ip/hostname of the Terraform node. More details could be found here: [HERE](#terraform-node-bastions--jumphosts)
 
-These variable are optional, there are sensible defaults set up, most of them can be declared from <ins>hypervisor scope</ins> to <ins>vm-group scope</ins> and <ins>per-vm scope</ins>:
+These variables are optional, there are sensible defaults set up, most of them can be declared from <ins>hypervisor scope</ins> to <ins>vm-group scope</ins> and <ins>per-vm scope</ins>:
 
 * **change_passwd_command:** `optional`. Specifies a different command to be used to change the user's password. If not specified the default command is used. Default: `echo root:{{ set_new_password }} | chpasswd`. This variable become really useful when you are using a FreeBSD OS.
 * **cpu:** `optional`. Specifies the cpu number for the VM. If not specified, the default value is taken. Default: `1`
@@ -460,11 +460,11 @@ of the networks we want to manage, improving compatibility with docker, k8s, nes
 
 ### Storage
 
-This section explain how you can add some additional disk to the VMs.
+This section explain how to add additional disks to the VMs.
 
-Suppose you want to create a VM that needs a large amount of storage space, and a separated disk just to store the configurations. Doing this is quite simple.
+Suppose that you want to create a VM that needs a large amount of storage, and a separated disk just to store the configurations. This will be quite simple to achieve.
 
-The main variable you need is `data_disks`. The you have to specify the disks and the related properties for each of them.
+The main variable you need is `data_disks`, then you have to specify the disks and the related properties for each one.
 
 If `data_disks` is mentioned in your inventory, the following variables are required:
 
@@ -474,7 +474,7 @@ If `data_disks` is mentioned in your inventory, the following variables are requ
 * **mount_point:** `required`. Specifies the mount point you want to create for the disk, use `none` if declaring a swap disk.
 * **encryption:** `required`. Specifies the mount point of the disk. Available values could be `True` or `False`.
 
-​	**N.B.** Each disk declared needs to have a unique name (eg. you can't use `disk0` twice).
+​	**N.B.** Each disk declared must have a unique name (eg. you can't use `disk0` twice).
 
 | OS Family   |  Supported Disk Format      |  Encryption Supported  |
 |----------|:-------------|--------------|
@@ -531,7 +531,7 @@ Let's take a look at how the *inventory* file is going to be fill.
 
 ## Compatibility
 
-Actually the playbook supports the most common 4 OS families for the Guests:
+At this time the playbook supports the most common 4 OS families for the Guests:
 
 * Alpine
 * RedHat
@@ -557,7 +557,7 @@ Actually the playbook supports the most common 4 OS families for the Guests:
     * FreeBSD 13.x
     * Other derivatives ( **untested** )
 
-This means you'll be able to generate the infrastructure using the OS listed above.
+This means you'll be able to generate the infrastructure using **ONLY** the OS listed above.
 
 Hypervisor OS is agnostic, as long as requirements are met.
 
@@ -595,11 +595,11 @@ To build the image, instead, type the following command:
 docker build -t terrible .
 ```
 
-This will take some time, grub a cup of coffee and wait.
+This will take some time, grab a cup of coffee and wait.
 
 #### Run
 
-Once you built the image, you are ready to run it as in the example below:
+Once you've built the image, you're ready to run it as in the example below:
 
 ```bash
 docker run \
@@ -620,10 +620,10 @@ docker run \
 
 * The volume `/var/run/libvirt/libvirt-sock` is mandatory if you want to run Terrible locally (a local QEMU/KVM instance). In this way you'll directly interact with the QEMU/KVM api, provided by the system.
 
-* The volume `./inventory-test.yml` is to include the inventory inside the container, to deploy the infrastructure (required if you want to run **terrible** properly ;) ).
+* The volume `./inventory-test.yml` has to include the inventory file inside the container, to deploy the infrastructure.
 
-* The volume `~/path/to/vm/images/` is to include the `qcow2` images (previously generated with Packer) inside the container to deploy them (required when **libvirt** is local).
-* The volume `~/.ssh` is to include your ssh keys into the container and deploy them inside the infrastructure machines (optional in case you want to use your own ssh keys).
+* The volume `~/VirtualMachines/` has to include the `qcow2` images inside the container to deploy them.
+* The volume `~/.ssh` has to include your ssh keys into the container to deploy them inside the infrastructure machines.
 
 ## Usage
 
@@ -660,8 +660,8 @@ ansible-playbook -i inventory.yml -u root main.yml --tags purge
 ### Outputs
 
 Based on your inventory, the complete state of the infrastructure (TF files, TF states, LUKS keys etc...)
-will be recorded to `${INVENTORY_NAME}-state.tar.gz` this file is essential to track the
-state of an infrastructure.
+will be written to `${INVENTORY_NAME}-state.tar.gz` this file is essential to keep track of the
+infrastructure state.
 
 You can (and should) save this state file to keep track of the infrastructure complete state, the *.tar.gz
 will be restored and saved on each run.
