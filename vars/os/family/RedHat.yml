@@ -20,7 +20,6 @@ ansible_dependencies:
       None
     {% endif %}"
 
-update_command: yum update -y --security
 install_command: yum install -y
 
 supported_fs:

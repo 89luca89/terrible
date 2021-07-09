@@ -19,7 +19,6 @@ ansible_dependencies:
       None
     {% endif %}"
 
-update_command: zypper patch -y
 install_command: zypper install -y
 
 supported_fs:

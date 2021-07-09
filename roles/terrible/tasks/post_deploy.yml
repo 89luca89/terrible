@@ -140,14 +140,4 @@
   when: data_disks is defined
   tags: provision
 
-# Upgrade systems but limit to only
-# security updates, to keep track of
-# the packages versions.
-- name: Update systems  # noqa 305
-  shell: "{{ update_command }}"
-  become: yes
-  become_user: root
-  changed_when: no
-  tags: provision
-
 ...
