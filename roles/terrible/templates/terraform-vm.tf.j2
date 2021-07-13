@@ -76,7 +76,9 @@ resource "libvirt_domain" "domain_{{ inventory_hostname }}" {
 {% if network_interfaces[iface].type  == "nat" %}
   # uses static  IP
   network_interface {
-    network_name   = "{{ network_name }}"
+{% if network_interfaces[iface].name is defined %}
+    network_name   = "{{ network_interfaces[iface].name }}"
+{% endif %}
     hostname       = "{{ inventory_hostname }}"
 {% if network_interfaces[iface].ip is defined %}
     addresses      = ["{{ network_interfaces[iface].ip }}"]

@@ -5,7 +5,6 @@
 ## DEFAULTS FOR VM RESOURCES
 cpu: 1
 memory: 1024
-network_name: "default"
 vm_autostart: False
 
 terraform_version: 0.12
