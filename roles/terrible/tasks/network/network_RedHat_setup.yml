@@ -77,7 +77,7 @@
 # keep track than using directly nmcli
 - name: Set connection setting files
   blockinfile:
-    path: "/etc/sysconfig/network-scripts/ifcfg-managed-{{ network_name }}-{{ item.0 }}"
+    path: "/etc/sysconfig/network-scripts/ifcfg-managed-{{ item.0 }}"
     mode: 0644
     block: |
       TYPE=Ethernet

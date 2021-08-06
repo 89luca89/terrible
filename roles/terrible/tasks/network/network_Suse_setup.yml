@@ -110,7 +110,7 @@
       {% endif %}
       IPV6_FAILURE_FATAL='no'
       IPV6_ADDR_GEN_MODE='stable-privacy'
-      NAME='managed-{{ network_name }}-{{ item.0 }}'
+      NAME='managed-default-{{ item.0 }}'
       UUID='{{ item.0 | to_uuid }}'
       DEVICE='{{ item.0 }}'
       ONBOOT='yes'

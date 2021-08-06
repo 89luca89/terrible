@@ -86,7 +86,7 @@
     # Use traditional /etc/network/interfaces on Debian
     - name: Set connection setting files - Ifupdown
       blockinfile:
-        path: "/etc/network/interfaces.d/ifcfg-managed-{{ network_name }}-{{ item.0 }}"
+        path: "/etc/network/interfaces.d/ifcfg-managed-{{ item.0 }}"
         mode: 0644
         block: |
           auto {{ item.0 }}:0
