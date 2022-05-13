@@ -50,7 +50,7 @@ As said, our objective was achievable thanks to the Ansible flexibility combined
 
 ### How It Works
 
-The baisc idea comes from the complexity to automate VMs deployments in a QEMU/KVM environment.
+The basic idea comes from the complexity to automate VMs deployments in a QEMU/KVM environment.
 
 For this reason we decided to automate the deployment process as much as possible, using **Ansible** and **Jinja2**.
 
