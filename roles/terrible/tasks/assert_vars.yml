@@ -4,26 +4,30 @@
 - name: Assert VMs Variables
   assert:
     quiet: yes
-    that: "{{ item }} is defined"
+    that:
+      - "item.value is not none"
+      - "item.value | string | length > 0"
     fail_msg: >
-      You must specify {{ item }}
-  with_items:
-    - hostvars['terraform_node']
-    - hostvars['terraform_node']['ansible_host']
-    - hostvars['terraform_node']['ansible_connection']
-    - ansible_host
-    - base_deploy_path
-    - disk_source
-    - network_interfaces
-    - pool_name
-    - ssh_password
-    - ssh_port
-    - ssh_public_key_file
-    - ssh_user
-    - state_save_file
-    - vm_autostart
+      You must specify {{ item.key }}
+  loop: "{{ _mandantory_variables | dict2items }}"
+  vars:
+    _mandantory_variables:
+      "hostvars['terraform_node']": "{{ hostvars['terraform_node'] | default }}"
+      "hostvars['terraform_node']['ansible_host']": "{{ hostvars['terraform_node']['ansible_host'] | default }}"
+      "hostvars['terraform_node']['ansible_connection']": "{{ hostvars['terraform_node']['ansible_connection'] | default }}"
+      "ansible_host": "{{ ansible_host | default }}"
+      "base_deploy_path": "{{ base_deploy_path | default }}"
+      "disk_source": "{{ disk_source | default }}"
+      "network_interfaces": "{{ network_interfaces | default }}"
+      "pool_name": "{{ pool_name | default }}"
+      "ssh_password": "{{ ssh_password | default }}"
+      "ssh_port": "{{ ssh_port | default }}"
+      "ssh_public_key_file": "{{ ssh_public_key_file | default }}"
+      "ssh_user": "{{ ssh_user | default }}"
+      "state_save_file": "{{ state_save_file | default }}"
+      "vm_autostart": "{{ vm_autostart | default }}"
 
-# Verifiy the correctness of the parameters.
+# Verify the correctness of the parameters.
 - name: Validate 'ssh_port' parameter
   assert:
     quiet: yes
@@ -33,7 +37,7 @@
     fail_msg: >
       You are trying to use an unsupported ssh_port value.
 
-# Verifiy the correctness of the parameters.
+# Verify the correctness of the parameters.
 - name: Validate 'ansible_port' parameter
   assert:
     quiet: yes
@@ -50,25 +54,21 @@
   assert:
     quiet: yes
     that:
-      - "{{ item }}"
+      - "os_family is defined"
+      - "os_family in os_family_support"
     fail_msg: >
       You must specify the os_family for host {{ inventory_hostname }},
       supported values are: {{ os_family_support }}
-  with_items:
-    - "os_family is defined"
-    - "os_family in os_family_support"
 
 # Ensure that the hypervisor variable has been set for current host.
 - name: Assert hypervisor variable
   assert:
     quiet: yes
     that:
-      - "{{ item }}"
+      - "hypervisor is defined"
+      - "hostvars[hypervisor]['ansible_host'] is defined"
     fail_msg: >
       You must specify the hyperisor value for host {{ inventory_hostname }}
-  with_items:
-    - "hypervisor is defined"
-    - "hostvars[hypervisor]['ansible_host'] is defined"
 
 # Verifiy the correctness of the parameters.
 - name: Validate 'cpu' parameter
@@ -117,11 +117,11 @@
   assert:
     quiet: yes
     that:
-      - "{{ item }}.name is defined"
-      - "{{ item }}.type is defined"
-      - "{{ item }}.ip is defined"
-      - "{{ item }}.gw is defined"
-      - "{{ item }}.dns is defined"
+      - "item.name is defined"
+      - "item.type is defined"
+      - "item.ip is defined"
+      - "item.gw is defined"
+      - "item.dns is defined"
     fail_msg: >
       Incomplete interface declaration for {{ item }}, missing a mandatory var
   with_items:
@@ -132,9 +132,9 @@
   assert:
     quiet: yes
     that:
-      - "{{ item }}.type == 'nat' or
-        {{ item }}.type == 'macvtap' or
-        {{ item }}.type == 'bridge'"
+      - "item.type == 'nat' or
+        item.type == 'macvtap' or
+        item.type == 'bridge'"
     fail_msg: >
       Unsupported value for interface type.
   with_items:
@@ -145,7 +145,7 @@
   assert:
     quiet: yes
     that:
-      - "{{ item }}.ip | ipaddr"
+      - "item.ip | ipaddr"
     fail_msg: >
       Invalid interface ip address.
   when:
@@ -158,7 +158,7 @@
   assert:
     quiet: yes
     that:
-      - "{{ item }}.gw | ipaddr"
+      - "item.gw | ipaddr"
     fail_msg: >
       Invalid interface gateway address.
   when:
@@ -171,7 +171,7 @@
   assert:
     quiet: yes
     that:
-      - "{{ item.dns }} | length > 0"
+      - "item.dns | length > 0"
     fail_msg: >
       Incomplete interface dns specification.
   when:
@@ -190,11 +190,11 @@
   assert:
     quiet: yes
     that:
-      - "{{ item }}.size is defined"
-      - "{{ item }}.pool is defined"
-      - "{{ item }}.format is defined"
-      - "{{ item }}.mount_point is defined"
-      - "{{ item }}.encryption is defined"
+      - "item.size is defined"
+      - "item.pool is defined"
+      - "item.format is defined"
+      - "item.mount_point is defined"
+      - "item.encryption is defined"
     fail_msg: >
       You must specify {{ item }} when data_disks is defined
   with_items:
@@ -208,8 +208,8 @@
   assert:
     quiet: yes
     that:
-      - "{{ item }}.size | int"
-      - "{{ item }}.size > 0"
+      - "item.size | int"
+      - "item.size > 0"
     fail_msg: >
       You are trying to use an unsupported size value.
   with_items:
@@ -223,7 +223,7 @@
   assert:
     quiet: yes
     that:
-      - "{{ item }}.pool | length > 0"
+      - "item.pool | length > 0"
     fail_msg: >
       You are trying to use an unsupported pool value.
   with_items:
@@ -236,8 +236,8 @@
   assert:
     quiet: yes
     that:
-      - "{{ item }}.format in {{ supported_fs }}"
-      - "{{ item }}.format | length > 0"
+      - "item.format in {{ supported_fs }}"
+      - "item.format | length > 0"
     fail_msg: >
       You must specify a valid disk format for host {{ inventory_hostname }},
       supported values are: {{ supported_fs }}
@@ -252,8 +252,8 @@
   assert:
     quiet: yes
     that:
-      - '{{ item }}.mount_point == "none" or {{ item }}.mount_point | regex_search("^/\\w+")'
-      - "{{ item }}.mount_point | length > 0"
+      - 'item.mount_point == "none" or item.mount_point | regex_search("^/\\w+")'
+      - "item.mount_point | length > 0"
     fail_msg: >
       You are trying to use an unsupported mount_point value.
   with_items:
@@ -267,7 +267,7 @@
   assert:
     quiet: yes
     that:
-      - not {{ item }}.encryption
+      - not item.encryption
     fail_msg: >
       You are trying to use an unsupported encryption value. FreeBSD family and CloudInit images doesn't support encryption.
   with_items:
@@ -282,7 +282,7 @@
   assert:
     quiet: yes
     that:
-      - "{{ item.encryption }} | type_debug == 'bool'"
+      - "item.encryption | type_debug == 'bool'"
     fail_msg: >
       You are trying to use an unsupported encryption value. Possible values could be 'True' or 'False'.
   with_items:
